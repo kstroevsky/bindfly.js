@@ -3,10 +3,18 @@ import './App.css';
 const Animation = React.lazy(() => import('./components/Animation'));
 
 function App() {
-
+    const properties = {
+        bgColor: 'rgb(17,17,19)',
+        particleColor: 'rgb(255,40,40,1)',
+        particleRadius: 3,
+        particleCount: 60,
+        particleMaxVelocity: 0.2,
+        lineLength: 150,
+        particleLife: 20
+    };
   return (
       <div className="App">
-        <Animation />
+        <Animation properties={properties}/>
       </div>
   );
 }

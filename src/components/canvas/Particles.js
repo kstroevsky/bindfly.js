@@ -5,24 +5,26 @@ export class Particles{
         this.ctx = ctx;
         this.properties = properties;
         this.particles = particles;
-        this.w = w;
-        this.h = h;
+        this.sizes={
+            w,
+            h
+        }
         this.boundAnimate = this.loop.bind(this);
     }
 
     reDrawBackground() {
          this.ctx.fillStyle = this.properties.bgColor;
-         this.ctx.fillRect(0, 0, this.w, this.h);
+         this.ctx.fillRect(0, 0, this.sizes.w, this.sizes.h);
     }
 
      drawLines() {
         let x1, y1,x2, y2, length, opacity;
         for (let i in this.particles) {
             for (let j in this.particles){
-                x1 = this.particles[i].x;
-                y1 = this.particles[i].y;
-                x2 = this.particles[j].x;
-                y2 = this.particles[j].y;
+                x1 = this.particles[i].rect.x;
+                y1 = this.particles[i].rect.y;
+                x2 = this.particles[j].rect.x;
+                y2 = this.particles[j].rect.y;
                 length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
                 if(length < this.properties.lineLength) {
                     opacity = 1-length/this.properties.lineLength;
@@ -55,7 +57,7 @@ export class Particles{
 
      init() {
         for (let i = 0; i<this.properties.particleCount; i++){
-            this.particles.push(new Particle(this.w, this.h, this.properties, this.ctx));
+            this.particles.push(new Particle(this.sizes.w, this.sizes.h, this.properties, this.ctx));
         }
     }
 

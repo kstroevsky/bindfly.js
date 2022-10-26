@@ -2,37 +2,41 @@ import React from "react";
 import {useEffect, useRef} from "react";
 import {Particles} from './canvas/Particles';
 
-function Animation() {
+function Animation({properties}) {
+    const workerRef = useRef(null);
     const canvasRef = useRef(null);
-    let w = window.innerWidth;
-    let h = window.innerHeight;
+
+    const {innerWidth, innerHeight} = window;
 
     const particles = [];
-    const properties = {
-        bgColor: 'rgb(17,17,19)',
-        particleColor: 'rgb(255,40,40,1)',
-        particleRadius: 3,
-        particleCount: 30,
-        particleMaxVelocity: 0.2,
-        lineLength: 150,
-        particleLife: 20
-    };
 
     useEffect(() => {
-        if (canvasRef.current) {
-            const canvas = canvasRef.current;
-            const ctx = canvas && canvas.getContext('2d');
-            canvas.width = w;
-            canvas.height = h;
-            if(ctx) {
-                const animation = new Particles(ctx, properties, particles, w, h)
+        workerRef.current = new Worker(new URL('./canvas/worker.js', import.meta.url));
+        if (canvasRef.current){
+            try {
+                const offscreen = canvasRef.current.transferControlToOffscreen();
+                workerRef.current.postMessage(
+                    {
+                        msg: 'init',
+                        canvas: offscreen,
+                        innerWidth,
+                        innerHeight,
+                        properties,
+                        particles
+                    },
+                    [offscreen]
+                );
+            } catch {
+                const canvas = canvasRef.current;
+                const ctx = canvas && canvas.getContext('2d');
+                canvas.width = innerWidth;
+                canvas.height = innerHeight;
+                const animation = new Particles(ctx, properties, particles, innerWidth, innerHeight)
                 animation.init();
                 animation.loop();
             }
         }
     }, [])
-
-
 
   return (
         <canvas
@@ -40,8 +44,8 @@ function Animation() {
             style={{
                 background: properties.bgColor
             }}
-            width={w}
-            height={h}
+            width={innerWidth}
+            height={innerHeight}
         />
   );
 }
