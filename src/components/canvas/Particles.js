@@ -1,13 +1,13 @@
 import {Particle} from './Particle'
 
 export class Particles{
-    constructor(ctx, properties, particles, w, h) {
+    constructor(ctx, parameters) {
         this.ctx = ctx;
-        this.properties = properties;
-        this.particles = particles;
+        this.properties = parameters.properties;
+        this.particles = parameters.particles;
         this.sizes={
-            w,
-            h
+            w: parameters.innerWidth,
+            h: parameters.innerHeight
         }
         this.boundAnimate = this.loop.bind(this);
     }

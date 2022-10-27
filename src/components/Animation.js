@@ -1,42 +1,37 @@
 import React from "react";
 import {useEffect, useRef} from "react";
 import {Particles} from './canvas/Particles';
+import {useAnimation} from "../hooks/useAnimation";
 
 function Animation({properties}) {
     const workerRef = useRef(null);
-    const canvasRef = useRef(null);
 
     const {innerWidth, innerHeight} = window;
 
     const particles = [];
+
+     const {canvasRef, animation} = useAnimation(Particles, {particles, properties, innerWidth, innerHeight});
 
     useEffect(() => {
         workerRef.current = new Worker(new URL('./canvas/worker.js', import.meta.url));
         if (canvasRef.current){
             try {
                 const offscreen = canvasRef.current.transferControlToOffscreen();
+                console.log(offscreen);
                 workerRef.current.postMessage(
                     {
                         msg: 'init',
                         canvas: offscreen,
-                        innerWidth,
-                        innerHeight,
-                        properties,
-                        particles
+                        animationParameters: {particles, properties, innerWidth, innerHeight}
                     },
                     [offscreen]
                 );
             } catch {
-                const canvas = canvasRef.current;
-                const ctx = canvas && canvas.getContext('2d');
-                canvas.width = innerWidth;
-                canvas.height = innerHeight;
-                const animation = new Particles(ctx, properties, particles, innerWidth, innerHeight)
-                animation.init();
-                animation.loop();
+                animation?.init();
+                animation?.loop();
             }
         }
-    }, [])
+    }, [animation])
 
   return (
         <canvas

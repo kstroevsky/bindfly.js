@@ -6,13 +6,13 @@ let canvas, ctx;
 // eslint-disable-next-line no-restricted-globals
 self.onmessage = function(e) {
     if (e.data.msg === 'init') {
+
         canvas = e.data.canvas;
-        canvas.width = e.data.innerWidth;
-        canvas.height = e.data.innerHeight;
+        ctx = canvas && canvas.getContext('2d');
+        canvas.width = e.data.animationParameters.innerWidth;
+        canvas.height = e.data.animationParameters.innerHeight;
 
-        ctx = canvas.getContext('2d');
-
-        animationWorker = new Particles(ctx, e.data.properties, e.data.particles, e.data.innerWidth, e.data.innerHeight)
+        animationWorker = new Particles(ctx, e.data.animationParameters)
         animationWorker.init();
         animationWorker.loop();
     }
