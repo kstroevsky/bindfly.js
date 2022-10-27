@@ -12,7 +12,9 @@ self.onmessage = function(e) {
         canvas.width = e.data.animationParameters.innerWidth;
         canvas.height = e.data.animationParameters.innerHeight;
 
-        animationWorker = new Particles(ctx, e.data.animationParameters)
+        const Animation = e.data.animation;
+
+        animationWorker = new Animation(ctx, e.data.animationParameters)
         animationWorker.init();
         animationWorker.loop();
     }

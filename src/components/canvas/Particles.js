@@ -4,7 +4,7 @@ export class Particles{
     constructor(ctx, parameters) {
         this.ctx = ctx;
         this.properties = parameters.properties;
-        this.particles = parameters.particles;
+        this.particles = [];
         this.sizes={
             w: parameters.innerWidth,
             h: parameters.innerHeight
