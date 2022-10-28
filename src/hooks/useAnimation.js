@@ -1,30 +1,26 @@
 import React, {useEffect, useRef} from "react";
 
-export const useAnimation = (ref, Animation, animationParameters) => {
+export const useAnimation = (Animation,animationParameters) => {
     const workerRef = useRef(null);
-    let offscreen;
+    const canvasRef = useRef(null);
+
     useEffect(() => {
         workerRef.current = new Worker(new URL('../components/canvas/worker.js', import.meta.url));
-        // workerRef.current.onerror = (event) => {
-        //     workerRef.current.terminate();
-        // }
 
-        if (ref && !offscreen){
-            console.log('ok')
+        if (canvasRef){
             try {
-                offscreen = ref.transferControlToOffscreen();
-                console.log(offscreen);
+                const offscreen = canvasRef.current.transferControlToOffscreen();
                 workerRef.current.postMessage(
                     {
                         msg: 'init',
                         canvas: offscreen,
-                        animation: Animation,
+                        animationName: Animation.name,
                         animationParameters: animationParameters
                     },
                     [offscreen]
                 );
             } catch {
-                const canvas = ref;
+                const canvas = canvasRef.current
                 const ctx = canvas.getContext('2d');
                 canvas.width = animationParameters.innerWidth;
                 canvas.height = animationParameters.innerHeight;
@@ -33,12 +29,9 @@ export const useAnimation = (ref, Animation, animationParameters) => {
                 try {
                     animation?.init();
                     animation?.loop();
-                    return true
-                } catch {
-                    return false
-                }
-
+                } catch {}
             }
         }
-    }, [ref])
+    }, [Animation])
+    return canvasRef
 }

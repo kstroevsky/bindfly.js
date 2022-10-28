@@ -1,6 +1,6 @@
 import {Particle} from './Particle'
 
-export class Particles{
+class Particles {
     constructor(ctx, parameters) {
         this.ctx = ctx;
         this.properties = parameters.properties;
@@ -63,3 +63,5 @@ export class Particles{
 
     clear() {this.particles = []}
 }
+
+export {Particles}
