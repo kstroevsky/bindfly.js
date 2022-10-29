@@ -1,6 +1,6 @@
 import React, {useEffect, useRef} from "react";
 
-export const useAnimation = (Animation,animationParameters) => {
+export const useAnimation = (Animation, animationParameters) => {
     const workerRef = useRef(null);
     const canvasRef = useRef(null);
 
@@ -21,17 +21,13 @@ export const useAnimation = (Animation,animationParameters) => {
                 );
             } catch {
                 const canvas = canvasRef.current
-                const ctx = canvas.getContext('2d');
+                const ctx = canvas.getContext('2d', { alpha: false });
                 canvas.width = animationParameters.innerWidth;
                 canvas.height = animationParameters.innerHeight;
                 const animation = new Animation(ctx, animationParameters)
-                console.log(animation)
-                try {
-                    animation?.init();
-                    animation?.loop();
-                } catch {}
+                animation?.init();
             }
         }
-    }, [Animation])
+    }, [Animation, animationParameters])
     return canvasRef
 }
