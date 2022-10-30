@@ -3,9 +3,16 @@ import {Particle} from './Particle'
 class Particles {
     constructor(ctx, parameters) {
         this.ctx = ctx;
+        this.isStarted = false
         this.properties = parameters.properties;
-        this.isParticleColors = parameters.properties.particleColors && parameters.properties.particleColors.length;
-        this.particles = [];     
+        this.colorOffset = 0;
+        this.particleColors = (parameters.properties.particleColors && parameters.properties.particleColors.length ) 
+            ? parameters.properties.particleColors 
+            : Array.from(new Array(parameters.properties.generativeColorsCounts)).map((_, i) => {
+                let frequency=5/parameters.properties.generativeColorsCounts;
+                return `rgba(${Math.floor(Math.sin(frequency*i + 0) * (127) + 128)}, ${Math.floor(Math.sin(frequency*i + 2) * (127) + 128)}, ${Math.floor(Math.sin(frequency*i + 4) * (127) + 128)}, 1)`
+            })
+        this.particles = [];    
         this.sizes={
             w: parameters.innerWidth,
             h: parameters.innerHeight
@@ -13,10 +20,8 @@ class Particles {
         this.color = this.properties.switchByClick
             ? this.properties.isMonochrome
                 ? this.monochrome
-                : this.isParticleColors
-                    ? this.propsColors
-                    : this.defaultColors
-            : this.defaultSwitchableColors   
+                : this.propsColors
+            : this.propsColors
         this.drawLines = this.properties.addByClick ? this.drawLinesWithAdding : this.drawLinesWithoutAdding
         this.boundAnimate = this.loop.bind(this);
     }
@@ -26,15 +31,7 @@ class Particles {
     }
 
     propsColors(i, opacity) {
-        return this.properties.particleColors[i % this.properties.particleColors.length].replace(/(?<=rgba.*)\d+(?=\)$)/, opacity)
-    }
-
-    defaultSwitchableColors(i, opacity, x1) {
-        return this.particles[i].getColor(i, opacity, x1)
-    }
-
-    defaultColors(i, opacity, x1) {
-        return this.particles[i].calcColor(opacity, 0, 100, x1)
+        return this.particleColors[(this.colorOffset + i) % this.particleColors.length].replace(/\d+(?=\)$)/, opacity)
     }
 
     reDrawBackground() {
@@ -44,14 +41,13 @@ class Particles {
 
     drawLinesWithoutAdding() {
         let x1, y1,x2, y2, length;
-
         for (let i in this.particles) {
             this.particles[i].reCalculateLife();
             this.particles[i].position();
             x1 = this.particles[i].x;
             y1 = this.particles[i].y;
-            
-            for (let j in this.particles){
+
+            for (let j in this.particles) {
                 x2 = this.particles[j].x;
                 y2 = this.particles[j].y;
                 length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(3)
@@ -70,14 +66,14 @@ class Particles {
 
     drawLinesWithAdding() {
         let x1, y1,x2, y2, length, opacity;
-
         for (let i in this.particles) {
             this.particles[i].reCalculateLife();
             this.particles[i].position();
             x1 = this.particles[i].x;
             y1 = this.particles[i].y;
+
             
-            for (let j in this.particles){
+            for (let j in this.particles) {
                 x2 = this.particles[j].x;
                 y2 = this.particles[j].y;
                 length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(3)
@@ -85,7 +81,9 @@ class Particles {
                 if (length < this.properties.lineLength) {
                     opacity = 1 - length/this.properties.lineLength
                     if (this.particles[i].isStart) {
-                        if (this.particles[i].start > opacity) this.particles[i].isStart = false
+                        if (this.particles[i].start > opacity) {
+                            this.particles[i].isStart = false
+                        }
                         opacity = this.particles[i].start
                     }
                     this.ctx.lineWidth = 0.5;
@@ -105,9 +103,15 @@ class Particles {
         requestAnimationFrame(this.boundAnimate);
     }
 
-     init() {
-        this.particles = new Particle(this.sizes.w, this.sizes.h, this.properties).particles;
-        this.loop();
+    init() {
+        this.particles = new Particle(this.sizes.w, this.sizes.h, this.properties, this.isParticleColors).particles;
+        if (this.properties.isStatic) {
+            this.reDrawBackground();
+            this.drawLines();
+            return;
+        }
+        this.isStarted = true;
+        this.loop()
     }
 
     clear() {this.particles = []}

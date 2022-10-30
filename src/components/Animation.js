@@ -1,6 +1,6 @@
 import React from "react";
 import {Particles} from './canvas/animations/Particles';
-import {useAnimation} from "../hooks/useAnimation";
+import {useAnimation} from "../hooks";
 
 function Animation({properties}) {
     const {innerWidth, innerHeight} = window;
@@ -8,7 +8,6 @@ function Animation({properties}) {
      const canvasRef = useAnimation(Particles, { properties, innerWidth, innerHeight});
 
       return (
-          <>
             <canvas
                 ref={canvasRef}
                 style={{
@@ -17,7 +16,6 @@ function Animation({properties}) {
                 width={innerWidth}
                 height={innerHeight}
             />
-          </>
       );
 }
 
