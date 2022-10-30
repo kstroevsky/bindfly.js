@@ -9,7 +9,6 @@ function Animation({properties}) {
 
       return (
           <>
-            {!canvasRef.current && <div>Анимациия недоступна</div>}
             <canvas
                 ref={canvasRef}
                 style={{
