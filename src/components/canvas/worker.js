@@ -29,7 +29,7 @@ self.onmessage = function(e) {
                 isStart: true,
                 start: 0,
                 position: animationWorker.particles[0].position,
-                reCalculateLife: animationWorker.particles[0].reCalculateLife,
+                reCalculateLife: animationWorker.particles[0].reCalculcateLifeWithNew,
                 calcColor: animationWorker.particles[0].calcColor,
                 getColor: animationWorker.particles[0].getColor
             }

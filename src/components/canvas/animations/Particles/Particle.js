@@ -29,9 +29,20 @@ export class Particle {
                         if (this.start >= 1) this.isStart = false
                         this.life--;
                     }
-
+                },
+                reCalculcateLifeWithNew() {
+                    if (!properties.isImmortal) {
+                        if (this.life < 1) {
+                            this.x = Math.random() * w;
+                            this.y = Math.random() * h;
+                            this.velocityX = velocity;
+                            this.velocityY = velocity;
+                            this.life = Math.random() * properties.particleLife*60
+                        }
+                        if (this.start >= 1) this.isStart = false
+                        this.life--;
+                    }
                     if (this.isStart) this.start = this.start + 0.0001
-
                 },
                 calcColor(opacity, min, max, val) {
                     const minHue = 240, maxHue = 0;
