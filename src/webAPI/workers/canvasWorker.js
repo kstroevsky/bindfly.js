@@ -13,7 +13,7 @@ self.onmessage = function(e) {
         canvas.width = e.data.animationParameters.innerWidth;
         canvas.height = e.data.animationParameters.innerHeight;
         
-        import(`../../components/${e.data.animationName}`).then(cl => {
+        import(`../../components/canvas/animations/${e.data.animationName}`).then(cl => {
             animationWorker = new cl[e.data.animationName](ctx, e.data.animationParameters)
             animationWorker.init();
         });

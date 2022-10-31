@@ -1,1 +1,1 @@
-export {useAnimation} from './useAnimation'
+export {useCanvas} from './useCanvas'

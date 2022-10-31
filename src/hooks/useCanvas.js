@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from "react";
 import {canvasClickHandler} from '../utils'
 
-export const useAnimation = (Animation, animationParameters) => {
+export const useCanvas = (Animation, animationParameters) => {
     const workerRef = useRef(null);
     const canvasRef = useRef(null);
 
