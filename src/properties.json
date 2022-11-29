@@ -1,0 +1,50 @@
+[
+    {
+        "name": "Default",
+        "bgColor": "rgba(255, 255, 255, 0.7)",
+        "generativeColorsCounts": 10,
+        "particleCount": 100,
+        "particleMaxVelocity": 1,
+        "lineLength": 150,
+        "particleLife": 20,
+        "margin": 20,
+        "isMonochrome": false,
+        "isCountStable": false,
+        "isImmortal": false,
+        "addByClick": true,
+        "switchByClick": false,
+        "isStatic": false
+    },
+    {
+        "name": "Set1",
+        "bgColor": "rgba(255, 255, 255, 0.7)",
+        "generativeColorsCounts": 10,
+        "particleCount": 100,
+        "particleMaxVelocity": 1,
+        "lineLength": 150,
+        "particleLife": 20,
+        "margin": 20,
+        "isMonochrome": false,
+        "isCountStable": false,
+        "isImmortal": false,
+        "addByClick": true,
+        "switchByClick": false,
+        "isStatic": false
+    },
+    {
+        "name": "Set2",
+        "bgColor": "rgba(255, 255, 255, 0.7)",
+        "generativeColorsCounts": 10,
+        "particleCount": 100,
+        "particleMaxVelocity": 1,
+        "lineLength": 150,
+        "particleLife": 20,
+        "margin": 20,
+        "isMonochrome": false,
+        "isCountStable": false,
+        "isImmortal": false,
+        "addByClick": true,
+        "switchByClick": false,
+        "isStatic": false
+    }
+]
