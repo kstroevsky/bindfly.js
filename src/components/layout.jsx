@@ -9,11 +9,10 @@ const Layout = () => {
 
   return (
     <>
-      <aside>
+      <aside className="Sidebar">
         <nav>
-          <ul>
+          <ul className="ListLink">
             {properties?.map(({ name }, idx) => {
-              console.log(name);
               return (
                 <li key={`${idx} + ${name}`}>
                   <Link to={`/${name === "Default" ? "" : name}`}>{name}</Link>
@@ -22,8 +21,6 @@ const Layout = () => {
             })}
           </ul>
         </nav>
-
-        <hr />
       </aside>
       <Outlet context={{ properties }} />
     </>

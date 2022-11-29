@@ -6,10 +6,12 @@ import { useOutletContext, useParams } from "react-router-dom";
 function Animation({ keyProperties }) {
   const { innerWidth, innerHeight } = window;
   const { properties } = useOutletContext();
-  console.log(keyProperties);
-
+  const [propertiesSet] = properties.filter(
+    (item) => item.name === keyProperties
+  );
+  console.log(propertiesSet);
   const canvasRef = useCanvas(Particles, {
-    properties,
+    properties: propertiesSet,
     innerWidth,
     innerHeight,
   });

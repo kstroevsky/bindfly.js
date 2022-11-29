@@ -1,6 +1,6 @@
-import React, { Suspense } from "react";
+import React from "react";
 import "./App.css";
-import { Routes, useOutletContext } from "react-router-dom";
+import { Routes } from "react-router-dom";
 import { Route } from "react-router-dom";
 import { Layout } from "./components/layout";
 
@@ -12,8 +12,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Animation keyProperties={"Default"} />} />
-          <Route path="set1" element={<Animation keyProperties={"set1"} />} />
-          <Route path="set2" element={<Animation keyProperties={"set2"} />} />
+          <Route path="Set1" element={<Animation keyProperties={"Set1"} />} />
+          <Route path="Set2" element={<Animation keyProperties={"Set2"} />} />
         </Route>
       </Routes>
     </div>
