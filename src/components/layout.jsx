@@ -1,28 +1,22 @@
-import { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import properties from "../properties.json";
 
-const initialState = properties;
-
-const Layout = () => {
-  const [properties, setProperties] = useState(initialState);
-
+const Layout = ({ properties }) => {
   return (
     <>
       <aside className="Sidebar">
         <nav>
           <ul className="ListLink">
-            {properties?.map(({ name }, idx) => {
+            {properties?.map((item, idx) => {
               return (
-                <li key={`${idx} + ${name}`}>
-                  <Link to={`/${name === "Default" ? "" : name}`}>{name}</Link>
+                <li key={`${idx}`}>
+                  <Link to={`/animation-${idx}`}>{`Animation-${idx}`}</Link>
                 </li>
               );
             })}
           </ul>
         </nav>
       </aside>
-      <Outlet context={{ properties }} />
+      <Outlet />
     </>
   );
 };

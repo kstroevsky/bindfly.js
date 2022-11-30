@@ -1,19 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import "./App.css";
 import { Routes } from "react-router-dom";
 import { Route } from "react-router-dom";
 import { Layout } from "./components/layout";
+import properties from "./properties.json";
 
 const Animation = React.lazy(() => import("./components/Animation"));
 
+const initialState = properties;
+
 function App() {
+  const [properties, setProperties] = useState(initialState);
+
   return (
     <div className="App">
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Animation keyProperties={"Default"} />} />
-          <Route path="Set1" element={<Animation keyProperties={"Set1"} />} />
-          <Route path="Set2" element={<Animation keyProperties={"Set2"} />} />
+        <Route path="/" element={<Layout properties={properties} />}>
+          {properties.map((x, i) => (
+            <Route
+              key={i}
+              path={`/animation-${i}`}
+              element={<Animation properties={x} />}
+              // action={async () => workerRef.current.terminate()}
+            />
+          ))}
         </Route>
       </Routes>
     </div>

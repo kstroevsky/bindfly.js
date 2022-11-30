@@ -1,17 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Particles } from "./canvas/animations/Particles";
 import { useCanvas } from "../hooks";
-import { useOutletContext, useParams } from "react-router-dom";
 
-function Animation({ keyProperties }) {
+function Animation({ properties }) {
   const { innerWidth, innerHeight } = window;
-  const { properties } = useOutletContext();
-  const [propertiesSet] = properties.filter(
-    (item) => item.name === keyProperties
-  );
-  console.log(propertiesSet);
+  // let canvasRef = useCanvas(null);
+
+  console.log(properties);
+
+  const path = window.location.pathname;
+
+  useEffect(() => {
+    console.log(window.location.pathname);
+  }, [path]);
+
   const canvasRef = useCanvas(Particles, {
-    properties: propertiesSet,
+    properties,
     innerWidth,
     innerHeight,
   });
