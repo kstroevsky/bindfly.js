@@ -1,15 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { canvasClickHandler } from "../utils";
 
 export const useCanvas = (Animation, animationParameters) => {
   const workerRef = useRef(null);
   const canvasRef = useRef(null);
-  //   const path = window.location.pathname;
-
-  //   useEffect(() => {
-  //     console.log(window.location.pathname);
-  //     workerRef.current.terminate();
-  //   }, [path]);
 
   useEffect(() => {
     workerRef.current = new Worker(

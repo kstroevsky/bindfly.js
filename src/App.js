@@ -1,27 +1,38 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import { Routes } from "react-router-dom";
 import { Route } from "react-router-dom";
-import { Layout } from "./components/layout";
+import { Layout } from "./components/Layout";
 import properties from "./properties.json";
+import useLongPress from "./hooks/useLongPressHandler";
 
 const Animation = React.lazy(() => import("./components/Animation"));
 
-const initialState = properties;
-
 function App() {
-  const [properties, setProperties] = useState(initialState);
+  const [data, setData] = useState([]);
+  const { action, handlers } = useLongPress();
+
+  useEffect(() => {
+    setData(properties);
+  }, [setData]);
 
   return (
-    <div className="App">
+    <div className="App" {...handlers}>
       <Routes>
-        <Route path="/" element={<Layout properties={properties} />}>
-          {properties.map((x, i) => (
+        <Route
+          path="/"
+          element={
+            <Layout
+              properties={data}
+              action={action === "longpress" && action}
+            />
+          }
+        >
+          {data?.map((x, i) => (
             <Route
               key={i}
               path={`/animation-${i}`}
               element={<Animation properties={x} />}
-              // action={async () => workerRef.current.terminate()}
             />
           ))}
         </Route>

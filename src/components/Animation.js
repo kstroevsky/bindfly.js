@@ -4,14 +4,11 @@ import { useCanvas } from "../hooks";
 
 function Animation({ properties }) {
   const { innerWidth, innerHeight } = window;
-  // let canvasRef = useCanvas(null);
-
-  console.log(properties);
 
   const path = window.location.pathname;
 
   useEffect(() => {
-    console.log(window.location.pathname);
+    // window.location.reload();
   }, [path]);
 
   const canvasRef = useCanvas(Particles, {
