@@ -137,4 +137,10 @@ export class FlyingLines {
     this.isStarted = true;
     this.loop();
   }
+
+  clear() {
+    cancelAnimationFrame(this.boundAnimate)
+    this.particles = null;
+    delete this
+  }
 }
