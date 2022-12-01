@@ -1,14 +1,15 @@
 export const getPosition = (position, size, velocity, margin) => {
-    return velocity*(((position + velocity > size - margin && velocity > 0) || (position + velocity < margin && velocity < margin)) ? -1 : 1);
+    return velocity * (((position + velocity > size - margin && velocity > 0) || (position + velocity < margin && velocity < margin)) ? -1 : 1);
 }
 
 export const canvasClickHandler = (animation, e) => {
     if (animation.properties.addByClick) {
+        console.log(e)
         animation.particles.push(
             Object.assign({}, {
                 ...animation.particles[0],
-                x: e.data.pos.x,
-                y: e.data.pos.y,
+                x: e.data?.pos.x || e.clientX,
+                y: e.data?.pos.y || e.clientY,
                 isStart: true,
                 start: 0,
             })

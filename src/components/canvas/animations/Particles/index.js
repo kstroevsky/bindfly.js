@@ -8,18 +8,18 @@ class Particles {
     this.colorOffset = 0;
     this.particleColors =
       parameters.properties.particleColors &&
-      parameters.properties.particleColors.length
+        parameters.properties.particleColors.length
         ? parameters.properties.particleColors
         : Array.from(
-            new Array(parameters.properties.generativeColorsCounts)
-          ).map((_, i) => {
-            let frequency = 5 / parameters.properties.generativeColorsCounts;
-            return `rgba(${Math.floor(
-              Math.sin(frequency * i + 0) * 127 + 128
-            )}, ${Math.floor(
-              Math.sin(frequency * i + 2) * 127 + 128
-            )}, ${Math.floor(Math.sin(frequency * i + 4) * 127 + 128)}, 1)`;
-          });
+          new Array(parameters.properties.generativeColorsCounts)
+        ).map((_, i) => {
+          let frequency = 5 / parameters.properties.generativeColorsCounts;
+          return `rgba(${Math.floor(
+            Math.sin(frequency * i + 0) * 127 + 128
+          )}, ${Math.floor(
+            Math.sin(frequency * i + 2) * 127 + 128
+          )}, ${Math.floor(Math.sin(frequency * i + 4) * 127 + 128)}, 1)`;
+        });
     this.particles = [];
     this.sizes = {
       w: parameters.innerWidth,
@@ -135,10 +135,12 @@ class Particles {
       return;
     }
     this.isStarted = true;
+    console.log(this.particles.length)
     this.loop();
   }
 
   clear() {
+    cancelAnimationFrame(this.boundAnimate);
     this.particles = [];
   }
 }

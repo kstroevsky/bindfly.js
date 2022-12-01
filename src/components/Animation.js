@@ -1,18 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Particles } from "./canvas/animations/Particles";
 import { useCanvas } from "../hooks";
+import { useNavigate } from "react-router-dom";
 
 function Animation({ properties }) {
   const { innerWidth, innerHeight } = window;
-  // let canvasRef = useCanvas(null);
-
-  console.log(properties);
-
-  const path = window.location.pathname;
-
-  useEffect(() => {
-    console.log(window.location.pathname);
-  }, [path]);
 
   const canvasRef = useCanvas(Particles, {
     properties,
@@ -20,16 +12,33 @@ function Animation({ properties }) {
     innerHeight,
   });
 
+  console.log('11', canvasRef)
+
+  // const [canvas, setCanvas] = useState(null)
+
+  // useEffect(() => {
+  //   setCanvas(React.cloneElement(<canvas
+  //     ref={canvasRef}
+  //     style={{
+  //       background: properties.bgColor,
+  //     }}
+  //     width={innerWidth}
+  //     height={innerHeight}
+  //   />, { ref: canvasRef }, null))
+  // }, [])
+
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        background: properties.bgColor,
-      }}
-      width={innerWidth}
-      height={innerHeight}
-    />
+    <>
+      <canvas
+        ref={canvasRef[0].current ? canvasRef[1] : canvasRef[0]}
+        style={{
+          background: properties.bgColor,
+        }}
+        width={innerWidth}
+        height={innerHeight}
+      />
+    </>
   );
 }
 
-export default React.memo(Animation);
+export default Animation;
