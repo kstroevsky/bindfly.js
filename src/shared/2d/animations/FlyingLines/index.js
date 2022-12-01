@@ -1,6 +1,6 @@
-import { Particle } from "./Particle";
+import { FlyingPoints } from "../../templates/FlyingPoints";
 
-class Particles {
+export class FlyingLines {
   constructor(ctx, parameters) {
     this.ctx = ctx;
     this.isStarted = false;
@@ -123,7 +123,7 @@ class Particles {
   }
 
   init() {
-    this.particles = new Particle(
+    this.particles = new FlyingPoints(
       this.sizes.w,
       this.sizes.h,
       this.properties,
@@ -135,14 +135,6 @@ class Particles {
       return;
     }
     this.isStarted = true;
-    console.log(this.particles.length)
     this.loop();
   }
-
-  clear() {
-    cancelAnimationFrame(this.boundAnimate);
-    this.particles = [];
-  }
 }
-
-export { Particles };

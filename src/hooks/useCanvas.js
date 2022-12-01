@@ -1,65 +1,46 @@
-import React, { useEffect, useRef, createRef } from "react";
+import { useEffect, useRef, useContext, createRef } from "react";
+import DataContext from "../components/Context";
 import { canvasClickHandler } from "../utils";
 
 export const useCanvas = (Animation, animationParameters) => {
-  const workerRef = useRef(null);
-  const offscreenRef = useRef(null);
-  const canvasRef1 = useRef(null);
-  const canvasRef2 = useRef(null);
-
-  const getRef = () => {
-    if (canvasRef1.current) {
-      canvasRef1 = createRef(null)
-      return canvasRef2;
-    }
-
-    canvasRef2 = createRef(null)
-    return canvasRef1;
-  }
+  const canvasRef = createRef(null);
+  const { webWorker } = useContext(DataContext)
 
   useEffect(() => {
-    console.log([canvasRef1, canvasRef2])
-    workerRef.current?.postMessage(
-      {
-        msg: "stop"
-      },
-      []
-    );
-    workerRef.current ??= new Worker(
-      new URL("../webAPI/workers/canvasWorker.js", import.meta.url),
+    const worker = new Worker(
+      new URL("../shared/webAPI/web-workers/canvasWorker.js", import.meta.url),
     );
 
+    webWorker.current = worker;
 
-    if (canvasRef1.current) {
-      // console.log(canvasRef)
+    if (canvasRef.current) {
+      canvasRef.current.ref++
       try {
-        const canvasRef = canvasRef1.current ? canvasRef2 : canvasRef1
-        offscreenRef.current ??= canvasRef.current.transferControlToOffscreen();
+        const offscreen = canvasRef.current.transferControlToOffscreen();
 
-        workerRef.current.postMessage(
+        worker.postMessage(
           {
             msg: "init",
-            canvas: offscreenRef.current,
+            canvas: offscreen,
             animationName: Animation.name,
             animationParameters: animationParameters,
           },
-          [offscreenRef]
+          [offscreen]
         );
 
         if (
           animationParameters.properties.addByClick ||
           animationParameters.properties.switchByClick
         )
-          document.onclick = (e) => {
-            workerRef.current.postMessage({
+          canvasRef.current.onclick = (e) => {
+            worker.postMessage({
               msg: "click",
               pos: { x: e.clientX, y: e.clientY },
             });
           };
 
-
       } catch {
-        const canvas = canvasRef1.current;
+        const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d", { alpha: false });
 
         canvas.width = animationParameters.innerWidth;
@@ -82,5 +63,5 @@ export const useCanvas = (Animation, animationParameters) => {
 
   }, [Animation, animationParameters]);
 
-  return [canvasRef1, canvasRef2]
+  return canvasRef
 };

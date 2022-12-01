@@ -1,1 +1,1 @@
-export {useCanvas} from './useCanvas'
+export { useCanvas } from './useCanvas'

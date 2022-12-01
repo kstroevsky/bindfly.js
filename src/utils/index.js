@@ -4,7 +4,6 @@ export const getPosition = (position, size, velocity, margin) => {
 
 export const canvasClickHandler = (animation, e) => {
     if (animation.properties.addByClick) {
-        console.log(e)
         animation.particles.push(
             Object.assign({}, {
                 ...animation.particles[0],
@@ -26,4 +25,9 @@ export const canvasClickHandler = (animation, e) => {
         }
     }
     animation.properties.switchByClick && animation.particles.push(animation.particles.shift())
+}
+
+export const canvasReload = (toggle, webWorker) => {
+    webWorker?.postMessage({ msg: "stop" })
+    toggle.current = !toggle.current
 }
