@@ -1,48 +1,68 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { canvasReload } from '../../utils';
+// import { canvasReload } from "../../utils";
 
-import DataContext from '../Context';
+// import DataContext from "../Context";
+import LinkItem from "../LinkItem";
 
-const PageLayout = ({ properties }) => {
-  const location = useLocation()
-  const { keyToggle, webWorker } = useContext(DataContext)
+const PageLayout = ({ properties, action }) => {
+  const [isAction, setIsAction] = useState(false);
+  // const location = useLocation();
+  // const { keyToggle, webWorker } = useContext(DataContext);
+
+  useEffect(() => {
+    action && setIsAction(true);
+  }, [action]);
+
+  function closeWindow() {
+    console.log("close");
+    setIsAction(false);
+  }
 
   return (
     <>
-      <aside className="Sidebar">
+      <aside className={`Sidebar${isAction ? " Active" : ""}`}>
         <nav>
           <ul className="ListLink">
-            {properties?.map((_, idx) => {
-              const navPath = `/animation-${idx}`;
+            {properties?.map((item, idx) => {
+              // const navPath = `/animation-${idx}`;
               return (
-                <li key={`${idx}`}>
-                  <NavLink
-                    {...(location.pathname === navPath
-                      ? {
-                        onClick: e => e.preventDefault(),
-                      } : {
-                        onClick: () => canvasReload(keyToggle, webWorker.current),
-                        to: navPath,
-                      }
-                    )}
-                    style={({ isActive }) => isActive ? {
-                      color: 'white',
-                      cursor: 'default',
-                      textDecoration: 'none'
-                    } : {}}
-                  >
-                    {`Animation-${idx}`}
-                  </NavLink>
-                </li>
+                <LinkItem key={idx} propertySets={item} id={idx} />
+                // <li key={`${idx}`}>
+                //   <NavLink
+                //     {...(location.pathname === navPath
+                //       ? {
+                //           onClick: (e) => e.preventDefault(),
+                //         }
+                //       : {
+                //           onClick: () =>
+                //             canvasReload(keyToggle, webWorker.current),
+                //           to: navPath,
+                //         })}
+                //     style={({ isActive }) =>
+                //       isActive
+                //         ? {
+                //             color: "white",
+                //             cursor: "default",
+                //             textDecoration: "none",
+                //           }
+                //         : {}
+                //     }
+                //   >
+                //     {`Animation-${idx}`}
+                //   </NavLink>
+                // </li>
               );
             })}
           </ul>
         </nav>
+        <button className="CloseButton" onClick={closeWindow}>
+          Close
+        </button>
       </aside>
       <Outlet />
     </>
   );
 };
 
-export default PageLayout
+export default PageLayout;

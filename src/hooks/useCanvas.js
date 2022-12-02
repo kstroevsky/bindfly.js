@@ -10,7 +10,10 @@ export const useCanvas = (Animation, animationParameters) => {
     if (canvasRef.current) {
       try {
         const worker = new Worker(
-          new URL("../shared/webAPI/web-workers/canvasWorker.js", import.meta.url),
+          new URL(
+            "../shared/webAPI/web-workers/canvasWorker.js",
+            import.meta.url
+          )
         );
 
         webWorker.current = worker;
@@ -37,7 +40,6 @@ export const useCanvas = (Animation, animationParameters) => {
               pos: { x: e.clientX, y: e.clientY },
             });
           };
-
       } catch {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d", { alpha: false });
@@ -58,13 +60,11 @@ export const useCanvas = (Animation, animationParameters) => {
         animation?.init();
 
         return () => {
-          animation.clear()
-        }
+          animation.clear();
+        };
       }
     }
-
-
   }, [Animation, animationParameters]);
 
-  return canvasRef
+  return canvasRef;
 };

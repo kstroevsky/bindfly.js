@@ -1,158 +1,52 @@
-import React, { useRef } from "react";
-
-import { Routes, Route } from "react-router-dom";
-import PageLayout from "./components/PageLayout";
-
-import "./App.css";
+import React, { useEffect, useRef, useState } from "react";
+import { Routes } from "react-router-dom";
+import { Route } from "react-router-dom";
+import useLongPress from "./hooks/useLongPressHandler";
 import DataContext from "./components/Context";
+import "./App.css";
+import properties from "./properties.json";
+import PageLayout from "./components/PageLayout";
 
 const Animation = React.lazy(() => import("./components/Animation"));
 
-const properties = [
-  {
-    bgColor: 'rgba(0, 0, 0, 0.7)',
-    particleColors: ['rgba(0, 0, 255, 1)', 'rgba(0, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
-    generativeColorsCounts: 10,
-    particleCount: 100,
-    particleMaxVelocity: 1,
-    lineLength: 150,
-    particleLife: 20,
-    margin: 20,
-    isMonochrome: false,
-    isCountStable: false,
-    isImmortal: false,
-    addByClick: false,
-    switchByClick: true,
-    isStatic: false,
-    // randomXByClick: false,
-    // randomYByClick: false,
-    // isAutoGenerate: false,
-    // autoGenerateTimeOut: 10,
-    // autoGeneratePosition: 'random'
-  },
-  {
-    bgColor: 'rgba(0, 0, 0, 0.7)',
-    // particleColors: ['rgba(0, 0, 255, 1)', 'rgba(0, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
-    generativeColorsCounts: 10,
-    particleCount: 100,
-    particleMaxVelocity: 1,
-    lineLength: 150,
-    particleLife: 20,
-    margin: 20,
-    isMonochrome: false,
-    isCountStable: false,
-    isImmortal: false,
-    addByClick: true,
-    switchByClick: false,
-    isStatic: false,
-    // randomXByClick: false,
-    // randomYByClick: false,
-    // isAutoGenerate: false,
-    // autoGenerateTimeOut: 10,
-    // autoGeneratePosition: 'random'
-  },
-  {
-    bgColor: 'rgba(0, 0, 0, 0.7)',
-    // particleColors: ['rgba(0, 0, 255, 1)', 'rgba(0, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
-    generativeColorsCounts: 10,
-    particleCount: 100,
-    particleMaxVelocity: 1,
-    lineLength: 150,
-    particleLife: 20,
-    margin: 20,
-    isMonochrome: false,
-    isCountStable: true,
-    isImmortal: false,
-    addByClick: true,
-    switchByClick: false,
-    isStatic: false,
-    // randomXByClick: false,
-    // randomYByClick: false,
-    // isAutoGenerate: false,
-    // autoGenerateTimeOut: 10,
-    // autoGeneratePosition: 'random'
-  },
-  {
-    bgColor: 'rgba(0, 0, 0, 0.7)',
-    // particleColors: ['rgba(0, 0, 255, 1)', 'rgba(0, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
-    generativeColorsCounts: 10,
-    particleCount: 100,
-    particleMaxVelocity: 1,
-    lineLength: 150,
-    particleLife: 20,
-    margin: 20,
-    isMonochrome: false,
-    isCountStable: true,
-    isImmortal: true,
-    addByClick: true,
-    switchByClick: false,
-    isStatic: false,
-    // randomXByClick: false,
-    // randomYByClick: false,
-    // isAutoGenerate: false,
-    // autoGenerateTimeOut: 10,
-    // autoGeneratePosition: 'random'
-  },
-  {
-    bgColor: 'rgba(0, 0, 0, 0.7)',
-    // particleColors: ['rgba(0, 0, 255, 1)', 'rgba(0, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
-    generativeColorsCounts: 10,
-    particleCount: 100,
-    particleMaxVelocity: 1,
-    lineLength: 150,
-    particleLife: 20,
-    margin: 20,
-    isMonochrome: false,
-    isCountStable: false,
-    isImmortal: false,
-    addByClick: false,
-    switchByClick: false,
-    isStatic: false,
-    // randomXByClick: false,
-    // randomYByClick: false,
-    // isAutoGenerate: false,
-    // autoGenerateTimeOut: 10,
-    // autoGeneratePosition: 'random'
-  },
-  {
-    bgColor: 'rgba(0, 0, 0, 0.7)',
-    // particleColors: ['rgba(0, 0, 255, 1)', 'rgba(0, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
-    generativeColorsCounts: 10,
-    particleCount: 100,
-    particleMaxVelocity: 1,
-    lineLength: 150,
-    particleLife: 20,
-    margin: 20,
-    isMonochrome: false,
-    isCountStable: false,
-    isImmortal: false,
-    addByClick: true,
-    switchByClick: false,
-    isStatic: false,
-    // randomXByClick: false,
-    // randomYByClick: false,
-    // isAutoGenerate: false,
-    // autoGenerateTimeOut: 10,
-    // autoGeneratePosition: 'random'
-  },
-];
+function App() {
+  const [data, setData] = useState([]);
+  const { action, handlers } = useLongPress();
 
-const App = () => (
-  <div className="App">
-    <DataContext.Provider value={{ keyToggle: useRef(false), webWorker: useRef(null) }}>
-      <Routes>
-        <Route path="/" element={<PageLayout properties={properties} />}>
-          {properties.map((x, i) => (
-            <Route
-              key={0}
-              path={`/animation-${i}`}
-              element={<Animation properties={x} />}
-            />
-          ))}
-        </Route>
-      </Routes>
-    </DataContext.Provider>
-  </div>
-);
+  console.log();
+
+  useEffect(() => {
+    setData(properties);
+  }, [setData]);
+
+  return (
+    <div className="App" {...handlers}>
+      <DataContext.Provider
+        value={{ keyToggle: useRef(false), webWorker: useRef(null) }}
+      >
+        <Routes>
+          {/* <Route path="/" element={<PageLayout properties={properties} />}> */}
+          <Route
+            path="/"
+            element={
+              <PageLayout
+                properties={data}
+                action={action === "longpress" && action}
+              />
+            }
+          >
+            {data?.map((x, i) => (
+              <Route
+                key={0}
+                path={`/animation-${i}`}
+                element={<Animation properties={x} />}
+              />
+            ))}
+          </Route>
+        </Routes>
+      </DataContext.Provider>
+    </div>
+  );
+}
 
 export default App;
