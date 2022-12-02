@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Routes } from "react-router-dom";
 import { Route } from "react-router-dom";
-import useLongPress from "./hooks/useLongPressHandler";
 import DataContext from "./components/Context";
 import "./App.css";
 import properties from "./properties.json";
@@ -11,30 +10,19 @@ const Animation = React.lazy(() => import("./components/Animation"));
 
 function App() {
   const [data, setData] = useState([]);
-  const { action, handlers } = useLongPress();
-
-  console.log();
 
   useEffect(() => {
     setData(properties);
   }, [setData]);
 
   return (
-    <div className="App" {...handlers}>
+    <div className="App">
       <DataContext.Provider
         value={{ keyToggle: useRef(false), webWorker: useRef(null) }}
       >
         <Routes>
           {/* <Route path="/" element={<PageLayout properties={properties} />}> */}
-          <Route
-            path="/"
-            element={
-              <PageLayout
-                properties={data}
-                action={action === "longpress" && action}
-              />
-            }
-          >
+          <Route path="/" element={<PageLayout properties={data} />}>
             {data?.map((x, i) => (
               <Route
                 key={0}

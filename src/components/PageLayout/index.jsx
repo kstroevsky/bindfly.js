@@ -1,58 +1,29 @@
-import React, { useContext, useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
-// import { canvasReload } from "../../utils";
+import React, { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
+import useLongPress from "../../hooks/useLongPressHandler";
 
-// import DataContext from "../Context";
 import LinkItem from "../LinkItem";
 
-const PageLayout = ({ properties, action }) => {
+const PageLayout = ({ properties }) => {
   const [isAction, setIsAction] = useState(false);
-  // const location = useLocation();
-  // const { keyToggle, webWorker } = useContext(DataContext);
+  const { action, handlers } = useLongPress();
 
   useEffect(() => {
+    console.log(isAction);
     action && setIsAction(true);
   }, [action]);
 
   function closeWindow() {
-    console.log("close");
     setIsAction(false);
   }
 
   return (
     <>
-      <aside className={`Sidebar${isAction ? " Active" : ""}`}>
+      <aside className={`Sidebar${isAction ? " Active" : ""}`} {...handlers}>
         <nav>
           <ul className="ListLink">
             {properties?.map((item, idx) => {
-              // const navPath = `/animation-${idx}`;
-              return (
-                <LinkItem key={idx} propertySets={item} id={idx} />
-                // <li key={`${idx}`}>
-                //   <NavLink
-                //     {...(location.pathname === navPath
-                //       ? {
-                //           onClick: (e) => e.preventDefault(),
-                //         }
-                //       : {
-                //           onClick: () =>
-                //             canvasReload(keyToggle, webWorker.current),
-                //           to: navPath,
-                //         })}
-                //     style={({ isActive }) =>
-                //       isActive
-                //         ? {
-                //             color: "white",
-                //             cursor: "default",
-                //             textDecoration: "none",
-                //           }
-                //         : {}
-                //     }
-                //   >
-                //     {`Animation-${idx}`}
-                //   </NavLink>
-                // </li>
-              );
+              return <LinkItem key={idx} propertySets={item} id={idx} />;
             })}
           </ul>
         </nav>

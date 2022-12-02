@@ -12,6 +12,7 @@ export default function useLongPress() {
   }, [touchStart, touchEnd]);
 
   function handleOnTouchStart() {
+    console.log("touch");
     setAction("");
     setTouchStart(Date.now());
   }
