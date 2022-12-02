@@ -36,7 +36,6 @@
 body {
   margin: 0;
   overflow: hidden;
-  /* background: rgb(17,17,19); */
   background-color: transparent;
 }
 
@@ -108,9 +107,6 @@ a:active, a:link, a:visited {
   right: -21px;
 }
 
-/* .DropDownContent{
-  display: none;
-} */
 .ListLinkItem{
   position: relative;
 }
