@@ -1,15 +1,21 @@
 import React, { useContext, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { LinkProps, NavLink, useLocation } from "react-router-dom";
 import DropDownContent from "../DropDownContent/DropDownContent";
 import { canvasReload } from "../utils";
+import { IDataContext, IProperty } from "../utils/types";
 import DataContext from "./Context";
 import ToggleButton from "./ToggleButton";
 
-const LinkItem = ({ propertySets, id }) => {
-  const [checked, setChecked] = useState(false);
+interface ILinkItemProps {
+  propertySets: IProperty,
+  id: number
+}
+
+const LinkItem : React.FC<ILinkItemProps> = ({ propertySets, id }) => {
+  const [checked, setChecked] = useState<boolean>(false);
   const location = useLocation();
-  const navPath = `/animation-${id}`;
-  const { keyToggle, webWorker } = useContext(DataContext);
+  const navPath: string = `/animation-${id}`;
+  const { keyToggle, webWorker } = useContext<IDataContext>(DataContext);
 
   const handleChange = () => {
     setChecked(!checked);
@@ -17,7 +23,6 @@ const LinkItem = ({ propertySets, id }) => {
 
   return (
     <li key={`${id}`} className="ListLinkItem">
-      {/* <Link to={`/animation-${id}`}>{`Animation-${id}`}</Link> */}
       <NavLink
         {...(location.pathname === navPath
           ? {
@@ -26,7 +31,7 @@ const LinkItem = ({ propertySets, id }) => {
           : {
               onClick: () => canvasReload(keyToggle, webWorker.current),
               to: navPath,
-            })}
+            }) as LinkProps}
         style={({ isActive }) =>
           isActive
             ? {

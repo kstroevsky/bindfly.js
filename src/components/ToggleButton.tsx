@@ -1,6 +1,12 @@
 import React from "react";
 
-const ToggleButton = ({ keyInput, value, onChange }) => {
+interface IToggleButtonProps {
+  keyInput: number,
+  value: boolean,
+  onChange: ()=>void
+}
+
+const ToggleButton: React.FC<IToggleButtonProps> = ({ keyInput, value, onChange }) => {
   return (
     <>
       <input

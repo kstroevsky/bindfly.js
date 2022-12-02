@@ -1,19 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { Routes } from "react-router-dom";
 import { Route } from "react-router-dom";
 import DataContext from "./components/Context";
 import "./App.css";
 import properties from "./properties.json";
 import PageLayout from "./components/PageLayout";
+import { TProperties } from "./utils/types";
 
 const Animation = React.lazy(() => import("./components/Animation"));
 
-function App() {
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    setData(properties);
-  }, [setData]);
+const App: React.FC = () => {
+  const data: TProperties = properties;
 
   return (
     <div className="App">
@@ -21,7 +18,6 @@ function App() {
         value={{ keyToggle: useRef(false), webWorker: useRef(null) }}
       >
         <Routes>
-          {/* <Route path="/" element={<PageLayout properties={properties} />}> */}
           <Route path="/" element={<PageLayout properties={data} />}>
             {data?.map((x, i) => (
               <Route

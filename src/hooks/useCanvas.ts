@@ -1,8 +1,9 @@
 import { useEffect, useRef, useContext } from "react";
 import DataContext from "../components/Context";
 import { canvasClickHandler } from "../utils";
+import { IAnimation } from "../utils/types";
 
-export const useCanvas = (Animation, animationParameters) => {
+export const useCanvas = <A extends IAnimation>(Animation:A, animationParameters) => {
   const canvasRef = useRef(null);
   const { webWorker } = useContext(DataContext)
 
@@ -47,14 +48,14 @@ export const useCanvas = (Animation, animationParameters) => {
         canvas.width = animationParameters.innerWidth;
         canvas.height = animationParameters.innerHeight;
 
-        const animation = new Animation(ctx, animationParameters);
+        const animation: A = new Animation(ctx, animationParameters);
 
         if (
           animationParameters.properties.addByClick ||
           animationParameters.properties.switchByClick
         )
           canvas.onclick = (e) => {
-            canvasClickHandler(animation, e);
+            canvasClickHandler<A>(animation, e);
           };
 
         animation?.init();

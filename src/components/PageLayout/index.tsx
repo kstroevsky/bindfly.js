@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import useLongPress from "../../hooks/useLongPressHandler";
+import { TProperties, IProperty } from "../../utils/types";
 
 import LinkItem from "../LinkItem";
 
-const PageLayout = ({ properties }) => {
-  const [isAction, setIsAction] = useState(false);
+interface IPageLayoutProps {
+  properties: TProperties
+}
+
+
+
+const PageLayout: React.FC<IPageLayoutProps> = ({ properties }) => {
+  const [isAction, setIsAction] = useState<boolean>(false);
   const { action, handlers } = useLongPress();
 
   useEffect(() => {
-    console.log(isAction);
     action && setIsAction(true);
   }, [action]);
 
@@ -22,7 +28,7 @@ const PageLayout = ({ properties }) => {
       <aside className={`Sidebar${isAction ? " Active" : ""}`} {...handlers}>
         <nav>
           <ul className="ListLink">
-            {properties?.map((item, idx) => {
+            {properties?.map((item: IProperty, idx: number) => {
               return <LinkItem key={idx} propertySets={item} id={idx} />;
             })}
           </ul>
