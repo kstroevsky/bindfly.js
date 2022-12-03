@@ -19,10 +19,12 @@ const Animation = ({ properties }) => {
     <Canvas
       key={+keyToggle.current}
       ref={canvasRef}
-      width={innerWidth}
-      height={innerHeight}
       style={{
         backgroundColor: properties.bgColor,
+        width: innerWidth - 225,
+        height: innerHeight,
+        position: 'relative',
+        right: 0,
       }}
     />
   )

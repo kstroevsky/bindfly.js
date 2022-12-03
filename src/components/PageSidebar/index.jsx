@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import classNames from "classnames";
 import NavLinkItem from '../NavLinkItem';
 
 export const PageSidebar = ({ properties, isModal, isActive = false, onClose = null }) => {
 
     return (
-        <aside className={classNames("sidebar", { 'active': isModal ? isActive : true })}>
+        <aside className={classNames("sidebar", { 'active': isModal && isActive })}>
             <nav>
                 <ul className="ListLink">
                     {properties?.map((item, idx) => (

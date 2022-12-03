@@ -3,7 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import DropDownContent from "../DropdownContent";
 import { canvasReload } from "../../shared/utils";
 import { DataContext } from "../Context";
-import ToggleButton from "../ToggleButton/ToggleButton";
+import ToggleButton from "../ToggleButton";
 import classNames from "classnames";
 
 const NavLinkItem = ({ id, propertySets, onCleanUp }) => {
