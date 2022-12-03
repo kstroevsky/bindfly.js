@@ -1,3 +1,5 @@
+import { TOUCH_EXPIRATION } from "../constants";
+
 export const getPosition = (position, size, velocity, margin) => {
     return velocity * (((position + velocity > size - margin && velocity > 0) || (position + velocity < margin && velocity < margin)) ? -1 : 1);
 }
@@ -31,3 +33,7 @@ export const canvasReload = (toggle, webWorker) => {
     webWorker?.postMessage({ msg: "stop" })
     toggle.current = !toggle.current
 }
+
+export const isLayoutActive = (start, end) => !!end && (end - start >= TOUCH_EXPIRATION)
+
+export const getMediaMatches = (query) => typeof window !== 'undefined' && window.matchMedia(query).matches

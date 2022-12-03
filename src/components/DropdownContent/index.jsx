@@ -1,7 +1,7 @@
 import React from "react";
-import DropDownContentItem from "./DropDownContentItem";
+import DropDownContentItem from "../DropdownItem";
 
-const DropDownContent = ({ propertySets }) => {
+const DropdownContent = ({ propertySets }) => {
   return (
     <ul className="DropDownContent">
       {Object.keys(propertySets).map((property, idx) => (
@@ -11,4 +11,4 @@ const DropDownContent = ({ propertySets }) => {
   );
 };
 
-export default DropDownContent;
+export default DropdownContent;

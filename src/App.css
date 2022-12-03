@@ -1,103 +1,95 @@
-@keyframes flicker {
-
-  0%,
-  18%,
-  22%,
-  25%,
-  53%,
-  57%,
-  100% {
-    text-shadow:
-      0 0 2px #fff,
-      0 0 4px #fff,
-      0 0 8px #fff,
-      0 0 15px #0fa,
-      0 0 30px #0fa,
-      0 0 40px #0fa,
-      0 0 70px #0fa,
-      0 0 100px #0fa;
-  }
-
-  20%,
-  24%,
-  55% {
-    text-shadow:
-      0 0 1px #fff,
-      0 0 2px #fff,
-      0 0 5px #fff,
-      0 0 11px #0fa,
-      0 0 20px #0fa,
-      0 0 30px #0fa,
-      0 0 55px #0fa,
-      0 0 80px #0fa;
-  }
-}
-
-body {
+* {
   margin: 0;
   overflow: hidden;
   background-color: transparent;
 }
 
-
-li{
-    list-style: none;
-    text-decoration: none;
+a {
+  text-decoration: none;
 }
-.App {
+
+li {
+  list-style: none;
+  text-decoration: none;
+}
+
+#App {
   text-align: center;
   height: 100vh;
+  display: flex;
 }
 
-.Sidebar{
-  position: absolute;
-  left:0;
-  top:0;
+.sidebar {
+  left: 0;
+  top: 0;
+  width: auto;
   height: 100vh;
-  width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #081225;
   opacity: 0;
   transform: translateX(0);
-  transition: all 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940)
+  transition: all 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+  z-index: -1;
 }
 
-.Sidebar.Active{
+.sidebar.active {
   opacity: 0.8;
   transform: translateX(0px);
+  z-index: 2;
 }
 
-@media (min-width: 960px) {
-  .Sidebar {
+@media (min-width: 769px) {
+  .sidebar {
+    position: relative;
+    padding: 0 1em;
+    opacity: 0.8;
+    transform: translateX(-100vw);
+  }
+
+  .sidebar nav {
+    width: 200px;
+  }
+}
+
+@media (max-width: 768px),
+(orientation: portrait) {
+  .sidebar {
+    width: 100vw;
+    position: absolute;
     opacity: 0.8;
     transform: translateX(-100vw);
   }
 }
-a:active, a:link, a:visited {
+
+a:active,
+a:link,
+a:visited {
   color: white;
   animation: flicker .5s infinite alternate;
 }
-.ListLink{
+
+.ListLink {
   line-height: 20px;
   font-size: 14px;
   color: white;
   margin: 0;
-  padding:0;
+  padding: 0;
 }
 
-.CloseButton{
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: transparent;
-    border: none;
-    color: white;
-    text-shadow: 0 0 10px red, 0 0 20px red, 0 0 30px red, 0 0 40px red;
+.CloseButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  color: white;
+  text-shadow: 0 0 10px red, 0 0 20px red, 0 0 30px red, 0 0 40px red;
+  cursor: pointer;
 }
 
-.Dropdown{
+.Dropdown {
   position: absolute;
   width: 10px;
   height: 10px;
@@ -107,9 +99,37 @@ a:active, a:link, a:visited {
   right: -21px;
 }
 
-.ListLinkItem{
+.ListLinkItem {
   position: relative;
+  color: #131313;
+  letter-spacing: .15em;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+  text-shadow: 0px 3px 3px rgba(255, 255, 255, 0.5);
 }
+
+.current-page {
+  cursor: default;
+  text-shadow: 2px 0 0px #800040,
+    3px 2px 0px rgba(77, 0, 38, 0.5),
+    3px 0 1px #FF002B,
+    5px 0 1px #800015,
+    6px 2px 1px rgba(77, 0, 13, 0.5),
+    6px 0 3px #FF5500,
+    8px 0 3px #802A00,
+    9px 2px 3px rgba(77, 25, 0, 0.5),
+    9px 0 6px #FFD500,
+    11px 0 6px #806A00,
+    12px 2px 6px rgba(77, 66, 0, 0.5),
+    12px 0 10px #D4FF00,
+    14px 0 10px #6A8000,
+    15px 2px 10px rgba(64, 77, 0, 0.5),
+    15px 0 15px #80FF00,
+    17px 0 15px #408000,
+    17px 2px 15px rgba(38, 77, 0, 0.5);
+}
+
 .ListLinkItem:not(:last-child) {
   margin-bottom: 20px;
 }
@@ -132,7 +152,7 @@ a:active, a:link, a:visited {
 }
 
 .checkbox-bipolar {
-margin-left: 15px;
+  margin-left: 15px;
   width: 36px;
   height: 20px;
   border-radius: 10px;
@@ -140,6 +160,7 @@ margin-left: 15px;
   display: inline-block;
   position: relative;
   bottom: -5px;
+  cursor: pointer;
 }
 
 .checkbox-bipolar:after {
@@ -176,9 +197,14 @@ margin-left: 15px;
   transition: 0.3s;
   font-size: 14px;
 }
-.CardPanel{
+
+.CardPanel {
   line-height: 20px;
   font-size: 14px;
   text-align: left;
   margin-left: 100px;
+}
+
+canvas {
+  z-index: 1;
 }

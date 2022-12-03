@@ -1,6 +1,6 @@
 import { useEffect, useRef, useContext } from "react";
-import DataContext from "../components/Context";
-import { canvasClickHandler } from "../utils";
+import { DataContext } from "../components/Context";
+import { canvasClickHandler } from "../shared/utils";
 
 export const useCanvas = (Animation, animationParameters) => {
   const canvasRef = useRef(null);

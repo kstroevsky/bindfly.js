@@ -1,4 +1,4 @@
-import { canvasClickHandler } from '../../../utils'
+import { canvasClickHandler } from '../../utils'
 
 let animationWorker = null;
 let canvas, ctx;

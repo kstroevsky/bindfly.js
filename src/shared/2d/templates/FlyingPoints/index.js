@@ -1,4 +1,4 @@
-import { getPosition } from '../../../../utils'
+import { getPosition } from '../../../utils'
 
 export class FlyingPoints {
     constructor(w, h, properties) {

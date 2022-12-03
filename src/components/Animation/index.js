@@ -3,7 +3,7 @@ import React, { useContext } from "react";
 import { FlyingLines } from "../../shared/2d/animations/FlyingLines";
 import { useCanvas } from "../../hooks";
 import { Canvas } from '../Canvas'
-import DataContext from "../Context";
+import { DataContext } from "../Context";
 
 const Animation = ({ properties }) => {
   const { keyToggle } = useContext(DataContext)

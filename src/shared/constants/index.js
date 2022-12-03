@@ -1,0 +1,1 @@
+export const TOUCH_EXPIRATION = 500;

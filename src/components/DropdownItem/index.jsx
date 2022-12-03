@@ -1,6 +1,6 @@
 import React from "react";
 
-const DropDownContentItem = ({ propertySets, property }) => {
+const DropdownItem = ({ propertySets, property }) => {
   return (
     <li className="CardPanel">
       <p>{`${property}: ${propertySets[property]}`}</p>
@@ -8,4 +8,4 @@ const DropDownContentItem = ({ propertySets, property }) => {
   );
 };
 
-export default DropDownContentItem;
+export default DropdownItem;

@@ -1,36 +1,44 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Outlet } from "react-router-dom";
-import useLongPress from "../../hooks/useLongPressHandler";
 
-import LinkItem from "../LinkItem";
+import useLongPress from "../../hooks/useLongPress";
+import { isLayoutActive } from "../../shared/utils";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { PageSidebar } from "../PageSidebar";
 
 const PageLayout = ({ properties }) => {
-  const [isAction, setIsAction] = useState(false);
-  const { action, handlers } = useLongPress();
+  const root = useRef(document.getElementById('root'))
+  const isModal = useMediaQuery('(max-width: 768px),(orientation: portrait)')
+  const { touchInterval, setTouchInterval, handlers } = useLongPress(500);
+
+  const handleClose = () => {
+    setTouchInterval({ start: 0, end: 0 })
+  }
 
   useEffect(() => {
-    console.log(isAction);
-    action && setIsAction(true);
-  }, [action]);
-
-  function closeWindow() {
-    setIsAction(false);
-  }
+    if (isModal) {
+      Object.keys(handlers).forEach(handler => root.current?.addEventListener(handler, handlers[handler]))
+      return () => Object.keys(handlers).forEach(handler => root.current?.removeEventListener(handler, handlers[handler]))
+    }
+  }, [isModal, handlers])
 
   return (
     <>
-      <aside className={`Sidebar${isAction ? " Active" : ""}`} {...handlers}>
-        <nav>
-          <ul className="ListLink">
-            {properties?.map((item, idx) => {
-              return <LinkItem key={idx} propertySets={item} id={idx} />;
-            })}
-          </ul>
-        </nav>
-        <button className="CloseButton" onClick={closeWindow}>
-          Close
-        </button>
-      </aside>
+      {isModal
+        ? createPortal(
+          <PageSidebar
+            isModal
+            properties={properties}
+            isActive={isLayoutActive(touchInterval.start, touchInterval.end)}
+            onClose={handleClose}
+          />,
+          root.current
+        ) : (
+          <PageSidebar
+            properties={properties}
+          />
+        )}
       <Outlet />
     </>
   );
