@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import classNames from "classnames";
 import NavLinkItem from '../NavLinkItem';
 
-export const PageSidebar = ({ properties, isModal, isActive = false, onClose = null }) => {
+export const PageSidebar = forwardRef(({ properties, isModal, isActive = false, onClose = null }, ref) => {
 
     return (
-        <aside className={classNames("sidebar", { 'active': isModal && isActive })}>
+        <aside className={classNames("sidebar", { 'active': isModal && isActive })} ref={ref}>
             <nav>
                 <ul className="ListLink">
                     {properties?.map((item, idx) => (
@@ -28,4 +28,4 @@ export const PageSidebar = ({ properties, isModal, isActive = false, onClose = n
 
         </aside>
     )
-}
+})

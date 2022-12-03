@@ -6,6 +6,7 @@ export const useCanvas = (Animation, animationParameters) => {
   const canvasRef = useRef(null);
   const { webWorker } = useContext(DataContext)
 
+
   useEffect(() => {
     if (canvasRef.current) {
       try {
@@ -25,7 +26,7 @@ export const useCanvas = (Animation, animationParameters) => {
             msg: "init",
             canvas: offscreen,
             animationName: Animation.name,
-            animationParameters: animationParameters,
+            animationParameters: animationParameters
           },
           [offscreen]
         );

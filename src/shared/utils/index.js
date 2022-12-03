@@ -9,7 +9,7 @@ export const canvasClickHandler = (animation, e) => {
         animation.particles.push(
             Object.assign({}, {
                 ...animation.particles[0],
-                x: (e.data?.pos.x || e.clientXO) + 200,
+                x: e.data?.pos.x || e.clientX - 220,
                 y: e.data?.pos.y || e.clientY,
                 isStart: true,
                 start: 0,

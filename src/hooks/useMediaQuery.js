@@ -11,7 +11,6 @@ export const useMediaQuery = (query) => {
 
     useEffect(() => {
         handleChange()
-
         return withListenersEffects(window.matchMedia(query), { change: handleChange }, true)
     }, [query])
 

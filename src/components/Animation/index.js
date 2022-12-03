@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 
 import { FlyingLines } from "../../shared/2d/animations/FlyingLines";
 import { useCanvas } from "../../hooks";
@@ -19,9 +19,11 @@ const Animation = ({ properties }) => {
     <Canvas
       key={+keyToggle.current}
       ref={canvasRef}
+      width={innerWidth}
+      height={innerHeight}
       style={{
         backgroundColor: properties.bgColor,
-        width: innerWidth - 225,
+        width: innerWidth,
         height: innerHeight,
         position: 'relative',
         right: 0,
