@@ -10,7 +10,7 @@ export const PageSidebar = forwardRef(({ properties, isModal, isActive = false, 
                 <ul className="ListLink">
                     {properties?.map((item, idx) => (
                         <NavLinkItem
-                            key={idx}
+                            key={`an-link-${idx}`}
                             id={idx}
                             propertySets={item}
                             onCleanUp={onClose}

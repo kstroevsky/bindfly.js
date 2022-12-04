@@ -9,7 +9,7 @@ export const canvasClickHandler = (animation, e) => {
         animation.particles.push(
             Object.assign({}, {
                 ...animation.particles[0],
-                x: e.data?.pos.x || e.clientX - 220,
+                x: e.data?.pos.x || e.clientX,
                 y: e.data?.pos.y || e.clientY,
                 isStart: true,
                 start: 0,
@@ -34,6 +34,33 @@ export const canvasReload = (toggle, webWorker) => {
     toggle.current = !toggle.current
 }
 
+export const resizeCanvasToDisplaySize = (canvas, w, h) => {
+    const { clientWidth, clientHeight } = canvas;
+
+    if (canvas.width !== clientWidth || canvas.height !== clientHeight) {
+        if (w) canvas.width = clientWidth;
+        if (h) canvas.height = clientHeight;
+        return true;
+    }
+
+    return false;
+}
+
 export const isLayoutActive = (start, end) => !!end && (end - start >= TOUCH_EXPIRATION)
 
 export const getMediaMatches = (query) => typeof window !== 'undefined' && window.matchMedia(query).matches
+
+export const RGBAToHexA = (rgba, forceRemoveAlpha = false) => 
+    "#" + rgba.replace(/^rgba?\(|\s+|\)$/g, '')
+    .split(',')
+    .slice(0, 3 + forceRemoveAlpha)
+    .map((string, index) => {
+        const number = parseFloat(string)
+
+        return (
+            index === 3 
+                ? Math.round(number * 255) 
+                : number
+        ).toString(16)
+    })
+    .reduce((acc, item) => acc + (item.length === 1 ? `0${item}` : item), "")

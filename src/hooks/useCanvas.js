@@ -2,10 +2,9 @@ import { useEffect, useRef, useContext } from "react";
 import { DataContext } from "../components/Context";
 import { canvasClickHandler } from "../shared/utils";
 
-export const useCanvas = (Animation, animationParameters) => {
+const useCanvas = (Animation, animationParameters) => {
   const canvasRef = useRef(null);
   const { webWorker } = useContext(DataContext)
-
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -38,7 +37,7 @@ export const useCanvas = (Animation, animationParameters) => {
           canvasRef.current.onclick = (e) => {
             worker.postMessage({
               msg: "click",
-              pos: { x: e.clientX, y: e.clientY },
+              pos: { x: e.clientX - animationParameters.offset, y: e.clientY },
             });
           };
       } catch {
@@ -65,7 +64,9 @@ export const useCanvas = (Animation, animationParameters) => {
         };
       }
     }
-  }, [Animation, animationParameters]);
+  }, [Animation, animationParameters, webWorker]);
 
   return canvasRef;
 };
+
+export default useCanvas;

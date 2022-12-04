@@ -5,7 +5,7 @@ import { withPrevents } from "../shared/HOF";
 
 const initialTouch = { start: 0, end: 0 }
 
-export default function useLongPress(touchDuration) {
+const useLongPress = (touchDuration) => {
   const touchStartTimer = useRef(null);
   const [touchInterval, setTouchInterval] = useState({ ...initialTouch })
 
@@ -29,3 +29,5 @@ export default function useLongPress(touchDuration) {
     }
   };
 }
+
+export default useLongPress;

@@ -17,7 +17,7 @@ const NavLinkItem = ({ id, propertySets, onCleanUp }) => {
   };
 
   return (
-    <li key={`${id}`} className="ListLinkItem">
+    <li className="ListLinkItem">
       <NavLink
         {...(location.pathname === navPath
           ? {

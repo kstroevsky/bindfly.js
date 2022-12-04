@@ -1,11 +1,11 @@
 import React from "react";
-import DropDownContentItem from "../DropdownItem";
+import DropdownItem from "../DropdownItem";
 
 const DropdownContent = ({ propertySets }) => {
   return (
-    <ul className="DropDownContent">
+    <ul className="DropdownContent">
       {Object.keys(propertySets).map((property, idx) => (
-        <DropDownContentItem key={idx} {...{ propertySets, property }} />
+        <DropdownItem key={idx} {...{ propertySets, property }} />
       ))}
     </ul>
   );
