@@ -17,16 +17,16 @@ const useListenersEffect = (
             const isLegacy = legacy && domNode?.addListener
             const isInverseFalse = isInverse && !inverseCondition
 
-            const addListenerFunc = (isLegacy ? domNode.addListener : domNode?.addEventListener).bind(domNode)
             const removeListenerFunc = (isLegacy ? domNode.removeListener : domNode?.removeEventListener).bind(domNode)
 
             Object.keys(eventHandlerConfig).forEach(eventName =>
                 (isInverseFalse || !isInverse
-                    ? addListenerFunc
-                    : removeListenerFunc)?.(...(isLegacy
-                        ? []
-                        : [eventName]
-                    ), eventHandlerConfig[eventName])
+                    ? (isLegacy ? domNode.addListener : domNode?.addEventListener).bind(domNode)
+                    : removeListenerFunc
+                )?.(...(isLegacy
+                    ? []
+                    : [eventName]
+                ), eventHandlerConfig[eventName])
             )
 
             return () => Object.keys(eventHandlerConfig).forEach(

@@ -37,18 +37,6 @@ export const canvasReload = (toggle, webWorker, canvasRef = null) => {
     toggle.current = !toggle.current
 }
 
-export const resizeCanvasToDisplaySize = (canvas, w, h) => {
-    const { clientWidth, clientHeight } = canvas;
-
-    if (canvas.width !== clientWidth || canvas.height !== clientHeight) {
-        if (w) canvas.width = clientWidth;
-        if (h) canvas.height = clientHeight;
-        return true;
-    }
-
-    return false;
-}
-
 export const isLayoutActive = (start, end) => !!end && (end - start >= TOUCH_EXPIRATION)
 
 export const getMediaMatches = (query) => typeof window !== 'undefined' && window.matchMedia(query).matches

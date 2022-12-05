@@ -1,8 +1,6 @@
 export const withPrevents = (func, callCondition = true, preventCondition = true) => {
     return e => {
-        if (callCondition) {
-            preventCondition && e?.preventDefault()
-            func(e)
-        }
+        preventCondition && e?.preventDefault()
+        callCondition && func(e)
     }
 }
