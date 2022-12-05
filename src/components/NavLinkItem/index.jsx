@@ -18,21 +18,23 @@ const NavLinkItem = ({ id, propertySets, onCleanUp }) => {
 
   return (
     <li className="ListLinkItem">
-      <NavLink
-        {...(location.pathname === navPath
-          ? {
-            onClick: (e) => e.preventDefault(),
+      <p>
+        <NavLink
+          {...(location.pathname === navPath
+            ? {
+              onClick: (e) => e.preventDefault(),
+            }
+            : {
+              onClick: () => canvasReload(keyToggle, webWorker.current) || onCleanUp?.(),
+              to: navPath,
+            })}
+          className={({ isActive }) => classNames({ "current-page": isActive })
           }
-          : {
-            onClick: () => canvasReload(keyToggle, webWorker.current) || onCleanUp?.(),
-            to: navPath,
-          })}
-        className={({ isActive }) => classNames({ "current-page": isActive })
-        }
-      >
-        {`Animation-${id}`}
-      </NavLink>
-      <ToggleButton keyInput={id} value={checked} onChange={handleChange} />
+        >
+          {`Animation-${id}`}
+        </NavLink>
+        <ToggleButton keyInput={id} value={checked} onChange={handleChange} />
+      </p>
       {checked && <DropDownContent propertySets={propertySets} />}
     </li>
   );

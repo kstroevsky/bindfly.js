@@ -1,9 +1,13 @@
 import React from "react";
+import { parametersToString } from "../../shared/utils";
 
 const DropdownItem = ({ propertySets, property }) => {
   return (
     <li className="CardPanel">
-      <p>{`${property}: ${propertySets[property]}`}</p>
+      <p>
+        {`${property}: `}
+        <span>{parametersToString(propertySets[property])}</span>
+      </p>
     </li>
   );
 };

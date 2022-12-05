@@ -50,17 +50,30 @@ export const isLayoutActive = (start, end) => !!end && (end - start >= TOUCH_EXP
 
 export const getMediaMatches = (query) => typeof window !== 'undefined' && window.matchMedia(query).matches
 
-export const RGBAToHexA = (rgba, forceRemoveAlpha = false) => 
+export const RGBAToHexA = (rgba, forceRemoveAlpha = false) =>
     "#" + rgba.replace(/^rgba?\(|\s+|\)$/g, '')
-    .split(',')
-    .slice(0, 3 + forceRemoveAlpha)
-    .map((string, index) => {
-        const number = parseFloat(string)
+        .split(',')
+        .slice(0, 3 + forceRemoveAlpha)
+        .map((string, index) => {
+            const number = parseFloat(string)
 
-        return (
-            index === 3 
-                ? Math.round(number * 255) 
-                : number
-        ).toString(16)
-    })
-    .reduce((acc, item) => acc + (item.length === 1 ? `0${item}` : item), "")
+            return (
+                index === 3
+                    ? Math.round(number * 255)
+                    : number
+            ).toString(16)
+        })
+        .reduce((acc, item) => acc + (item.length === 1 ? `0${item}` : item), "")
+
+export const parametersToString = (value) => {
+    switch (true) {
+        case Array.isArray(value):
+            return value.map(parametersToString).join(", ")
+        case /rgb/g.test(value):
+            return RGBAToHexA(value)
+        case typeof value == "boolean":
+            return value.toString()
+        default:
+            return value
+    }
+}

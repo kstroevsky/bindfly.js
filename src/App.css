@@ -2,6 +2,7 @@
   margin: 0;
   overflow: hidden;
   background-color: transparent;
+  transition: 0.3s;
 }
 
 a {
@@ -32,6 +33,7 @@ li {
   transform: translateX(0);
   transition: all 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940);
   z-index: -1;
+  overflow-y: auto;
 }
 
 .sidebar.active {
@@ -68,7 +70,6 @@ a:active,
 a:link,
 a:visited {
   color: white;
-  animation: flicker .5s infinite alternate;
 }
 
 .ListLink {
@@ -80,14 +81,16 @@ a:visited {
 }
 
 .CloseButton {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  position: fixed;
+  top: 0px;
+  right: 0px;
   background-color: transparent;
   border: none;
   color: white;
   text-shadow: 0 0 10px red, 0 0 20px red, 0 0 30px red, 0 0 40px red;
   cursor: pointer;
+  font-size: 2rem;
+  padding: 1.4rem;
 }
 
 .Dropdown {
@@ -108,14 +111,38 @@ a:visited {
   -moz-background-clip: text;
   background-clip: text;
   text-shadow: 0px 3px 3px rgba(255, 255, 255, 0.5);
+  text-align: center;
+  font-size: 1.5rem;
 }
 
-.ListLinkItem>* {
+.ListLinkItem a:hover {
+  text-shadow: 0px 3px 3px #FF002B;
+}
+
+.ListLinkItem>p {
+  padding-bottom: 10px;
+}
+
+.ListLinkItem:not(:last-child) {
+  margin-bottom: 2rem;
+}
+
+.ListLinkItem>*:not(.DropdownContent) {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   -o-user-select: none;
   user-select: none;
+}
+
+@media (min-width: 769px) {
+  .ListLinkItem {
+    font-size: 1rem;
+  }
+
+  .ListLinkItem:not(:last-child) {
+    margin-bottom: 1rem;
+  }
 }
 
 .current-page {
@@ -137,10 +164,6 @@ a:visited {
     15px 0 15px #80FF00,
     17px 0 15px #408000,
     17px 2px 15px rgba(38, 77, 0, 0.5);
-}
-
-.ListLinkItem:not(:last-child) {
-  margin-bottom: 20px;
 }
 
 .checkbox-bipolar-input {
@@ -207,11 +230,35 @@ a:visited {
   font-size: 14px;
 }
 
+.DropdownContent {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  border: 1px dashed lightcoral;
+  color: white;
+  transition: 0.3s;
+  max-height: 220px;
+  overflow-y: auto;
+  text-shadow: none;
+}
+
 .CardPanel {
-  line-height: 20px;
-  font-size: 14px;
+  line-height: 18px;
+  font-size: 10px;
   text-align: left;
-  margin-left: 100px;
+  width: 90%
+}
+
+.CardPanel span {
+  cursor: pointer;
+  font-weight: 900;
+  color: rgb(240, 128, 128)
+}
+
+.CardPanel span:hover {
+  color: rgb(240, 80, 80);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
 }
 
 canvas {
