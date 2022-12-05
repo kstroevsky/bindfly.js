@@ -1,16 +1,14 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import DropDownContent from "../DropdownContent";
-import { canvasReload } from "../../shared/utils";
-import { DataContext } from "../Context";
-import ToggleButton from "../ToggleButton";
 import classNames from "classnames";
+
+import DropDownContent from "../DropdownContent";
+import ToggleButton from "../ToggleButton";
 
 const NavLinkItem = ({ id, propertySets, onCleanUp }) => {
   const [checked, setChecked] = useState(false);
   const location = useLocation();
   const navPath = `/animation-${id}`;
-  const { keyToggle, webWorker } = useContext(DataContext);
 
   const handleChange = () => {
     setChecked(!checked);
@@ -25,7 +23,7 @@ const NavLinkItem = ({ id, propertySets, onCleanUp }) => {
               onClick: (e) => e.preventDefault(),
             }
             : {
-              onClick: () => canvasReload(keyToggle, webWorker) || onCleanUp?.(),
+              onClick: () => onCleanUp?.(),
               to: navPath,
             })}
           className={({ isActive }) => classNames({ "current-page": isActive })

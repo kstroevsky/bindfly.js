@@ -264,7 +264,10 @@ canvas {
 @media (max-width: 768px),
 (orientation: portrait) {
 
-  .sidebar.modal,
+  .sidebar.modal {
+    z-index: -1
+  }
+
   .sidebar.modal.active * {
     z-index: 2
   }
