@@ -8,6 +8,7 @@ import { root } from "../..";
 
 export const PageSidebar = forwardRef(({ properties, isModal = false }, ref) => {
     const { touchInterval, setTouchInterval } = useLongPress(500, root, isModal);
+    const mobileVisibility = isModal && isLayoutActive(touchInterval.start, touchInterval.end)
 
     const handleClose = useCallback(() => {
         setTouchInterval({ start: 0, end: 0 })
@@ -16,7 +17,7 @@ export const PageSidebar = forwardRef(({ properties, isModal = false }, ref) => 
     return (
         <aside
             ref={ref}
-            className={classNames("sidebar", { 'active': isModal && isLayoutActive(touchInterval.start, touchInterval.end) })}
+            className={classNames("sidebar", { 'modal': isModal, 'active': mobileVisibility })}
         >
             <nav>
                 <ul className="ListLink">

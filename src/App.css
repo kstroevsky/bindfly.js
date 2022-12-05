@@ -23,47 +23,15 @@ li {
 .sidebar {
   left: 0;
   top: 0;
-  width: auto;
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #081225;
   opacity: 0;
-  transform: translateX(0);
-  transition: all 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940);
-  z-index: -1;
-  overflow-y: auto;
-}
-
-.sidebar.active {
-  opacity: 0.8;
   transform: translateX(0px);
-  z-index: 2;
-}
-
-@media (min-width: 769px) {
-  .sidebar {
-    position: relative;
-    padding: 0 20px;
-    opacity: 0.8;
-    transform: translateX(0px);
-    z-index: 2
-  }
-
-  .sidebar nav {
-    width: 200px;
-  }
-}
-
-@media (max-width: 768px),
-(orientation: portrait) {
-  .sidebar {
-    width: 100vw;
-    position: absolute;
-    opacity: 0.8;
-    transform: translateX(-100vw);
-  }
+  transition: transform 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+  overflow-y: auto;
 }
 
 a:active,
@@ -115,7 +83,7 @@ a:visited {
   font-size: 1.5rem;
 }
 
-.ListLinkItem a:hover {
+.ListLinkItem a:not(.current-page):hover {
   text-shadow: 0px 3px 3px #FF002B;
 }
 
@@ -262,6 +230,24 @@ canvas {
 }
 
 @media (min-width: 769px) {
+  .sidebar:not(.modal) {
+    position: relative;
+    padding: 0 20px;
+    width: auto;
+    opacity: 0.8;
+    transform: translateX(0px);
+    z-index: 2;
+  }
+
+  .sidebar.modal,
+  .sidebar.modal * {
+    z-index: -1;
+  }
+
+  .sidebar:not(.modal) nav {
+    width: 200px;
+  }
+
   .ListLinkItem {
     font-size: 1rem;
   }
@@ -272,5 +258,31 @@ canvas {
 
   .CardPanel {
     font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 768px),
+(orientation: portrait) {
+
+  .sidebar.modal,
+  .sidebar.modal.active * {
+    z-index: 2
+  }
+
+  .sidebar.modal {
+    width: 100vw;
+    position: absolute;
+    opacity: 0.8;
+    z-index: 2;
+    transform: translateX(-100vw);
+  }
+
+  .sidebar.modal.active {
+    transform: translateX(0px);
+    z-index: 2;
+  }
+
+  .sidebar.modal nav {
+    width: 60vw;
   }
 }

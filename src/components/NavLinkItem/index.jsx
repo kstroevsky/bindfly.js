@@ -25,7 +25,7 @@ const NavLinkItem = ({ id, propertySets, onCleanUp }) => {
               onClick: (e) => e.preventDefault(),
             }
             : {
-              onClick: () => canvasReload(keyToggle, webWorker.current) || onCleanUp?.(),
+              onClick: () => canvasReload(keyToggle, webWorker) || onCleanUp?.(),
               to: navPath,
             })}
           className={({ isActive }) => classNames({ "current-page": isActive })

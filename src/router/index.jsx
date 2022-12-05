@@ -1,5 +1,6 @@
 import React from "react";
 import { Navigate, Route, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
+import { DataContextProvider } from "../components/Context";
 
 import properties from "../properties.json";
 
@@ -12,7 +13,11 @@ const router = createBrowserRouter(
     createRoutesFromElements(
         <Route
             path="/"
-            element={<PageLayout properties={properties} />}
+            element={
+                <DataContextProvider>
+                    <PageLayout properties={properties} />
+                </DataContextProvider>
+            }
         >
             <>
                 <Route path="/" element={<Navigate replace to={"/animation-0"} />} />

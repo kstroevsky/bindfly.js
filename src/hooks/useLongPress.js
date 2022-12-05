@@ -29,7 +29,7 @@ const useLongPress = (touchDuration, pressElement, preventCondition = true) => {
   useListenersEffect(pressElement, {
     touchstart: withPrevents(handleTouchStart, !isActive, false),
     touchend: withPrevents(handleTouchEnd, !isActive, false)
-  }, [isActive], false, null, preventCondition, true, isActive)
+  }, [isActive], false, null, preventCondition, true)
 
   return {
     touchInterval,

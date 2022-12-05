@@ -29,8 +29,11 @@ export const canvasClickHandler = (animation, e, offset = 0) => {
     animation.properties.switchByClick && animation.particles.push(animation.particles.shift())
 }
 
-export const canvasReload = (toggle, webWorker) => {
-    webWorker?.postMessage({ msg: "stop" })
+export const canvasReload = (toggle, webWorker, canvasRef = null) => {
+    webWorker.current?.postMessage({ msg: "stop" })
+    webWorker.current?.terminate()
+    webWorker.current = null;
+    if (canvasRef) canvasRef.current = null
     toggle.current = !toggle.current
 }
 

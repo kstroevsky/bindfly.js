@@ -8,25 +8,26 @@ import { useOutletContext } from "react-router-dom";
 
 const Animation = ({ properties }) => {
   const { keyToggle } = useContext(DataContext)
+  const { width: offset, isMobile } = useOutletContext();
   const { innerWidth, innerHeight } = window;
-  const { width: offset } = useOutletContext();
 
+  const offsetWidth = isMobile ? 0 : offset
   const canvasRef = useCanvas(FlyingLines, {
     properties,
     innerWidth,
     innerHeight,
-    offset,
+    offset: offsetWidth,
   });
 
   return (
     <Canvas
       key={+keyToggle.current}
       ref={canvasRef}
-      width={innerWidth - offset}
+      width={innerWidth - offsetWidth}
       height={innerHeight}
       style={{
         backgroundColor: properties.bgColor,
-        width: innerWidth - offset,
+        width: innerWidth - offsetWidth,
         height: innerHeight,
         position: 'absolute',
         right: 0,

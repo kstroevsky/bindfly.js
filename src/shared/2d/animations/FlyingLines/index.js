@@ -7,7 +7,7 @@ export class FlyingLines {
     this.ctx = ctx;
     this.particles = [];
     this.sizes = {
-      w: parameters.innerWidth,
+      w: parameters.innerWidth - parameters.offset,
       h: parameters.innerHeight,
     };
 
