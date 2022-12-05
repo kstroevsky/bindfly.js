@@ -1,6 +1,8 @@
-export const withPrevents = (func, ...conditions) => {
-    return conditions.every(x => x) ? (e) => {
-        e?.preventDefault()
-        func(e)
-    } : () => { }
+export const withPrevents = (func, callCondition = true, preventCondition = true) => {
+    return e => {
+        if (callCondition) {
+            preventCondition && e?.preventDefault()
+            func(e)
+        }
+    }
 }

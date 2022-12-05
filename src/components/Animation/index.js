@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 
 import { FlyingLines } from "../../shared/2d/animations/FlyingLines";
 import { useCanvas } from "../../hooks";
@@ -10,6 +10,8 @@ const Animation = ({ properties }) => {
   const { keyToggle } = useContext(DataContext)
   const { innerWidth, innerHeight } = window;
   const { width: offset } = useOutletContext();
+
+  console.log(offset)
 
   const canvasRef = useCanvas(FlyingLines, {
     properties,

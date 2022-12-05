@@ -6,19 +6,40 @@ const useListenersEffect = (
     deps = undefined,
     legacy = false,
     additionalCalls = null,
-    condition = true
+    condition = true,
+    isInverse = false,
+    inverseCondition = deps.every(x => x)
 ) => {
     useEffect(() => {
-        additionalCalls()
+        additionalCalls && additionalCalls()
 
         if (condition) {
-            if (legacy && domNode?.addListener) Object.values(eventHandlerConfig).forEach(handler => domNode.addListener(handler))
-            else Object.keys(eventHandlerConfig).forEach(eventName => domNode?.addEventListener(eventName, eventHandlerConfig[eventName]))
+            const isLegacy = legacy && domNode?.addListener
+            const isInverseTrue = isInverse && inverseCondition
+            const isInverseFalse = isInverse && !inverseCondition
 
-            return () => {
-                if (legacy && domNode?.removeListener) Object.values(eventHandlerConfig).forEach(handler => domNode.removeListener(handler))
-                else Object.keys(eventHandlerConfig).forEach(eventName => domNode?.removeEventListener(eventName, eventHandlerConfig[eventName]))
+            const addListenerFunc = (isLegacy ? domNode.addListener : domNode?.addEventListener).bind(domNode)
+            const removeListenerFunc = (isLegacy ? domNode.removeListener : domNode?.removeEventListener).bind(domNode)
+
+            switch (true) {
+                case isInverseTrue:
+                    Object.keys(eventHandlerConfig).forEach(
+                        eventName => removeListenerFunc?.(...(isLegacy ? [] : [eventName]), eventHandlerConfig[eventName])
+                    )
+                    break
+                case isInverseFalse:
+                case !isInverse:
+                    Object.keys(eventHandlerConfig).forEach(
+                        eventName => addListenerFunc?.(...(isLegacy ? [] : [eventName]), eventHandlerConfig[eventName])
+                    )
+                    break
+                default:
+                    break
             }
+
+            return () => Object.keys(eventHandlerConfig).forEach(
+                eventName => removeListenerFunc?.(...(isLegacy ? [] : [eventName]), eventHandlerConfig[eventName])
+            )
         }
     }, deps)
 }
