@@ -1,9 +1,7 @@
-import { resizeCanvasToDisplaySize } from "../../../utils";
 import { FlyingPoints } from "../../templates/FlyingPoints";
 
 export class FlyingLines {
-  constructor(ctx, parameters, isMainThread = true) {
-    if (isMainThread) resizeCanvasToDisplaySize(ctx.canvas, true, true)
+  constructor(ctx, parameters) {
     this.properties = parameters.properties;
 
     this.ctx = ctx;

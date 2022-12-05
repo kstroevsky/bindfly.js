@@ -16,14 +16,12 @@ const useLongPress = (touchDuration, pressElement, preventCondition = true) => {
     setTouchInterval({ start: Date.now(), end: 0 })
 
     touchStartTimer.current = setTimeout(() => {
-      console.log(e)
       setTouchInterval(prev => ({ ...prev, end: prev.start + touchDuration * 1.5 }))
       clearTimeout(touchStartTimer.current)
     }, touchDuration);
   }, [])
 
   const handleTouchEnd = useCallback(e => {
-    console.log(e)
     clearTimeout(touchStartTimer.current)
     !touchInterval.end && setTouchInterval(prev => ({ ...prev, end: prev.end || Date.now() }))
   }, [])

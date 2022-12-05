@@ -11,8 +11,6 @@ const Animation = ({ properties }) => {
   const { innerWidth, innerHeight } = window;
   const { width: offset } = useOutletContext();
 
-  console.log(offset)
-
   const canvasRef = useCanvas(FlyingLines, {
     properties,
     innerWidth,

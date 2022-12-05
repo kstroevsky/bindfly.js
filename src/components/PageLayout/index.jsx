@@ -15,37 +15,29 @@ const PageLayout = ({ properties }) => {
 
   const isVisible = isMobile ? true : !!width
 
-  console.log(width)
-
   useEffect(() => {
     if (!isMobile) setWidth(+sidebarRef.current?.getBoundingClientRect().width || 0)
-    else window.oncontextmenu = e => {
-      console.log(e)
-      if ((e.button !== 2 && !(e.clientX === e.clientY === 1 || 0)) || e.pointerType === 'touch') {
-        e.preventDefault();
-      }
-    }
+    else window.oncontextmenu = e => ((e.button !== 2 && !(e.clientX === e.clientY === 1 || 0)) || e.pointerType === 'touch')
+      && e.preventDefault();
   }, [sidebarRef, isMobile])
 
   return (
     <DataContextProvider>
-      {/* <Suspense> */}
-      {isMobile
-        ? createPortal(
-          <PageSidebar
-            isModal={true}
-            properties={properties}
-          // isActive={isLayoutActive(touchInterval.start, touchInterval.end)}
-          // onClose={handleClose}
-          />, root
-        ) : (
-          <PageSidebar
-            ref={sidebarRef}
-            properties={properties}
-          />
-        )}
-      {isVisible && <Outlet context={{ width }} />}
-      {/* </Suspense> */}
+      <Suspense>
+        {isMobile
+          ? createPortal(
+            <PageSidebar
+              isModal={true}
+              properties={properties}
+            />, root
+          ) : (
+            <PageSidebar
+              ref={sidebarRef}
+              properties={properties}
+            />
+          )}
+        {isVisible && <Outlet context={{ width }} />}
+      </Suspense>
     </DataContextProvider>
 
   );

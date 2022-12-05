@@ -43,10 +43,6 @@ const useCanvas = (Animation, animationParameters) => {
       } catch {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d", { alpha: false });
-
-        canvas.width = animationParameters.innerWidth;
-        canvas.height = animationParameters.innerHeight;
-
         const animation = new Animation(ctx, animationParameters);
 
         if (
@@ -54,7 +50,7 @@ const useCanvas = (Animation, animationParameters) => {
           animationParameters.properties.switchByClick
         )
           canvas.onclick = (e) => {
-            canvasClickHandler(animation, e);
+            canvasClickHandler(animation, e, animationParameters.offset);
           };
 
         animation?.init();
