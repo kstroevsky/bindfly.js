@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { Outlet } from "react-router-dom";
-import useLongPress from "../../hooks/useLongPressHandler";
 import { TProperties, IProperty } from "../../utils/types";
 
 import useMediaQuery from "../../hooks/useMediaQuery";
@@ -26,7 +25,7 @@ const PageLayout: React.FC<IPageLayoutProps> = ({ properties }) => {
 
   useEffect(() => {
     if (!isMobile) setWidth(+sidebarRef.current?.getBoundingClientRect().width || 0)
-    else window.oncontextmenu = e => ((e.button !== 2 && !(e.clientX === e.clientY === 1 || 0)) || e.pointerType === 'touch')
+    else window.oncontextmenu = (e: MouseEvent) => ((e.button !== 2 && !(e.clientX === e.clientY === 1 || 0)) || e.pointerType === 'touch')
       && e.preventDefault()
   }, [sidebarRef, isMobile])
 

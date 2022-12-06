@@ -1,5 +1,6 @@
 import { useEffect, useRef, useContext } from "react";
-import { DataContext } from "../components/Context";
+import DataContext from "../components/Context";
+// import { DataContext } from "../components/Context";
 import { canvasClickHandler, canvasReload } from "../shared/utils";
 import useForceUpdate from "./useForceUpdate";
 
