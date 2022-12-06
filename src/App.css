@@ -1,103 +1,67 @@
-@keyframes flicker {
-
-  0%,
-  18%,
-  22%,
-  25%,
-  53%,
-  57%,
-  100% {
-    text-shadow:
-      0 0 2px #fff,
-      0 0 4px #fff,
-      0 0 8px #fff,
-      0 0 15px #0fa,
-      0 0 30px #0fa,
-      0 0 40px #0fa,
-      0 0 70px #0fa,
-      0 0 100px #0fa;
-  }
-
-  20%,
-  24%,
-  55% {
-    text-shadow:
-      0 0 1px #fff,
-      0 0 2px #fff,
-      0 0 5px #fff,
-      0 0 11px #0fa,
-      0 0 20px #0fa,
-      0 0 30px #0fa,
-      0 0 55px #0fa,
-      0 0 80px #0fa;
-  }
-}
-
-body {
+* {
   margin: 0;
   overflow: hidden;
   background-color: transparent;
+  transition: 0.3s;
 }
 
-
-li{
-    list-style: none;
-    text-decoration: none;
+a {
+  text-decoration: none;
 }
-.App {
+
+li {
+  list-style: none;
+  text-decoration: none;
+}
+
+#App {
   text-align: center;
   height: 100vh;
+  display: flex;
 }
 
-.Sidebar{
-  position: absolute;
-  left:0;
-  top:0;
+.sidebar {
+  left: 0;
+  top: 0;
   height: 100vh;
-  width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #081225;
   opacity: 0;
-  transform: translateX(0);
-  transition: all 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940)
-}
-
-.Sidebar.Active{
-  opacity: 0.8;
   transform: translateX(0px);
+  transition: transform 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+  overflow-y: auto;
 }
 
-@media (min-width: 960px) {
-  .Sidebar {
-    opacity: 0.8;
-    transform: translateX(-100vw);
-  }
-}
-a:active, a:link, a:visited {
+a:active,
+a:link,
+a:visited {
   color: white;
-  animation: flicker .5s infinite alternate;
 }
-.ListLink{
+
+.ListLink {
   line-height: 20px;
   font-size: 14px;
   color: white;
   margin: 0;
-  padding:0;
+  padding: 0;
 }
 
-.CloseButton{
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: transparent;
-    border: none;
-    color: white;
-    text-shadow: 0 0 10px red, 0 0 20px red, 0 0 30px red, 0 0 40px red;
+.CloseButton {
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  background-color: transparent;
+  border: none;
+  color: white;
+  text-shadow: 0 0 10px red, 0 0 20px red, 0 0 30px red, 0 0 40px red;
+  cursor: pointer;
+  font-size: 2rem;
+  padding: 1.4rem;
 }
 
-.Dropdown{
+.Dropdown {
   position: absolute;
   width: 10px;
   height: 10px;
@@ -107,11 +71,63 @@ a:active, a:link, a:visited {
   right: -21px;
 }
 
-.ListLinkItem{
+.ListLinkItem {
   position: relative;
+  color: #131313;
+  letter-spacing: .15em;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+  text-shadow: 0px 3px 3px rgba(255, 255, 255, 0.5);
+  text-align: center;
+  font-size: 1.5rem;
 }
+
+.ListLinkItem a:not(.current-page):hover {
+  text-shadow: 0px 3px 3px #FF002B;
+}
+
+.ListLinkItem>p {
+  padding-bottom: 10px;
+}
+
+.ListLinkItem a {
+  position: relative;
+  bottom: 3px;
+}
+
 .ListLinkItem:not(:last-child) {
-  margin-bottom: 20px;
+  margin-bottom: 2rem;
+}
+
+.ListLinkItem>*:not(.DropdownContent),
+.CloseButton {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.current-page {
+  cursor: default;
+  text-shadow: 2px 0 0px #800040,
+    3px 2px 0px rgba(77, 0, 38, 0.5),
+    3px 0 1px #FF002B,
+    5px 0 1px #800015,
+    6px 2px 1px rgba(77, 0, 13, 0.5),
+    6px 0 3px #FF5500,
+    8px 0 3px #802A00,
+    9px 2px 3px rgba(77, 25, 0, 0.5),
+    9px 0 6px #FFD500,
+    11px 0 6px #806A00,
+    12px 2px 6px rgba(77, 66, 0, 0.5),
+    12px 0 10px #D4FF00,
+    14px 0 10px #6A8000,
+    15px 2px 10px rgba(64, 77, 0, 0.5),
+    15px 0 15px #80FF00,
+    17px 0 15px #408000,
+    17px 2px 15px rgba(38, 77, 0, 0.5);
 }
 
 .checkbox-bipolar-input {
@@ -132,14 +148,15 @@ a:active, a:link, a:visited {
 }
 
 .checkbox-bipolar {
-margin-left: 15px;
-  width: 36px;
-  height: 20px;
+  margin-left: 16px;
+  width: 40px;
+  height: 25px;
   border-radius: 10px;
   border: 1px solid #36c373;
   display: inline-block;
   position: relative;
   bottom: -5px;
+  cursor: pointer;
 }
 
 .checkbox-bipolar:after {
@@ -176,9 +193,99 @@ margin-left: 15px;
   transition: 0.3s;
   font-size: 14px;
 }
-.CardPanel{
-  line-height: 20px;
-  font-size: 14px;
+
+.DropdownContent {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  border: 1px dashed lightcoral;
+  color: white;
+  transition: 0.3s;
+  max-height: 220px;
+  overflow-y: auto;
+  text-shadow: none;
+}
+
+.CardPanel {
+  line-height: 18px;
+  font-size: 0.8rem;
   text-align: left;
-  margin-left: 100px;
+  width: 90%
+}
+
+.CardPanel span {
+  cursor: pointer;
+  font-weight: 900;
+  color: rgb(240, 128, 128)
+}
+
+.CardPanel span:hover {
+  color: rgb(240, 80, 80);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
+}
+
+canvas {
+  z-index: 1;
+}
+
+@media (min-width: 769px) {
+  .sidebar:not(.modal) {
+    position: relative;
+    padding: 0 20px;
+    width: auto;
+    opacity: 0.8;
+    transform: translateX(0px);
+    z-index: 2;
+  }
+
+  .sidebar.modal,
+  .sidebar.modal * {
+    z-index: -1;
+  }
+
+  .sidebar:not(.modal) nav {
+    width: 200px;
+  }
+
+  .ListLinkItem {
+    font-size: 1rem;
+  }
+
+  .ListLinkItem:not(:last-child) {
+    margin-bottom: 1rem;
+  }
+
+  .CardPanel {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 768px),
+(orientation: portrait) {
+
+  .sidebar.modal {
+    z-index: -1
+  }
+
+  .sidebar.modal.active * {
+    z-index: 2
+  }
+
+  .sidebar.modal {
+    width: 100vw;
+    position: absolute;
+    opacity: 0.8;
+    z-index: 2;
+    transform: translateX(-100vw);
+  }
+
+  .sidebar.modal.active {
+    transform: translateX(0px);
+    z-index: 2;
+  }
+
+  .sidebar.modal nav {
+    width: 60vw;
+  }
 }
