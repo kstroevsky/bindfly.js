@@ -43,7 +43,7 @@ export const canvasClickHandler = <A>(animation:A, e) => {
 
 
 
-export const canvasReload = (...args: IDataContext) => {
+export const canvasReload = (...args) => {
   webWorker?.postMessage({ msg: "stop" });
   toggle.current = !toggle.current;
 };

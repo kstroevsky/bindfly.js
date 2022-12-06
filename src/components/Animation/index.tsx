@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { ContextType, useContext } from "react";
 import { FlyingLines } from "../../shared/2d/animations/FlyingLines";
 import { useCanvas } from "../../hooks";
 import { Canvas } from "../Canvas";
@@ -10,7 +10,8 @@ interface IProps {
 }
 
 const Animation: React.FC<IProps> = ({ properties }) => {
-  const { keyToggle } = useContext<IDataContext>(DataContext);
+  const { keyToggle } = useContext(DataContext)!;
+
   const { innerWidth, innerHeight } = window;
 
   const canvasRef = useCanvas<typeof FlyingLines>(FlyingLines, {
@@ -21,7 +22,7 @@ const Animation: React.FC<IProps> = ({ properties }) => {
 
   return (
     <Canvas
-      key={+keyToggle.current}
+      key={+keyToggle!.current}
       ref={canvasRef}
       width={innerWidth}
       height={innerHeight}

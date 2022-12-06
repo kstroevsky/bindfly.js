@@ -1,11 +1,11 @@
 import { useEffect, useRef, useContext } from "react";
 import DataContext from "../components/Context";
 import { canvasClickHandler } from "../utils";
-import { IAnimation } from "../utils/types";
+import { IAnimation, IDataContext } from "../utils/types";
 
 export const useCanvas = <A extends IAnimation>(Animation:A, animationParameters) => {
   const canvasRef = useRef(null);
-  const { webWorker } = useContext(DataContext)
+  const { webWorker } = useContext(DataContext)!;
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -17,7 +17,7 @@ export const useCanvas = <A extends IAnimation>(Animation:A, animationParameters
           )
         );
 
-        webWorker.current = worker;
+        webWorker!.current = worker;
 
         const offscreen = canvasRef.current.transferControlToOffscreen();
 
