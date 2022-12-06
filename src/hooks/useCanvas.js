@@ -1,59 +1,77 @@
-import { useEffect, useRef } from "react";
-import { canvasClickHandler } from "../utils";
+import { useEffect, useRef, useContext } from "react";
+import { DataContext } from "../components/Context";
+import { canvasClickHandler, canvasReload } from "../shared/utils";
+import useForceUpdate from "./useForceUpdate";
 
-export const useCanvas = (Animation, animationParameters) => {
-  const workerRef = useRef(null);
+const useCanvas = (Animation, animationParameters) => {
   const canvasRef = useRef(null);
+  const { keyToggle, webWorker } = useContext(DataContext)
+  const reload = useForceUpdate()
+
+  canvasReload(keyToggle, webWorker, canvasRef)
 
   useEffect(() => {
-    workerRef.current = new Worker(
-      new URL("../webAPI/workers/canvasWorker.js", import.meta.url)
-    );
-
-    if (canvasRef) {
+    if (canvasRef.current) {
       try {
-        const offscreen = canvasRef.current.transferControlToOffscreen();
+        try {
+          const worker = new Worker(
+            new URL(
+              "../shared/webAPI/web-workers/canvasWorker.js",
+              import.meta.url
+            )
+          );
 
-        workerRef.current.postMessage(
-          {
-            msg: "init",
-            canvas: offscreen,
-            animationName: Animation.name,
-            animationParameters: animationParameters,
-          },
-          [offscreen]
-        );
+          webWorker.current = worker;
 
-        if (
-          animationParameters.properties.addByClick ||
-          animationParameters.properties.switchByClick
-        )
-          document.addEventListener("click", (e) => {
-            workerRef.current.postMessage({
-              msg: "click",
-              pos: { x: e.clientX, y: e.clientY },
-            });
-          });
+          const offscreen = canvasRef.current.transferControlToOffscreen();
+
+          worker.postMessage(
+            {
+              msg: "init",
+              canvas: offscreen,
+              animationName: Animation.name,
+              animationParameters: animationParameters
+            },
+            [offscreen]
+          );
+
+          if (
+            animationParameters.properties.addByClick ||
+            animationParameters.properties.switchByClick
+          )
+            canvasRef.current.onclick = (e) => {
+              worker.postMessage({
+                msg: "click",
+                pos: { x: e.clientX - animationParameters.offset, y: e.clientY },
+              });
+            };
+
+        } catch {
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext("2d", { alpha: false });
+          const animation = new Animation(ctx, animationParameters);
+
+          if (
+            animationParameters.properties.addByClick ||
+            animationParameters.properties.switchByClick
+          )
+            canvas.onclick = (e) => {
+              canvasClickHandler(animation, e, animationParameters.offset);
+            };
+
+          animation?.init();
+
+          return () => {
+            animation.clear();
+          };
+        }
       } catch {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d", { alpha: false });
-
-        canvas.width = animationParameters.innerWidth;
-        canvas.height = animationParameters.innerHeight;
-
-        const animation = new Animation(ctx, animationParameters);
-
-        if (
-          animationParameters.properties.addByClick ||
-          animationParameters.properties.switchByClick
-        )
-          canvas.addEventListener("click", (e) => {
-            canvasClickHandler(animation, e);
-          });
-
-        animation?.init();
+        reload()
       }
     }
   }, [Animation, animationParameters]);
+
   return canvasRef;
 };
+
+export default useCanvas;

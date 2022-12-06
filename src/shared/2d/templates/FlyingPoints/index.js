@@ -1,19 +1,19 @@
-import {getPosition} from '../../../../utils'
+import { getPosition } from '../../../utils'
 
-export class Particle {
+export class FlyingPoints {
     constructor(w, h, properties) {
         this.particles = Array.from(new Array(properties.particleCount)).map((_) => {
-            const velocity = Math.random()*(properties.particleMaxVelocity*2)-properties.particleMaxVelocity;
+            const velocity = Math.random() * (properties.particleMaxVelocity * 2) - properties.particleMaxVelocity;
 
             return {
-                x: Math.random()*w,
-                y: Math.random()*h,
+                x: Math.random() * w,
+                y: Math.random() * h,
                 velocityX: velocity,
                 velocityY: velocity,
-                life: Math.random()*properties.particleLife*60,
+                life: Math.random() * properties.particleLife * 60,
                 isStart: false,
                 start: 0,
-                position () {
+                position() {
                     this.velocityX = getPosition(this.x, w, this.velocityX, properties.margin)
                     this.velocityY = getPosition(this.y, h, this.velocityY, properties.margin)
                     this.x += this.velocityX
@@ -24,7 +24,7 @@ export class Particle {
                         if (this.life < 1) {
                             this.x = Math.random() * w;
                             this.y = Math.random() * h;
-                            this.life = Math.random() * properties.particleLife*60
+                            this.life = Math.random() * properties.particleLife * 60
                         }
                         if (this.start >= 1) this.isStart = false
                         this.life--;
