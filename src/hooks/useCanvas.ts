@@ -1,12 +1,15 @@
-import { useEffect, useRef, useContext } from "react";
-import DataContext from "../components/Context";
-// import { DataContext } from "../components/Context";
+import { ConstructorOf, IProperty, TAnimationProperties, TSomeAbstractClass, TSomeClass } from '../shared/types/index';
+import { useEffect, useRef, useContext, SyntheticEvent, EventHandler, MouseEvent } from "react";
+import DataContext, { IDataContext } from "../components/Context";
 import { canvasClickHandler, canvasReload } from "../shared/utils";
 import useForceUpdate from "./useForceUpdate";
+import FlyingPoints from '../shared/2d/templates/FlyingPoints';
+import FlyingLines from '../shared/2d/animations/FlyingLines';
+import { getEventListeners } from 'events';
 
-const useCanvas = (Animation, animationParameters) => {
-  const canvasRef = useRef(null);
-  const { keyToggle, webWorker } = useContext(DataContext)
+const useCanvas = <A extends ConstructorOf<any>>(Animation: A, animationParameters: TAnimationProperties) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const { keyToggle, webWorker } = useContext<IDataContext>(DataContext)
   const reload = useForceUpdate()
 
   canvasReload(keyToggle, webWorker, canvasRef)
@@ -15,7 +18,7 @@ const useCanvas = (Animation, animationParameters) => {
     if (canvasRef.current) {
       try {
         try {
-          const worker = new Worker(
+          const worker: Worker = new Worker(
             new URL(
               "../shared/webAPI/web-workers/canvasWorker.js",
               import.meta.url
@@ -24,7 +27,7 @@ const useCanvas = (Animation, animationParameters) => {
 
           webWorker.current = worker;
 
-          const offscreen = canvasRef.current.transferControlToOffscreen();
+          const offscreen: OffscreenCanvas = canvasRef.current.transferControlToOffscreen();
 
           worker.postMessage(
             {
@@ -49,16 +52,12 @@ const useCanvas = (Animation, animationParameters) => {
 
         } catch {
           const canvas = canvasRef.current;
-          const ctx = canvas.getContext("2d", { alpha: false });
-          const animation = new Animation(ctx, animationParameters);
+          const ctx: CanvasRenderingContext2D | null = canvas.getContext("2d", { alpha: false });
+          const animation: InstanceType<A> = new Animation(ctx, animationParameters);
 
-          if (
-            animationParameters.properties.addByClick ||
+          if (animationParameters.properties.addByClick ||
             animationParameters.properties.switchByClick
-          )
-            canvas.onclick = (e) => {
-              canvasClickHandler(animation, e, animationParameters.offset);
-            };
+          ) canvas.onclick = ((e: MouseEvent<HTMLCanvasElement, MouseEvent>) => canvasClickHandler(animation, e, animationParameters.offset)) as EventHandler<HTMLCanvasElement>;
 
           animation?.init();
 

@@ -1,8 +1,13 @@
-import React, { forwardRef } from 'react';
+import React, { CSSProperties, forwardRef } from 'react';
 
+export interface ICanvasProps {
+    width: number
+    height: number
+    style?: CSSProperties
+    props?: any[]
+}
 
-
-export const Canvas = forwardRef(({ style, width, height, ...props }, ref) => (
+export const Canvas = forwardRef<HTMLCanvasElement, ICanvasProps>(({ style, width, height, ...props }, ref) => (
     <canvas
         ref={ref}
         style={style}

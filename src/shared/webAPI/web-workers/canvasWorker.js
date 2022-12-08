@@ -22,7 +22,7 @@ self.onmessage = function (e) {
             });
             break;
         case 'click':
-            canvasClickHandler(animationWorker, e);
+            canvasClickHandler(animationWorker, e.data);
             break;
         case 'resize':
             this.cancelAnimationFrame(this.canvasRafId)

@@ -1,12 +1,18 @@
 import React, { forwardRef, useCallback } from 'react';
 import classNames from "classnames";
 
+import root from "../..";
 import NavLinkItem from '../NavLinkItem';
 import { useLongPress } from '../../hooks';
 import { isLayoutActive } from '../../shared/utils';
-import { root } from "../..";
+import { IProperty, TProperties } from '../../shared/types';
 
-export const PageSidebar = forwardRef(({ properties, isModal = false }, ref) => {
+export interface IPageSidebarProps {
+    properties: TProperties
+    isModal: boolean
+}
+
+export const PageSidebar = forwardRef<HTMLElement, IPageSidebarProps>(({ properties, isModal = false }, ref) => {
     const { touchInterval, setTouchInterval } = useLongPress(500, root, isModal);
     const mobileVisibility = isModal && isLayoutActive(touchInterval.start, touchInterval.end)
 
@@ -21,11 +27,11 @@ export const PageSidebar = forwardRef(({ properties, isModal = false }, ref) => 
         >
             <nav>
                 <ul className="ListLink">
-                    {properties?.map((item, idx) => (
+                    {properties?.map((item: IProperty, idx: number) => (
                         <NavLinkItem
                             key={`an-link-${idx}`}
                             id={idx}
-                            propertySets={item}
+                            propertySet={item}
                             onCleanUp={handleClose}
                         />
                     ))}

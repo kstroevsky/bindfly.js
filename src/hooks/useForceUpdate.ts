@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-const useForceUpdate = () => {
-    const set = useState(false)[1];
+const useForceUpdate = (): () => void => {
+    const set = useState<boolean>(false)[1];
     return () => set((s) => !s);
 };
 

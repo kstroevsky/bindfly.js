@@ -1,43 +1,19 @@
-// import React, { useRef } from "react";
-// import { Routes } from "react-router-dom";
-// import { Route } from "react-router-dom";
-// import DataContext from "./components/Context";
-// import "./App.css";
-// import properties from "./properties.json";
-// import PageLayout from "./components/PageLayout";
-// import { TProperties } from "./utils/types";
-
-// const Animation = React.lazy(() => import("./components/Animation"));
-
-// const App: React.FC = () => {
-//   const data: TProperties = properties;
-
-//   return (
-//     <div className="App">
-//       <DataContext.Provider
-//         value={{ keyToggle: useRef(false), webWorker: useRef(null) }}
-//       >
-//         <Routes>
-//           <Route path="/" element={<PageLayout properties={data} />}>
-//             {data?.map((x, i) => (
-//               <Route
-//                 key={0}
-//                 path={`/animation-${i}`}
-//                 element={<Animation properties={x} />}
-//               />
-//             ))}
-//           </Route>
-//         </Routes>
-//       </DataContext.Provider>
+import React, { FC, MouseEvent, PointerEvent } from "react";
 import { RouterProvider } from "react-router-dom";
 import router from "./router";
 
-function App() {
-  return (
-    <div id="App">
-      <RouterProvider router={router} />
-    </div>
-  );
-}
+export const App: FC = () => (
+  <div
+    id="App"
+    onContextMenu={(e: MouseEvent<HTMLDivElement> & PointerEvent<HTMLDivElement>) => {
+      const { button, clientX, clientY, pointerType = 'click' } = e.nativeEvent;
+      const isTouchByPosition = (clientX !== 1 && clientX !== 0 && clientY !== 1 || clientY !== 0)
+
+      if (button !== 2 && isTouchByPosition || pointerType === 'touch') e.preventDefault()
+    }}
+  >
+    <RouterProvider router={router} />
+  </div>
+);
 
 export default App;

@@ -5,7 +5,7 @@ import {
   createBrowserRouter,
   createRoutesFromElements,
 } from "react-router-dom";
-import DataContextProvider from "../components/Context";
+import { DataContextProvider } from "../components/Context";
 
 import properties from "../properties.json";
 
