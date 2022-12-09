@@ -54,6 +54,8 @@ export interface TAnimationProperties {
 export interface I2DAnimationBaseType<T extends object> {
     properties: T
     ctx: CanvasRenderingContext2D
+    colorOffset: any
+    particles: any
     sizes: {
         width: number
         height: number

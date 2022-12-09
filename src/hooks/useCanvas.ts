@@ -1,11 +1,9 @@
-import { ConstructorOf, IProperty, TAnimationProperties, TSomeAbstractClass, TSomeClass } from '../shared/types/index';
-import { useEffect, useRef, useContext, SyntheticEvent, EventHandler, MouseEvent } from "react";
+import { ConstructorOf, TAnimationProperties, WorkerClickData } from '../shared/types/index';
+import { useEffect, useRef, useContext, EventHandler, MouseEvent } from "react";
 import DataContext, { IDataContext } from "../components/Context";
 import { canvasClickHandler, canvasReload } from "../shared/utils";
 import useForceUpdate from "./useForceUpdate";
-import FlyingPoints from '../shared/2d/templates/FlyingPoints';
-import FlyingLines from '../shared/2d/animations/FlyingLines';
-import { getEventListeners } from 'events';
+
 
 const useCanvas = <A extends ConstructorOf<any>>(Animation: A, animationParameters: TAnimationProperties) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -51,13 +49,13 @@ const useCanvas = <A extends ConstructorOf<any>>(Animation: A, animationParamete
             };
 
         } catch {
-          const canvas = canvasRef.current;
+          const canvas: HTMLCanvasElement = canvasRef.current;
           const ctx: CanvasRenderingContext2D | null = canvas.getContext("2d", { alpha: false });
           const animation: InstanceType<A> = new Animation(ctx, animationParameters);
 
           if (animationParameters.properties.addByClick ||
             animationParameters.properties.switchByClick
-          ) canvas.onclick = ((e: MouseEvent<HTMLCanvasElement, MouseEvent>) => canvasClickHandler(animation, e, animationParameters.offset)) as EventHandler<HTMLCanvasElement>;
+          ) canvas.onclick = (e) => canvasClickHandler(animation, e, animationParameters.offset);
 
           animation?.init();
 

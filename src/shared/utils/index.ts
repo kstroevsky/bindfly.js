@@ -1,9 +1,8 @@
-import { MouseEvent, MutableRefObject, SyntheticEvent, TouchEvent } from "react";
+import { MutableRefObject } from "react";
 import { IDataContext } from "../../components/Context";
-import FlyingLines from "../2d/animations/FlyingLines";
-import { FlyingPoints } from "../2d/templates/FlyingPoints";
+
 import { TOUCH_EXPIRATION } from "../constants";
-import { ConstructorOf, IAnimationWithParticles, IProperty, TPropertiesValues, WorkerClickData } from "../types";
+import { IAnimationWithParticles, IProperty, TPropertiesValues, WorkerClickData } from "../types";
 
 export const getPosition = (
     position: number,
