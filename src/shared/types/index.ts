@@ -69,7 +69,7 @@ export type IAnimationWithParticles<P, A extends object> = I2DAnimationBaseType<
     particles: P[]
 }
 
-export type TSomeAbstractClass<T> = abstract new (...args: any[]) => T;
+export type TSomeAbstractClass<T> = new (...args: any[]) => T;
 
 export type TSomeClass<T> = new (...args: any[]) => T;
 

@@ -55,7 +55,7 @@ const useCanvas = <A extends ConstructorOf<any>>(Animation: A, animationParamete
 
           if (animationParameters.properties.addByClick ||
             animationParameters.properties.switchByClick
-          ) canvas.onclick = (e) => canvasClickHandler(animation, e, animationParameters.offset);
+          ) canvas.onclick = (e: any) => canvasClickHandler(animation, e, animationParameters.offset);
 
           animation?.init();
 

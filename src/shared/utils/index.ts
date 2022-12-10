@@ -15,7 +15,10 @@ export const getPosition = (
 
 export const canvasClickHandler = <P, A extends IAnimationWithParticles<P, IProperty>>(
     animation: A,
-    e: { pos: WorkerClickData },
+    e: { 
+        msg: string, 
+        pos: WorkerClickData 
+    },
     offset: number = 0
 ) => {
     if (animation.properties.addByClick) {

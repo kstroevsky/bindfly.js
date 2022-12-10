@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { canvasClickHandler } from '../../utils'
 
 let animationWorker = null;
@@ -17,6 +19,10 @@ self.onmessage = function (e) {
             canvas.height = height !== innerHeight ? height : innerHeight
 
             import(`../../2d/animations/${e.data.animationName}`).then(cl => {
+                //mylog
+                console.log(cl);
+                //mylog
+                console.log(cl);
                 animationWorker = new cl[e.data.animationName](ctx, e.data.animationParameters, false)
                 animationWorker.init();
             });

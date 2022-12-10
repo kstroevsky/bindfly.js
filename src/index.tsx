@@ -10,9 +10,7 @@ import "./index.css";
 const root: HTMLElement = document.getElementById("root") || document.body;
 
 ReactDOM.createRoot(root!).render(
-  <BrowserRouter>
     <App />
-  </BrowserRouter>
 );
 
 
