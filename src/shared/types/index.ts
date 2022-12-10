@@ -54,8 +54,7 @@ export interface TAnimationProperties {
 export interface I2DAnimationBaseType<T extends object> {
     properties: T
     ctx: CanvasRenderingContext2D
-    colorOffset: any
-    particles: any
+    colorOffset: string
     sizes: {
         width: number
         height: number
@@ -65,8 +64,20 @@ export interface I2DAnimationBaseType<T extends object> {
     isStarted: boolean
 }
 
-export type IAnimationWithParticles<P, A extends object> = I2DAnimationBaseType<A> & {
-    particles: P[]
+export type ISingleParticle = {
+    isStart: boolean
+    life: number
+    position: ()=> void
+    reCalculateLife: ()=> void
+    start: number
+    velocityX: number
+    velocityY: number
+    x: number
+    y: number
+}
+
+export type IAnimationWithParticles<A extends object> = I2DAnimationBaseType<A> & {
+    particles: ISingleParticle[]
 }
 
 export type TSomeAbstractClass<T> = new (...args: any[]) => T;

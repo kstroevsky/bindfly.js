@@ -2,7 +2,7 @@ import { MutableRefObject } from "react";
 import { IDataContext } from "../../components/Context";
 
 import { TOUCH_EXPIRATION } from "../constants";
-import { IAnimationWithParticles, IProperty, TPropertiesValues, WorkerClickData } from "../types";
+import { IAnimationWithParticles, IProperty, ISingleParticle, TPropertiesValues, WorkerClickData } from "../types";
 
 export const getPosition = (
     position: number,
@@ -13,12 +13,9 @@ export const getPosition = (
     velocity * (((position + velocity > size - margin && velocity > 0)
         || (position + velocity < margin && velocity < margin)) ? -1 : 1);
 
-export const canvasClickHandler = <P, A extends IAnimationWithParticles<P, IProperty>>(
+export const canvasClickHandler = <A extends IAnimationWithParticles<IProperty>>(
     animation: A,
-    e: { 
-        msg: string, 
-        pos: WorkerClickData 
-    },
+    e: { pos: WorkerClickData },
     offset: number = 0
 ) => {
     if (animation.properties.addByClick) {
@@ -42,7 +39,8 @@ export const canvasClickHandler = <P, A extends IAnimationWithParticles<P, IProp
             if (animation.colorOffset) animation.colorOffset += 1
         }
     }
-    animation.properties.switchByClick && animation.particles.push(animation.particles.shift())
+
+    animation.properties.switchByClick && animation.particles.push(animation.particles.shift() as ISingleParticle)
 }
 
 export const canvasReload = (

@@ -1,5 +1,5 @@
-import { ConstructorOf, TAnimationProperties, WorkerClickData } from '../shared/types/index';
-import { useEffect, useRef, useContext, EventHandler, MouseEvent } from "react";
+import { ConstructorOf, TAnimationProperties } from '../shared/types/index';
+import { useEffect, useRef, useContext } from "react";
 import DataContext, { IDataContext } from "../components/Context";
 import { canvasClickHandler, canvasReload } from "../shared/utils";
 import useForceUpdate from "./useForceUpdate";
@@ -55,7 +55,7 @@ const useCanvas = <A extends ConstructorOf<any>>(Animation: A, animationParamete
 
           if (animationParameters.properties.addByClick ||
             animationParameters.properties.switchByClick
-          ) canvas.onclick = (e: any) => canvasClickHandler(animation, e, animationParameters.offset);
+          ) canvas.onclick = (e: any): void => canvasClickHandler(animation, e, animationParameters.offset);
 
           animation?.init();
 
