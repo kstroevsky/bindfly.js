@@ -1,14 +1,21 @@
-import React, { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import React, { FC, useState } from "react";
+import { LinkProps, NavLink, useLocation } from "react-router-dom";
 import classNames from "classnames";
 
 import DropDownContent from "../DropdownContent";
 import ToggleButton from "../ToggleButton";
+import { IProperty } from "../../shared/types";
 
-const NavLinkItem = ({ id, propertySets, onCleanUp }) => {
-  const [checked, setChecked] = useState(false);
+export interface INavLinkItemProps {
+  id: number
+  propertySet: IProperty
+  onCleanUp: () => void
+}
+
+const NavLinkItem: FC<INavLinkItemProps> = ({ id, propertySet, onCleanUp }) => {
+  const [checked, setChecked] = useState<boolean>(false);
   const location = useLocation();
-  const navPath = `/animation-${id}`;
+  const navPath: string = `/animation-${id}`;
 
   const handleChange = () => {
     setChecked(!checked);
@@ -25,7 +32,7 @@ const NavLinkItem = ({ id, propertySets, onCleanUp }) => {
             : {
               onClick: () => onCleanUp?.(),
               to: navPath,
-            })}
+            }) as LinkProps}
           className={({ isActive }) => classNames({ "current-page": isActive })
           }
         >
@@ -33,7 +40,7 @@ const NavLinkItem = ({ id, propertySets, onCleanUp }) => {
         </NavLink>
         <ToggleButton keyInput={id} value={checked} onChange={handleChange} />
       </p>
-      {checked && <DropDownContent propertySets={propertySets} />}
+      {checked && <DropDownContent propertySet={propertySet} />}
     </li>
   );
 };

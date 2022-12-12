@@ -1,14 +1,14 @@
-import { FlyingPoints } from "../../templates/FlyingPoints";
+import FlyingPoints from "../../templates/FlyingPoints";
 
-export class FlyingLines {
+export default class FlyingLines {
   constructor(ctx, parameters) {
     this.properties = parameters.properties;
 
     this.ctx = ctx;
     this.particles = [];
     this.sizes = {
-      w: parameters.innerWidth - parameters.offset,
-      h: parameters.innerHeight,
+      width: parameters.innerWidth - parameters.offset,
+      height: parameters.innerHeight,
     };
 
     this.isStarted = false;
@@ -54,7 +54,7 @@ export class FlyingLines {
 
   reDrawBackground() {
     this.ctx.fillStyle = this.properties.bgColor;
-    this.ctx.fillRect(0, 0, this.sizes.w, this.sizes.h);
+    this.ctx.fillRect(0, 0, this.sizes.width, this.sizes.height);
   }
 
   drawLinesWithoutAdding() {
@@ -142,8 +142,8 @@ export class FlyingLines {
 
   init() {
     this.particles = new FlyingPoints(
-      this.sizes.w,
-      this.sizes.h,
+      this.sizes.width,
+      this.sizes.height,
       this.properties,
       this.isParticleColors
     ).particles;

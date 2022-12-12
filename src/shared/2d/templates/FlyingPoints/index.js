@@ -1,6 +1,6 @@
 import { getPosition } from '../../../utils'
 
-export class FlyingPoints {
+export default class FlyingPoints {
     constructor(w, h, properties) {
         this.particles = Array.from(new Array(properties.particleCount)).map((_) => {
             const velocity = Math.random() * (properties.particleMaxVelocity * 2) - properties.particleMaxVelocity;

@@ -1,5 +1,5 @@
 {
-  "name": "canvas-react",
+  "name": "bindfly",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -19,7 +19,13 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0"
+    "@testing-library/user-event": "^13.5.0",
+    "@types/node": "^18.11.10",
+    "@types/prop-types": "^15.7.5",
+    "@types/react": "^18.0.25",
+    "@types/react-dom": "^18.0.9",
+    "awesome-typescript-loader": "^5.2.1",
+    "typescript": "^3.9.10"
   },
   "eslintConfig": {
     "extends": [
