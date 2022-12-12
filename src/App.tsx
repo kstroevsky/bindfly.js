@@ -1,5 +1,6 @@
-import React, { FC, MouseEvent, PointerEvent } from "react";
+import React, { FC, MouseEvent, PointerEvent, Suspense } from "react";
 import { RouterProvider } from "react-router-dom";
+import Loader from "./components/Loader";
 import router from "./router";
 
 export const App: FC = () => (
@@ -12,7 +13,9 @@ export const App: FC = () => (
       if (button !== 2 && isTouchByPosition || pointerType === 'touch') e.preventDefault()
     }}
   >
-    <RouterProvider router={router} />
+    <Suspense fallback={<Loader size={200} />}>
+      <RouterProvider router={router} />
+    </Suspense>
   </div>
 );
 

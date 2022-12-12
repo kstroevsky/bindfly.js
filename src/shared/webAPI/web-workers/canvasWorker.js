@@ -24,13 +24,6 @@ self.onmessage = function (e) {
         case 'click':
             canvasClickHandler(animationWorker, e.data);
             break;
-        case 'resize':
-            this.cancelAnimationFrame(this.canvasRafId)
-            this.cancelAnimationFrame(this.timerRafId)
-
-            canvas.width = canvas.width !== e.data.sizes.innerWidth ? width : e.data.sizes.innerWidth
-            canvas.height = canvas.height !== e.data.sizes.innerHeight ? height : e.data.sizes.innerHeight
-            break;
         case 'stop':
         default:
             this.cancelAnimationFrame(this.canvasRafId)
