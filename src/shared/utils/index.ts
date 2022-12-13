@@ -22,6 +22,7 @@ export const canvasClickHandler = <A extends IAnimationWithParticles<IProperty>>
         animation.particles.push(
             Object.assign({}, {
                 ...animation.particles[0],
+                life: Math.random() * animation.properties.particleLife * 60,
                 x: e.pos.x - offset,
                 y: e.pos.y,
                 isStart: true,

@@ -14,6 +14,7 @@ export const LoaderTiles: FC<ILoaderTilesProps> = ({ radioCommand, position }) =
     const clipPathForPosition = (position: string | number) => {
         let newPosition = parseInt(position as string, 10);
         const SIZE = (100 - 2 * GUTTER) / 3;
+
         const VAR0 = '0% ';
         const VAR1 = (SIZE + GUTTER) + '% ';
         const VAR2 = (2 * SIZE + 2 * GUTTER) + '% ';

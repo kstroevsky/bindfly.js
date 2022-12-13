@@ -49,14 +49,21 @@ const useCanvas = <A extends ConstructorOf<any>>(Animation: A, animationParamete
             };
 
         } catch {
+          const { innerWidth, innerHeight, devicePixelRatio } = animationParameters
           const canvas: HTMLCanvasElement = canvasRef.current;
+
+          canvas.width = (canvas.width !== innerWidth ? canvas.width : innerWidth) * devicePixelRatio
+          canvas.height = (canvas.height !== innerHeight ? canvas.height : innerHeight) * devicePixelRatio
+
           const ctx: CanvasRenderingContext2D | null = canvas.getContext("2d", { alpha: false });
+          ctx?.scale(devicePixelRatio, devicePixelRatio)
+
           const animation: InstanceType<A> = new Animation(ctx, animationParameters);
 
           if (animationParameters.properties.addByClick ||
             animationParameters.properties.switchByClick
           ) canvas.onclick = (e: any): void => {
-              canvasClickHandler(animation, e, animationParameters.offset);
+            canvasClickHandler(animation, e, animationParameters.offset);
           }
 
           animation?.init();
