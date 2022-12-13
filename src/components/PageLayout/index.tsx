@@ -5,6 +5,7 @@ import { Outlet } from "react-router-dom";
 import root from "../..";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { TProperties, IOutletContext } from "../../shared/types";
+import Loader from "../Loader";
 import { PageSidebar } from "../PageSidebar";
 
 interface IPageLayoutProps {
@@ -36,15 +37,17 @@ const PageLayout: React.FC<IPageLayoutProps> = ({ properties }) => {
   }, [])
 
   return (
-    <Suspense>
+    <>
       <PageSidebar
         ref={sidebarRef}
         key={"desktop-sidebar"}
         properties={properties}
         isModal={isMobile}
       />
-      {isVisible && <Outlet context={{ width, isMobile }} />}
-    </Suspense>
+      <Suspense fallback={<Loader size={200} />}>
+        {isVisible && <Outlet context={{ width, isMobile }} />}
+      </Suspense>
+    </>
   );
 };
 

@@ -14,13 +14,15 @@ export interface IAnimationProps {
 const Animation: FC<IAnimationProps> = ({ properties }) => {
   const { keyToggle } = useContext<IDataContext>(DataContext);
   const { width: offset, isMobile } = useOutletContext<IOutletContext>();
-  const { innerWidth, innerHeight } = window;
+
+  const { innerWidth, innerHeight, devicePixelRatio } = window;
   const offsetWidth: number = isMobile ? 0 : offset;
 
   const canvasRef = useCanvas<typeof FlyingLines>(FlyingLines, {
     properties,
     innerWidth,
     innerHeight,
+    devicePixelRatio,
     offset: offsetWidth,
   });
 

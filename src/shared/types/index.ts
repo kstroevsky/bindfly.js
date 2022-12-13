@@ -48,6 +48,7 @@ export interface TAnimationProperties {
     properties: IProperty
     innerWidth: number
     innerHeight: number
+    devicePixelRatio: number
     offset: number
 }
 

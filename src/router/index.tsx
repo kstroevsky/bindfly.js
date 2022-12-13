@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import {
   Navigate,
   Route,
@@ -6,6 +6,7 @@ import {
   createRoutesFromElements,
 } from "react-router-dom";
 import { DataContextProvider } from "../components/Context";
+import Loader from "../components/Loader";
 
 import properties from "../properties.json";
 
@@ -29,13 +30,12 @@ const router = createBrowserRouter(
       }
     >
       <>
-        <Route path="/" element={<Navigate replace to={"/animation-0"} />} />
+        <Route path="/" element={<Navigate replace to={"/animation-0"} />} errorElement={<Loader size={200} />} />
         {properties?.map((x, i) => (
           <Route
             key={i}
             path={`/animation-${i}`}
             element={<Animation properties={x} />}
-            errorElement={<></>}
           />
         ))}
       </>

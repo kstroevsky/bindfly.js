@@ -22,6 +22,7 @@ export const canvasClickHandler = <A extends IAnimationWithParticles<IProperty>>
         animation.particles.push(
             Object.assign({}, {
                 ...animation.particles[0],
+                life: Math.random() * animation.properties.particleLife * 60,
                 x: e.pos.x - offset,
                 y: e.pos.y,
                 isStart: true,
@@ -85,4 +86,14 @@ export const parametersToString = (value: TPropertiesValues | TPropertiesValues[
         default:
             return value!.toString()
     }
+}
+
+export const insertToArray = (array: any, insertions: any[]) => {
+    let newArray = [...array]
+    insertions.forEach(ins => {
+        newArray.splice(ins.position, 0, ins.item)
+        console.log(newArray)
+    })
+
+    return newArray
 }
