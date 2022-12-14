@@ -1,4 +1,4 @@
-import FlyingPoints from "../../templates/FlyingPoints";
+import FlyingPoints from '../../templates/FlyingPoints';
 
 export default class FlyingLines {
   constructor(ctx, parameters) {
@@ -8,7 +8,7 @@ export default class FlyingLines {
     this.particles = [];
     this.sizes = {
       width: parameters.innerWidth - parameters.offset,
-      height: parameters.innerHeight,
+      height: parameters.innerHeight
     };
 
     this.isStarted = false;
@@ -16,18 +16,18 @@ export default class FlyingLines {
 
     this.particleColors =
       parameters.properties.particleColors &&
-        parameters.properties.particleColors.length
+      parameters.properties.particleColors.length
         ? parameters.properties.particleColors
-        : Array.from(
-          new Array(parameters.properties.generativeColorsCounts)
-        ).map((_, i) => {
-          let frequency = 5 / parameters.properties.generativeColorsCounts;
-          return `rgba(${Math.floor(
-            Math.sin(frequency * i + 0) * 127 + 128
-          )}, ${Math.floor(
-            Math.sin(frequency * i + 2) * 127 + 128
-          )}, ${Math.floor(Math.sin(frequency * i + 4) * 127 + 128)}, 1)`;
-        });
+        : Array.from(new Array(parameters.properties.generativeColorsCounts)).map(
+            (_, i) => {
+              const frequency = 5 / parameters.properties.generativeColorsCounts;
+              return `rgba(${Math.floor(
+                Math.sin(frequency * i + 0) * 127 + 128
+              )}, ${Math.floor(
+                Math.sin(frequency * i + 2) * 127 + 128
+              )}, ${Math.floor(Math.sin(frequency * i + 4) * 127 + 128)}, 1)`;
+            }
+          );
 
     this.color = this.properties.switchByClick
       ? this.properties.isMonochrome
@@ -43,7 +43,7 @@ export default class FlyingLines {
   }
 
   monochrome(i, opacity) {
-    return `rgba(${i % 2 === 0 ? "0, 0, 0" : "255, 255, 255"}, ${opacity})`;
+    return `rgba(${i % 2 === 0 ? '0, 0, 0' : '255, 255, 255'}, ${opacity})`;
   }
 
   propsColors(i, opacity) {
@@ -60,20 +60,18 @@ export default class FlyingLines {
   drawLinesWithoutAdding() {
     let x1, y1, x2, y2, length;
 
-    for (let i in this.particles) {
+    for (const i in this.particles) {
       this.particles[i].reCalculateLife();
       this.particles[i].position();
 
       x1 = this.particles[i].x;
       y1 = this.particles[i].y;
 
-      for (let j in this.particles) {
+      for (const j in this.particles) {
         x2 = this.particles[j].x;
         y2 = this.particles[j].y;
 
-        length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(
-          3
-        );
+        length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(3);
 
         if (length < this.properties.lineLength) {
           this.ctx.lineWidth = 0.5;
@@ -95,20 +93,18 @@ export default class FlyingLines {
   drawLinesWithAdding() {
     let x1, y1, x2, y2, length, opacity;
 
-    for (let i in this.particles) {
+    for (const i in this.particles) {
       this.particles[i].reCalculateLife();
       this.particles[i].position();
 
       x1 = this.particles[i].x;
       y1 = this.particles[i].y;
 
-      for (let j in this.particles) {
+      for (const j in this.particles) {
         x2 = this.particles[j].x;
         y2 = this.particles[j].y;
 
-        length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(
-          3
-        );
+        length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(3);
 
         if (length < this.properties.lineLength) {
           opacity = 1 - length / this.properties.lineLength;
@@ -159,8 +155,8 @@ export default class FlyingLines {
   }
 
   clear() {
-    cancelAnimationFrame(this.boundAnimate)
+    cancelAnimationFrame(this.boundAnimate);
     this.particles = null;
-    delete this
+    delete this;
   }
 }

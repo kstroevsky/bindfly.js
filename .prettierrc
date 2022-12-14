@@ -1,0 +1,27 @@
+{
+  "printWidth": 85,
+  "arrowParens": "always",
+  "semi": true,
+  "useTabs": false,
+  "singleQuote": true,
+  "bracketSpacing": true,
+  "bracketSameLine": true,
+  "quoteProps": "as-needed",
+  "trailingComma": "none",
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+      "options": {
+        "semi": true,
+        "arrowParens": "always",
+        "printWidth": 85,
+        "useTabs": false,
+        "bracketSpacing": true,
+        "bracketSameLine": true,
+        "quoteProps": "as-needed",
+        "trailingComma": "none",
+        "singleQuote": true
+      }
+    }
+  ]
+}

@@ -1,14 +1,14 @@
-import React, { FC, useContext } from "react";
-import { useOutletContext } from "react-router-dom";
+import React, { FC, useContext } from 'react';
+import { useOutletContext } from 'react-router-dom';
 
-import FlyingLines from "../../shared/2d/animations/FlyingLines";
-import { useCanvas } from "../../hooks";
-import { Canvas } from "../Canvas";
-import DataContext, { IDataContext } from "../Context";
-import { IOutletContext, IProperty } from "../../shared/types";
+import { useCanvas } from '../../hooks';
+import FlyingLines from '../../shared/2d/animations/FlyingLines';
+import { IOutletContext, IProperty } from '../../shared/types';
+import { Canvas } from '../Canvas';
+import DataContext, { IDataContext } from '../Context';
 
 export interface IAnimationProps {
-  properties: IProperty
+  properties: IProperty;
 }
 
 const Animation: FC<IAnimationProps> = ({ properties }) => {
@@ -23,7 +23,7 @@ const Animation: FC<IAnimationProps> = ({ properties }) => {
     innerWidth,
     innerHeight,
     devicePixelRatio,
-    offset: offsetWidth,
+    offset: offsetWidth
   });
 
   return (
@@ -36,8 +36,8 @@ const Animation: FC<IAnimationProps> = ({ properties }) => {
         backgroundColor: properties.bgColor,
         width: innerWidth - offsetWidth,
         height: innerHeight,
-        position: "absolute",
-        right: 0,
+        position: 'absolute',
+        right: 0
       }}
     />
   );

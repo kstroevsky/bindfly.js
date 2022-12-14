@@ -1,18 +1,18 @@
-import React, { FC, useCallback, useState } from "react";
+import React, { FC, useCallback, useState } from 'react';
 import { ReactComponent as CopyIcon } from '../../assets/copy-icon.svg';
-import { COPY_ANIMATION_DURATION } from "../../shared/constants";
-import { IProperty, TPropertiesValues } from "../../shared/types";
-import DropdownItem from "../DropdownItem";
+import { COPY_ANIMATION_DURATION } from '../../shared/constants';
+import { IProperty, TPropertiesValues } from '../../shared/types';
+import DropdownItem from '../DropdownItem';
 
 export interface IDropdownContent {
-  propertySet: IProperty
+  propertySet: IProperty;
 }
 
 const DropdownContent: FC<IDropdownContent> = ({ propertySet }) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const onListClick = useCallback(() => {
-    navigator.clipboard.writeText(JSON.stringify(propertySet, null, "\t"));
+    navigator.clipboard.writeText(JSON.stringify(propertySet, null, '\t'));
     setIsCopied(true);
 
     setTimeout(() => {
@@ -20,15 +20,22 @@ const DropdownContent: FC<IDropdownContent> = ({ propertySet }) => {
     }, COPY_ANIMATION_DURATION);
   }, [propertySet]);
 
-
   return (
     <ul className="DropdownContent">
-      <CopyIcon width={16} height={16} fill={isCopied ? "#36c373" : "white"} className="Clipboard" onClick={onListClick} />
+      <CopyIcon
+        width={16}
+        height={16}
+        fill={isCopied ? '#36c373' : 'white'}
+        className="Clipboard"
+        onClick={onListClick}
+      />
       {Object.entries<TPropertiesValues>(propertySet).map(
         ([propertyKey, propertyValue]: [string, TPropertiesValues], idx: number) => (
           <DropdownItem key={idx} {...{ propertyKey, propertyValue }} />
-        ))}
+        )
+      )}
     </ul>
-)};
+  );
+};
 
 export default DropdownContent;

@@ -26,7 +26,7 @@ li {
   background-color: #081225;
   opacity: 0;
   transform: translateX(0px);
-  transition: transform 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   overflow-y: auto;
 }
 
@@ -79,7 +79,7 @@ a:visited {
 .ListLinkItem {
   position: relative;
   color: #131313;
-  letter-spacing: .15em;
+  letter-spacing: 0.15em;
   -webkit-background-clip: text;
   -moz-background-clip: text;
   background-clip: text;
@@ -89,10 +89,10 @@ a:visited {
 }
 
 .ListLinkItem a:not(.current-page):hover {
-  text-shadow: 0px 3px 3px #FF002B;
+  text-shadow: 0px 3px 3px #ff002b;
 }
 
-.ListLinkItem>p {
+.ListLinkItem > p {
   padding-bottom: 10px;
 }
 
@@ -105,7 +105,7 @@ a:visited {
   margin-bottom: 2rem;
 }
 
-.ListLinkItem>*:not(.DropdownContent),
+.ListLinkItem > *:not(.DropdownContent),
 .CloseButton {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -116,39 +116,28 @@ a:visited {
 
 .current-page {
   cursor: default;
-  text-shadow: 2px 0 0px #800040,
-    3px 2px 0px rgba(77, 0, 38, 0.5),
-    3px 0 1px #FF002B,
-    5px 0 1px #800015,
-    6px 2px 1px rgba(77, 0, 13, 0.5),
-    6px 0 3px #FF5500,
-    8px 0 3px #802A00,
-    9px 2px 3px rgba(77, 25, 0, 0.5),
-    9px 0 6px #FFD500,
-    11px 0 6px #806A00,
-    12px 2px 6px rgba(77, 66, 0, 0.5),
-    12px 0 10px #D4FF00,
-    14px 0 10px #6A8000,
-    15px 2px 10px rgba(64, 77, 0, 0.5),
-    15px 0 15px #80FF00,
-    17px 0 15px #408000,
-    17px 2px 15px rgba(38, 77, 0, 0.5);
+  text-shadow: 2px 0 0px #800040, 3px 2px 0px rgba(77, 0, 38, 0.5), 3px 0 1px #ff002b,
+    5px 0 1px #800015, 6px 2px 1px rgba(77, 0, 13, 0.5), 6px 0 3px #ff5500,
+    8px 0 3px #802a00, 9px 2px 3px rgba(77, 25, 0, 0.5), 9px 0 6px #ffd500,
+    11px 0 6px #806a00, 12px 2px 6px rgba(77, 66, 0, 0.5), 12px 0 10px #d4ff00,
+    14px 0 10px #6a8000, 15px 2px 10px rgba(64, 77, 0, 0.5), 15px 0 15px #80ff00,
+    17px 0 15px #408000, 17px 2px 15px rgba(38, 77, 0, 0.5);
 }
 
 .checkbox-bipolar-input {
   display: none;
 }
 
-.checkbox-bipolar-input:checked+label .checkbox-bipolar:after {
+.checkbox-bipolar-input:checked + label .checkbox-bipolar:after {
   left: 18px;
   right: 2px;
 }
 
-.checkbox-bipolar-input:checked+label .checkbox-bipolar .on {
+.checkbox-bipolar-input:checked + label .checkbox-bipolar .on {
   opacity: 0.5;
 }
 
-.checkbox-bipolar-input:checked+label .checkbox-bipolar .off {
+.checkbox-bipolar-input:checked + label .checkbox-bipolar .off {
   opacity: 0;
 }
 
@@ -235,7 +224,7 @@ a:visited {
 
 .CardPanel span {
   font-weight: 900;
-  color: rgb(240, 128, 128)
+  color: rgb(240, 128, 128);
 }
 
 .CardPanel span:hover {
@@ -280,15 +269,13 @@ canvas {
   }
 }
 
-@media (max-width: 768px),
-(orientation: portrait) {
-
+@media (max-width: 768px), (orientation: portrait) {
   .sidebar.modal {
-    z-index: -1
+    z-index: -1;
   }
 
   .sidebar.modal.active * {
-    z-index: 2
+    z-index: 2;
   }
 
   .sidebar.modal {

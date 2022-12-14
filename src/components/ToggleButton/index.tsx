@@ -1,12 +1,16 @@
-import React from "react";
+import React from 'react';
 
 interface IToggleButtonProps {
-  keyInput: number,
-  value: boolean,
-  onChange: ()=>void
+  keyInput: number;
+  value: boolean;
+  onChange: () => void;
 }
 
-const ToggleButton: React.FC<IToggleButtonProps> = ({ keyInput, value, onChange }) => {
+const ToggleButton: React.FC<IToggleButtonProps> = ({
+  keyInput,
+  value,
+  onChange
+}) => {
   return (
     <>
       <input

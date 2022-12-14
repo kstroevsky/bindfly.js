@@ -1,12 +1,12 @@
-import { EventHandler, ReactEventHandler, SyntheticEvent, UIEvent } from "react"
+import { EventHandler, ReactEventHandler, SyntheticEvent, UIEvent } from 'react';
 
 export const withPrevents = <E extends Element, V extends UIEvent<E>>(
-    func: EventHandler<V>,
-    callCondition: boolean = true,
-    preventCondition: boolean = true
+  func: EventHandler<V>,
+  callCondition = true,
+  preventCondition = true
 ) => {
-    return (e: V) => {
-        preventCondition && e?.preventDefault()
-        callCondition && func(e)
-    }
-}
+  return (e: V) => {
+    preventCondition && e?.preventDefault();
+    callCondition && func(e);
+  };
+};
