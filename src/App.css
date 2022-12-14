@@ -205,6 +205,7 @@ a:visited {
   max-height: 220px;
   overflow-y: auto;
   text-shadow: none;
+  cursor: pointer;
 }
 
 .CardPanel {
@@ -288,4 +289,20 @@ canvas {
   .sidebar.modal nav {
     width: 60vw;
   }
+}
+
+.Clipboard {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.Clipboard img {
+  width: 20px;
+}
+
+.Clipboard p {
+  color: #36c373;
 }
