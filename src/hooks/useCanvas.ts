@@ -1,6 +1,6 @@
-import { ConstructorOf, TAnimationProperties } from '../shared/types/index';
-import { useEffect, useRef, useContext } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import DataContext, { IDataContext } from '../components/Context';
+import { ConstructorOf, TAnimationProperties } from '../shared/types/index';
 import { canvasClickHandler, canvasReload } from '../shared/utils';
 import useForceUpdate from './useForceUpdate';
 
@@ -19,7 +19,10 @@ const useCanvas = <A extends ConstructorOf<any>>(
       try {
         try {
           const worker: Worker = new Worker(
-            new URL('../shared/webAPI/web-workers/canvasWorker.js', import.meta.url)
+            new URL('../shared/webAPI/web-workers/canvasWorker.js', import.meta.url),
+            {
+              type: 'module'
+            }
           );
 
           webWorker.current = worker;

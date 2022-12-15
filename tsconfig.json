@@ -16,8 +16,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": false,
-    "jsx": "react"
+    "jsx": "react",
+    "outDir": "dist"
   },
-  "include": ["src", "*/*.config.js"],
+  "include": ["src"],
   "exclude": ["node_modules"]
 }

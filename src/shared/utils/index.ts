@@ -103,13 +103,3 @@ export const parametersToString = (
       return value!.toString();
   }
 };
-
-export const insertToArray = (array: any, insertions: any[]) => {
-  const newArray = [...array];
-  insertions.forEach((ins) => {
-    newArray.splice(ins.position, 0, ins.item);
-    console.log(newArray);
-  });
-
-  return newArray;
-};

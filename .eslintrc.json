@@ -12,9 +12,6 @@
   },
   "plugins": ["react", "import", "@typescript-eslint"],
   "extends": [
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "plugin:react/recommended",
     "eslint:recommended",
     "standard",
@@ -49,7 +46,7 @@
     "quotes": ["error", "single"],
     "comma-dangle": ["error", "only-multiline"],
     "no-console": [
-      "error",
+      "warn",
       {
         "allow": ["warn", "error", "info"]
       }
@@ -62,12 +59,14 @@
       }
     ],
     "no-undef": "off",
-    "@typescript-eslint/no-floating-promises": "off",
-    "@typescript-eslint/no-unsafe-assignment": "off",
-    "@typescript-eslint/no-unsafe-return": "off",
-    "@typescript-eslint/await-thenable": "off",
-    "@typescript-eslint/restrict-plus-operands": "error",
-    "@typescript-eslint/no-unsafe-member-access": "off",
+    "no-unused-vars": [
+      "error", 
+      { 
+        "varsIgnorePattern": "^_$", 
+        "args": "all", 
+        "argsIgnorePattern": "^_$"
+      } 
+    ],
     "react/jsx-sort-props": [
       "error",
       {
@@ -83,14 +82,6 @@
     ],
     "react/jsx-indent": ["error", 2],
     "react/jsx-indent-props": ["error", 2],
-    "@typescript-eslint/no-misused-promises": [
-      "error",
-      {
-        "checksVoidReturn": false
-      }
-    ],
-    "@typescript-eslint/no-use-before-define": ["error"],
-    "@typescript-eslint/no-unused-vars": ["error"],
     "import/extensions": ["error", "never"],
     "prettier/prettier": [
       "error",
@@ -109,6 +100,41 @@
     "react/display-name": "off"
   },
   "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "extends": [
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:@typescript-eslint/eslint-recommended"
+      ],
+      "parserOptions": {
+        "project": ["./tsconfig.json"]
+      },
+      "rules": {
+        "@typescript-eslint/no-use-before-define": ["error"],
+        "@typescript-eslint/no-misused-promises": [
+          "error",
+          {
+            "checksVoidReturn": false
+          }
+        ],
+        "@typescript-eslint/no-floating-promises": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/await-thenable": "off",
+        "@typescript-eslint/restrict-plus-operands": "error",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-argument": "warn",
+        "@typescript-eslint/no-unused-vars": [
+          "error", 
+          { 
+            "varsIgnorePattern": "^_$", 
+            "args": "all", 
+            "argsIgnorePattern": "^_$"
+          } 
+        ]
+      }
+    },
     {
       "env": {
         "jest": true

@@ -10,7 +10,8 @@
     "lint:fix": "eslint --fix .",
     "format": "prettier --write \"**/*.+(ts|tsx|js|jsx|json|css)\"",
     "build": "webpack",
-    "dev": "webpack serve"
+    "dev": "SET NODE_ENV=production && webpack serve",
+    "development": "SET NODE_ENV=development && webpack serve"
   },
   "dependencies": {
     "classnames": "^2.3.2",

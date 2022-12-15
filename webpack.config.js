@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
+const development = process.env.NODE_ENV === "development" ? "development" : "production";
+
 module.exports = {
-  mode: 'development',
+  mode: development,
   entry: {
     bundle: path.resolve(__dirname, 'src/index.tsx')
   },
@@ -17,9 +18,14 @@ module.exports = {
   },
   devtool: 'source-map',
   devServer: {
-    static: {
+    static: [
+      {
       directory: path.resolve(__dirname, 'dist')
-    },
+      },
+      {
+        directory: path.resolve(__dirname, 'public')
+      }
+    ],
     port: 3000,
     open: true,
     hot: true,
@@ -44,8 +50,9 @@ module.exports = {
         exclude: /node_modules/
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: 'assets/resource'
+        test: /\.(png|svg|jpg|jpeg|gif|ico)$/,
+        exclude: /node_modules/,
+        use: ['file-loader?name=[name].[ext]']
       },
       {
         test: /\.css$/i,
@@ -55,10 +62,11 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'React App',
-      filename: './index.html',
+      inject: true,
+      title: 'Bindfly Gallery',
       template: './public/index.html',
-      favicon: './public/favicon.ico'
+      favicon: './public/favicon.ico',
+      manifest: './public/manifest.json'
     }),
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
@@ -67,5 +75,10 @@ module.exports = {
   ],
   resolve: {
     extensions: ['*', '.js', '.jsx', '.ts', '.tsx']
+  },
+  performance: {
+    hints: false,
+    maxEntrypointSize: 512000,
+    maxAssetSize: 512000
   }
 };
