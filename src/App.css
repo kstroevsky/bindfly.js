@@ -23,15 +23,20 @@ li {
 .sidebar {
   left: 0;
   top: 0;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   background-color: #081225;
   opacity: 0;
   transform: translateX(0px);
   transition: transform 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940);
   overflow-y: auto;
+}
+
+.sidebar nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 20px 0;
 }
 
 a:active,
@@ -205,7 +210,7 @@ a:visited {
   max-height: 220px;
   overflow-y: auto;
   text-shadow: none;
-  position: relative;;
+  position: relative;
 }
 
 .DropdownContent::-webkit-scrollbar {

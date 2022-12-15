@@ -23,7 +23,7 @@ const DropdownItem: FC<IDropdownItemProps> = ({ propertyKey, propertyValue }) =>
 
   return (
     <li className="CardPanel" onClick={onItemClick}>
-      <p className={classNames({ 'CardPanel_Copied': isCopied })}>
+      <p>
         {`${propertyKey}: `}
         <span className={classNames({ 'CardPanel_Copied': isCopied })}>{parametersToString(propertyValue)}</span>
       </p>
