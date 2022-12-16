@@ -1,4 +1,6 @@
-import React, { FC } from "react";
+import React, { FC, useCallback, useState } from "react";
+import { ReactComponent as CopyIcon } from '../../assets/copy-icon.svg';
+import { COPY_ANIMATION_DURATION } from "../../shared/constants";
 import { IProperty, TPropertiesValues } from "../../shared/types";
 import DropdownItem from "../DropdownItem";
 
@@ -6,19 +8,27 @@ export interface IDropdownContent {
   propertySet: IProperty
 }
 
-type TKeys<T extends object> = keyof { [P in keyof T]: P }
+const DropdownContent: FC<IDropdownContent> = ({ propertySet }) => {
+  const [isCopied, setIsCopied] = useState(false);
 
-function createEnum<T extends { [P in keyof T]: P }>(o: T) {
-  return o
-}
+  const onListClick = useCallback(() => {
+    navigator.clipboard.writeText(JSON.stringify(propertySet, null, "\t"));
+    setIsCopied(true);
 
-const DropdownContent: FC<IDropdownContent> = ({ propertySet }) => (
-  <ul className="DropdownContent">
-    {Object.entries<TPropertiesValues>(propertySet).map(
-      ([propertyKey, propertyValue]: [string, TPropertiesValues], idx: number) => (
-        <DropdownItem key={idx} {...{ propertyKey, propertyValue }} />
-      ))}
-  </ul>
-);
+    setTimeout(() => {
+      setIsCopied(false);
+    }, COPY_ANIMATION_DURATION);
+  }, [propertySet]);
+
+
+  return (
+    <ul className="DropdownContent">
+      <CopyIcon width={16} height={16} fill={isCopied ? "#36c373" : "white"} className="Clipboard" onClick={onListClick} />
+      {Object.entries<TPropertiesValues>(propertySet).map(
+        ([propertyKey, propertyValue]: [string, TPropertiesValues], idx: number) => (
+          <DropdownItem key={idx} {...{ propertyKey, propertyValue }} />
+        ))}
+    </ul>
+)};
 
 export default DropdownContent;

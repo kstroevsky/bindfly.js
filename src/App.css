@@ -23,15 +23,20 @@ li {
 .sidebar {
   left: 0;
   top: 0;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   background-color: #081225;
   opacity: 0;
   transform: translateX(0px);
   transition: transform 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940);
   overflow-y: auto;
+}
+
+.sidebar nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 20px 0;
 }
 
 a:active,
@@ -205,17 +210,30 @@ a:visited {
   max-height: 220px;
   overflow-y: auto;
   text-shadow: none;
+  position: relative;
+}
+
+.DropdownContent::-webkit-scrollbar {
+  width: 0px;
 }
 
 .CardPanel {
   line-height: 18px;
   font-size: 0.8rem;
   text-align: left;
-  width: 90%
+  width: 90%;
+  transition: 0s;
+}
+
+.CardPanel .CardPanel_Copied {
+  color: #36c373;
+}
+
+.CardPanel .CardPanel_Copied:is(span):hover {
+  color: #36c373;
 }
 
 .CardPanel span {
-  cursor: pointer;
   font-weight: 900;
   color: rgb(240, 128, 128)
 }
@@ -257,6 +275,7 @@ canvas {
   }
 
   .CardPanel {
+    cursor: pointer;
     font-size: 0.6rem;
   }
 }
@@ -288,4 +307,16 @@ canvas {
   .sidebar.modal nav {
     width: 60vw;
   }
+}
+
+.Clipboard {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: 0s;
 }
