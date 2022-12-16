@@ -3,6 +3,7 @@ import DataContext, { IDataContext } from '../components/Context';
 import { ConstructorOf, TAnimationProperties } from '../shared/types/index';
 import { canvasClickHandler, canvasReload } from '../shared/utils';
 import useForceUpdate from './useForceUpdate';
+// import Worker from 'web-worker';
 
 const useCanvas = <A extends ConstructorOf<any>>(
 	Animation: A,
@@ -15,15 +16,19 @@ const useCanvas = <A extends ConstructorOf<any>>(
 	canvasReload(keyToggle, webWorker, canvasRef);
 
 	useEffect(() => {
+		// console.log(new URL(`${window.location.origin}/WebApi/workers/canvasWorker.js`));
+
 		if (canvasRef.current) {
 			try {
 				try {
 					const worker: Worker = new Worker(
-						new URL(`${window.location.origin}/canvasWorker.js`, import.meta.url),
+						new URL(`${window.location.origin}/WebApi/workers/canvasWorker.js`),
 						{
 							type: 'module'
 						}
 					);
+
+					// console.log({ worker });
 
 					webWorker.current = worker;
 
@@ -35,7 +40,8 @@ const useCanvas = <A extends ConstructorOf<any>>(
 							msg: 'init',
 							canvas: offscreen,
 							animationName: Animation.name,
-							animationParameters
+							animationParameters,
+							canvasClickHandler
 						},
 						[offscreen]
 					);

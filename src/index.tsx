@@ -15,10 +15,4 @@ ReactDOM.createRoot(root).render(<App />);
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-if (typeof importScripts === 'function') {
-	importScripts(
-		new URL(`${window.location.origin}/canvasWorker.js`, import.meta.url)
-	);
-}
-
 export default root;

@@ -1,8 +1,8 @@
 import React, { FC, useCallback, useState } from 'react';
-import { ReactComponent as CopyIcon } from '../../assets/copy-icon.svg';
 import { COPY_ANIMATION_DURATION } from '../../shared/constants';
 import { IProperty, TPropertiesValues } from '../../shared/types';
 import DropdownItem from '../DropdownItem';
+import CopyIcon from '../../assets/copyIcon.svg';
 
 export interface IDropdownContent {
 	propertySet: IProperty;
