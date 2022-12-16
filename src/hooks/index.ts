@@ -5,9 +5,9 @@ import useLongPress from './useLongPress';
 import useMediaQuery from './useMediaQuery';
 
 export {
-  useCanvas,
-  useMediaQuery,
-  useLongPress,
-  useListenersEffect,
-  useForceUpdate
+	useCanvas,
+	useMediaQuery,
+	useLongPress,
+	useListenersEffect,
+	useForceUpdate
 };

@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
@@ -7,6 +8,7 @@ const development = process.env.NODE_ENV === "development" ? "development" : "pr
 
 module.exports = {
   mode: development,
+  target: "webworker",
   entry: {
     bundle: path.resolve(__dirname, 'src/index.tsx')
   },
@@ -20,7 +22,7 @@ module.exports = {
   devServer: {
     static: [
       {
-      directory: path.resolve(__dirname, 'dist')
+        directory: path.resolve(__dirname, 'dist')
       },
       {
         directory: path.resolve(__dirname, 'public')

@@ -33,7 +33,7 @@
     "no-tabs": "off",
     "indent": [
       "error",
-      2,
+      "tab",
       {
         "SwitchCase": 1,
         "VariableDeclarator": "first",
@@ -80,8 +80,8 @@
         "locale": "auto"
       }
     ],
-    "react/jsx-indent": ["error", 2],
-    "react/jsx-indent-props": ["error", 2],
+    "react/jsx-indent": [2, "tab"],
+    "react/jsx-indent-props": [2, "tab"],
     "import/extensions": ["error", "never"],
     "prettier/prettier": [
       "error",
@@ -89,7 +89,7 @@
         "semi": true,
         "arrowParens": "always",
         "printWidth": 85,
-        "useTabs": false,
+        "useTabs": true,
         "bracketSpacing": true,
         "bracketSameLine": true,
         "quoteProps": "as-needed",
