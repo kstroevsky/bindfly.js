@@ -1,5 +1,7 @@
 import FlyingPoints from '../../templates/FlyingPoints';
 
+console.log(import.meta.url);
+
 export default class FlyingLines {
 	constructor(ctx, parameters) {
 		this.properties = parameters.properties;
@@ -16,7 +18,7 @@ export default class FlyingLines {
 
 		this.particleColors =
 			parameters.properties.particleColors &&
-			parameters.properties.particleColors.length
+				parameters.properties.particleColors.length
 				? parameters.properties.particleColors
 				: Array.from(new Array(parameters.properties.generativeColorsCounts)).map(
 					(_, i) => {
@@ -27,7 +29,7 @@ export default class FlyingLines {
 							Math.sin(frequency * i + 2) * 127 + 128
 						)}, ${Math.floor(Math.sin(frequency * i + 4) * 127 + 128)}, 1)`;
 					}
-				  );
+				);
 
 		this.color = this.properties.switchByClick
 			? this.properties.isMonochrome

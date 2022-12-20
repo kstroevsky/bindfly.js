@@ -99,3 +99,10 @@ export interface WorkerClickData {
 }
 
 export type TKeys<O extends object> = keyof O;
+
+export interface ICanvasWorkerProps {
+	msg: 'init' | 'click' | 'stop';
+	canvas: OffscreenCanvas;
+	animationName: string;
+	animationParameters: TAnimationProperties;
+}

@@ -10,7 +10,11 @@
     "browser": true,
     "es2021": true
   },
-  "plugins": ["react", "import", "@typescript-eslint"],
+  "plugins": [
+    "react",
+    "import",
+    "@typescript-eslint"
+  ],
   "extends": [
     "plugin:react/recommended",
     "eslint:recommended",
@@ -43,29 +47,43 @@
       }
     ],
     "no-return-assign": "off",
-    "quotes": ["error", "single"],
-    "comma-dangle": ["error", "only-multiline"],
+    "quotes": [
+      "error",
+      "single"
+    ],
+    "comma-dangle": [
+      "error",
+      "only-multiline"
+    ],
     "no-console": [
       "warn",
       {
-        "allow": ["warn", "error", "info"]
+        "allow": [
+          "warn",
+          "error",
+          "info"
+        ]
       }
     ],
     "no-use-before-define": "off",
     "react/jsx-filename-extension": [
       2,
       {
-        "extensions": [".jsx", ".ts", ".tsx"]
+        "extensions": [
+          ".jsx",
+          ".ts",
+          ".tsx"
+        ]
       }
     ],
     "no-undef": "off",
     "no-unused-vars": [
-      "error", 
-      { 
-        "varsIgnorePattern": "^_$", 
-        "args": "all", 
+      "error",
+      {
+        "varsIgnorePattern": "^_$",
+        "args": "all",
         "argsIgnorePattern": "^_$"
-      } 
+      }
     ],
     "react/jsx-sort-props": [
       "error",
@@ -80,9 +98,15 @@
         "locale": "auto"
       }
     ],
-    "react/jsx-indent": [2, "tab"],
-    "react/jsx-indent-props": [2, "tab"],
-    "import/extensions": ["error", "never"],
+    "react/jsx-indent": [
+      2,
+      "tab"
+    ],
+    "react/jsx-indent-props": [
+      2,
+      "tab"
+    ],
+    "import/extensions": "off",
     "prettier/prettier": [
       "error",
       {
@@ -101,17 +125,24 @@
   },
   "overrides": [
     {
-      "files": ["*.ts", "*.tsx"],
+      "files": [
+        "*.ts",
+        "*.tsx"
+      ],
       "extends": [
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking",
         "plugin:@typescript-eslint/eslint-recommended"
       ],
       "parserOptions": {
-        "project": ["./tsconfig.json"]
+        "project": [
+          "./tsconfig.json"
+        ]
       },
       "rules": {
-        "@typescript-eslint/no-use-before-define": ["error"],
+        "@typescript-eslint/no-use-before-define": [
+          "error"
+        ],
         "@typescript-eslint/no-misused-promises": [
           "error",
           {
@@ -126,12 +157,12 @@
         "@typescript-eslint/no-unsafe-member-access": "off",
         "@typescript-eslint/no-unsafe-argument": "warn",
         "@typescript-eslint/no-unused-vars": [
-          "error", 
-          { 
-            "varsIgnorePattern": "^_$", 
-            "args": "all", 
+          "error",
+          {
+            "varsIgnorePattern": "^_$",
+            "args": "all",
             "argsIgnorePattern": "^_$"
-          } 
+          }
         ]
       }
     },
@@ -139,8 +170,16 @@
       "env": {
         "jest": true
       },
-      "files": ["*.test.js", "*.test.ts", "*.test.tsx", "*.test.jsx"],
-      "extends": ["plugin:testing-library/react", "plugin:jest/all"],
+      "files": [
+        "*.test.js",
+        "*.test.ts",
+        "*.test.tsx",
+        "*.test.jsx"
+      ],
+      "extends": [
+        "plugin:testing-library/react",
+        "plugin:jest/all"
+      ],
       "rules": {
         "jest/globals": "off",
         "jest/no-disabled-tests": "warn",
@@ -151,5 +190,10 @@
       }
     }
   ],
-  "ignorePatterns": ["node_modules", "build", "dist", "public"]
+  "ignorePatterns": [
+    "node_modules",
+    "build",
+    "dist",
+    "public"
+  ]
 }

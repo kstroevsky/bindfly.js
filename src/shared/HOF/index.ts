@@ -1,4 +1,4 @@
-import { EventHandler, ReactEventHandler, SyntheticEvent, UIEvent } from 'react';
+import { EventHandler, UIEvent } from 'react';
 
 export const withPrevents = <E extends Element, V extends UIEvent<E>>(
 	func: EventHandler<V>,

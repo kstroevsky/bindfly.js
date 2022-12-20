@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -59,15 +60,16 @@ module.exports = {
 				use: ['@svgr/webpack']
 			},
 			{
-				test: /\.worker\.js$/,
-				loader: 'worker-loader',
-				options: {
-					esModule: false
-				}
-			},
-			{
 				test: /\.css$/i,
 				use: ['style-loader', 'css-loader']
+			},
+			{
+				test: /\.Worker.ts$/,
+				loader: 'babel-loader',
+				options: {
+					instance: 'web-worker',
+					configFileName: './src/shared/WebApi/web-workers/tsconfig.json'
+				}
 			}
 		]
 	},
@@ -82,6 +84,9 @@ module.exports = {
 		new CleanWebpackPlugin(),
 		new MiniCssExtractPlugin({
 			filename: '[name].[contenthash].css'
+		}),
+		new webpack.ProvidePlugin({
+			process: 'process/browser'
 		})
 	],
 	resolve: {

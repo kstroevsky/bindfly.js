@@ -39,10 +39,12 @@ export const LoaderTiles: FC<ILoaderTilesProps> = ({ radioCommand, position }) =
 		}
 	};
 
+	const tileKey = radioCommand || '';
+
 	return (
 		<div
-			key={`rect-${radioCommand}`}
-			className={`rect ${radioCommand}`}
+			key={`rect-${tileKey}}`}
+			className={`rect ${tileKey}`}
 			style={{
 				transition: `${TRANSITION}s cubic-bezier(0.86, 0, 0.07, 1)`,
 				WebkitClipPath: clipPathForPosition(position)

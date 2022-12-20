@@ -1,9 +1,12 @@
 import { useContext, useEffect, useRef } from 'react';
 import DataContext, { IDataContext } from '../components/Context';
-import { ConstructorOf, TAnimationProperties } from '../shared/types/index';
+import {
+	ConstructorOf,
+	ICanvasWorkerProps,
+	TAnimationProperties
+} from '../shared/types/index';
 import { canvasClickHandler, canvasReload } from '../shared/utils';
 import useForceUpdate from './useForceUpdate';
-// import Worker from 'web-worker';
 
 const useCanvas = <A extends ConstructorOf<any>>(
 	Animation: A,
@@ -16,33 +19,30 @@ const useCanvas = <A extends ConstructorOf<any>>(
 	canvasReload(keyToggle, webWorker, canvasRef);
 
 	useEffect(() => {
-		// console.log(new URL(`${window.location.origin}/WebApi/workers/canvasWorker.js`));
-
 		if (canvasRef.current) {
 			try {
 				try {
 					const worker: Worker = new Worker(
-						new URL(`${window.location.origin}/WebApi/workers/canvasWorker.js`),
-						{
-							type: 'module'
-						}
+						new URL(
+							'../shared/WebApi/web-workers/canvas-worker.ts',
+							import.meta.url
+						),
+						{ type: 'module' }
 					);
-
-					// console.log({ worker });
+					console.info('WORKER', worker);
 
 					webWorker.current = worker;
 
 					const offscreen: OffscreenCanvas =
 						canvasRef.current.transferControlToOffscreen();
 
-					worker.postMessage(
+					webWorker.current.postMessage(
 						{
 							msg: 'init',
 							canvas: offscreen,
 							animationName: Animation.name,
-							animationParameters,
-							canvasClickHandler
-						},
+							animationParameters
+						} as ICanvasWorkerProps,
 						[offscreen]
 					);
 
@@ -51,12 +51,13 @@ const useCanvas = <A extends ConstructorOf<any>>(
 						animationParameters.properties.switchByClick
 					)
 						canvasRef.current.onclick = (e) => {
-							worker.postMessage({
+							webWorker.current?.postMessage({
 								msg: 'click',
 								pos: { x: e.clientX - animationParameters.offset, y: e.clientY }
 							});
 						};
 				} catch {
+					console.info('MAIN');
 					const { innerWidth, innerHeight, devicePixelRatio } = animationParameters;
 					const canvas: HTMLCanvasElement = canvasRef.current;
 
