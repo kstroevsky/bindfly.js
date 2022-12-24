@@ -16,7 +16,7 @@ module.exports = {
 	},
 	output: {
 		path: path.resolve(__dirname, 'dist'),
-		publicPath: 'auto',
+		publicPath: '/',
 		filename: '[name].[contenthash].js',
 		clean: true,
 		assetModuleFilename: '[name][ext]'
@@ -24,22 +24,22 @@ module.exports = {
 	cache: {
 		type: 'memory'
 	},
-	devtool: 'source-map',
-	devServer: {
-		static: [
-			{
-				directory: path.resolve(__dirname, 'dist')
-			},
-			{
-				directory: path.resolve(__dirname, 'public')
-			}
-		],
-		port: 3000,
-		open: true,
-		hot: true,
-		compress: true,
-		historyApiFallback: true
-	},
+	devtool: 'inline-source-map',
+	// devServer: {
+	// 	static: [
+	// 		{
+	// 			directory: path.resolve(__dirname, 'dist')
+	// 		},
+	// 		{
+	// 			directory: path.resolve(__dirname, 'public')
+	// 		}
+	// 	],
+	// 	port: process.env.PORT || 3000,
+	// 	open: true,
+	// 	hot: true,
+	// 	compress: true,
+	// 	historyApiFallback: true
+	// },
 	module: {
 		rules: [
 			{

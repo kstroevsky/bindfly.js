@@ -4,7 +4,7 @@
   "private": true,
   "description": "An optimised canvas beautiful something with multiple parameters. A library and a web-socket based game in future.",
   "engines": {
-    "node": "18.6.0"
+    "node": "^16.15.1"
   },
   "scripts": {
     "start:dev": "webpack-dev-server --mode development",
