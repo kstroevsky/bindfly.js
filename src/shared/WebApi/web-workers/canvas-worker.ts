@@ -47,6 +47,6 @@ self.onmessage = async function (e: MessageEvent<ICanvasWorkerProps>) {
 
 		case 'stop':
 		default:
-			self.close()
+			close()
 	}
 }

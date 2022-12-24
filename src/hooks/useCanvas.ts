@@ -17,8 +17,6 @@ const useCanvas = <A extends object>(
 	const { keyToggle, webWorker } = useContext<IDataContext>(DataContext)
 	const reload = useForceUpdate()
 
-	console.log(1)
-
 	canvasReload(keyToggle, webWorker, canvasRef)
 
 	useEffect(() => {

@@ -18,8 +18,6 @@ const Animation: FC<IAnimationProps> = ({ properties }) => {
 	const { innerWidth, innerHeight, devicePixelRatio } = window
 	const offsetWidth: number = isMobile ? 0 : offset
 
-	console.log('f')
-
 	const canvasRef = useCanvas<typeof FlyingLines>(FlyingLines, {
 		properties,
 		innerWidth,

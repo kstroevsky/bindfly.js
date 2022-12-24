@@ -16,7 +16,7 @@ module.exports = {
 	},
 	output: {
 		path: path.resolve(__dirname, 'dist'),
-		publicPath: '/',
+		publicPath: 'auto',
 		filename: '[name].[contenthash].js',
 		clean: true,
 		assetModuleFilename: '[name][ext]'
@@ -34,7 +34,7 @@ module.exports = {
 			}
 		],
 		port: process.env.PORT || 3000,
-		open: true,
+		// open: true,
 		hot: true,
 		compress: true,
 		historyApiFallback: true
