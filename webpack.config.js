@@ -24,22 +24,21 @@ module.exports = {
 	cache: {
 		type: 'memory'
 	},
-	devtool: 'inline-source-map',
-	// devServer: {
-	// 	static: [
-	// 		{
-	// 			directory: path.resolve(__dirname, 'dist')
-	// 		},
-	// 		{
-	// 			directory: path.resolve(__dirname, 'public')
-	// 		}
-	// 	],
-	// 	port: process.env.PORT || 3000,
-	// 	open: true,
-	// 	hot: true,
-	// 	compress: true,
-	// 	historyApiFallback: true
-	// },
+	devServer: {
+		static: [
+			{
+				directory: path.resolve(__dirname, 'dist')
+			},
+			{
+				directory: path.resolve(__dirname, 'public')
+			}
+		],
+		port: process.env.PORT || 3000,
+		open: true,
+		hot: true,
+		compress: true,
+		historyApiFallback: true
+	},
 	module: {
 		rules: [
 			{
