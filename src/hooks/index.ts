@@ -1,7 +1,13 @@
-import useCanvas from './useCanvas';
-import useMediaQuery from './useMediaQuery';
-import useLongPress from './useLongPress';
-import useListenersEffect from './useListenersEffect';
-import useForceUpdate from './useForceUpdate';
+import useCanvas from './useCanvas'
+import useForceUpdate from './useForceUpdate'
+import useListenersEffect from './useListenersEffect'
+import useLongPress from './useLongPress'
+import useMediaQuery from './useMediaQuery'
 
-export { useCanvas, useMediaQuery, useLongPress, useListenersEffect, useForceUpdate }
+export {
+	useCanvas,
+	useMediaQuery,
+	useLongPress,
+	useListenersEffect,
+	useForceUpdate
+}

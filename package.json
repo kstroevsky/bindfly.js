@@ -2,11 +2,18 @@
   "name": "bindfly",
   "version": "0.1.0",
   "private": true,
+  "description": "An optimised canvas beautiful something with multiple parameters. A library and a web-socket based game in future.",
+  "engines": {
+    "node": "^16.15.1"
+  },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start:dev": "webpack-dev-server --mode development",
+    "start": "webpack && webpack serve",
+    "build": "webpack",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
   },
   "dependencies": {
     "classnames": "^2.3.2",
@@ -17,21 +24,40 @@
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
+    "@babel/core": "^7.20.5",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-react": "^7.18.6",
+    "@babel/preset-typescript": "^7.18.6",
+    "@svgr/webpack": "^6.5.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/node": "^18.11.10",
-    "@types/prop-types": "^15.7.5",
     "@types/react": "^18.0.25",
     "@types/react-dom": "^18.0.9",
-    "awesome-typescript-loader": "^5.2.1",
-    "typescript": "^3.9.10"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "babel-loader": "^9.1.0",
+    "clean-webpack-plugin": "^4.0.0",
+    "css-loader": "^6.7.2",
+    "eslint": "^8.29.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard-with-typescript": "^24.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.6.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-react": "^7.31.11",
+    "html-webpack-plugin": "^5.5.0",
+    "mini-css-extract-plugin": "^2.7.2",
+    "process": "^0.11.10",
+    "style-loader": "^3.3.1",
+    "terser-webpack-plugin": "^5.3.6",
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.9.4",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.11.1"
   },
   "browserslist": {
     "production": [
@@ -43,6 +69,189 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "eslintConfig": {
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },
+    "env": {
+      "browser": true,
+      "es2021": true
+    },
+    "plugins": [
+      "react",
+      "import",
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "plugin:react/recommended",
+      "eslint:recommended",
+      "standard"
+    ],
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "ecmaFeatures": {
+        "jsx": true,
+        "modules": true,
+        "spread": true,
+        "restParams": true
+      },
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-var": "error",
+      "no-tabs": "off",
+      "indent": [
+        "error",
+        "tab",
+        {
+          "SwitchCase": 1,
+          "VariableDeclarator": "first",
+          "MemberExpression": 1,
+          "ObjectExpression": 1,
+          "offsetTernaryExpressions": true
+        }
+      ],
+      "no-return-assign": "off",
+      "quotes": [
+        "error",
+        "single"
+      ],
+      "comma-dangle": [
+        "error",
+        "only-multiline"
+      ],
+      "no-console": [
+        "warn",
+        {
+          "allow": [
+            "warn",
+            "error",
+            "info"
+          ]
+        }
+      ],
+      "no-use-before-define": "off",
+      "react/jsx-filename-extension": [
+        2,
+        {
+          "extensions": [
+            ".jsx",
+            ".ts",
+            ".tsx"
+          ]
+        }
+      ],
+      "no-undef": "off",
+      "no-unused-vars": [
+        "error",
+        {
+          "varsIgnorePattern": "^_$",
+          "args": "all",
+          "argsIgnorePattern": "^_$"
+        }
+      ],
+      "react/jsx-sort-props": [
+        "error",
+        {
+          "callbacksLast": true,
+          "shorthandFirst": true,
+          "shorthandLast": false,
+          "multiline": "last",
+          "ignoreCase": true,
+          "noSortAlphabetically": true,
+          "reservedFirst": true,
+          "locale": "auto"
+        }
+      ],
+      "react/jsx-indent": [
+        2,
+        "tab"
+      ],
+      "react/jsx-indent-props": [
+        2,
+        "tab"
+      ],
+      "import/extensions": "off",
+      "react/display-name": "off"
+    },
+    "overrides": [
+      {
+        "files": [
+          "*.ts",
+          "*.tsx"
+        ],
+        "extends": [
+          "plugin:@typescript-eslint/recommended",
+          "plugin:@typescript-eslint/recommended-requiring-type-checking",
+          "plugin:@typescript-eslint/eslint-recommended"
+        ],
+        "parserOptions": {
+          "project": [
+            "./tsconfig.json"
+          ]
+        },
+        "rules": {
+          "@typescript-eslint/no-use-before-define": [
+            "error"
+          ],
+          "@typescript-eslint/no-misused-promises": [
+            "error",
+            {
+              "checksVoidReturn": false
+            }
+          ],
+          "@typescript-eslint/no-floating-promises": "off",
+          "@typescript-eslint/no-unsafe-assignment": "off",
+          "@typescript-eslint/no-unsafe-return": "off",
+          "@typescript-eslint/await-thenable": "off",
+          "@typescript-eslint/restrict-plus-operands": "error",
+          "@typescript-eslint/no-unsafe-member-access": "off",
+          "@typescript-eslint/no-unsafe-argument": "warn",
+          "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+              "varsIgnorePattern": "^_$",
+              "args": "all",
+              "argsIgnorePattern": "^_$"
+            }
+          ]
+        }
+      },
+      {
+        "env": {
+          "jest": true
+        },
+        "files": [
+          "*.test.js",
+          "*.test.ts",
+          "*.test.tsx",
+          "*.test.jsx"
+        ],
+        "extends": [
+          "plugin:testing-library/react",
+          "plugin:jest/all"
+        ],
+        "rules": {
+          "jest/globals": "off",
+          "jest/no-disabled-tests": "warn",
+          "jest/no-focused-tests": "error",
+          "jest/no-identical-title": "error",
+          "jest/prefer-to-have-length": "warn",
+          "jest/valid-expect": "error"
+        }
+      }
+    ],
+    "ignorePatterns": [
+      "node_modules",
+      "build",
+      "dist",
+      "public"
     ]
   }
 }
