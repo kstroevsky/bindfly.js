@@ -1,9 +1,9 @@
-const webpack = require('webpack');
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require('webpack')
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
 
 module.exports = {
 	mode: 'production',
@@ -16,7 +16,7 @@ module.exports = {
 	},
 	output: {
 		path: path.resolve(__dirname, 'dist'),
-		publicPath: 'auto',
+		publicPath: '/',
 		filename: '[name].[contenthash].js',
 		clean: true,
 		assetModuleFilename: '[name][ext]'
@@ -24,7 +24,6 @@ module.exports = {
 	cache: {
 		type: 'memory'
 	},
-	devtool: 'source-map',
 	devServer: {
 		static: [
 			{
@@ -34,7 +33,7 @@ module.exports = {
 				directory: path.resolve(__dirname, 'public')
 			}
 		],
-		port: 3000,
+		port: process.env.PORT || 3000,
 		open: true,
 		hot: true,
 		compress: true,
@@ -102,4 +101,4 @@ module.exports = {
 		maxEntrypointSize: 512000,
 		maxAssetSize: 512000
 	}
-};
+}

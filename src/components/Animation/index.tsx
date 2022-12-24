@@ -1,22 +1,24 @@
-import React, { FC, useContext } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import React, { FC, useContext } from 'react'
+import { useOutletContext } from 'react-router-dom'
 
-import { useCanvas } from '../../hooks';
-import FlyingLines from '../../shared/2d/animations/FlyingLines';
-import { IOutletContext, IProperty } from '../../shared/types';
-import { Canvas } from '../Canvas';
-import DataContext, { IDataContext } from '../Context';
+import { useCanvas } from '../../hooks'
+import FlyingLines from '../../shared/2d/animations/FlyingLines'
+import { IOutletContext, IProperty } from '../../shared/types'
+import { Canvas } from '../Canvas'
+import DataContext, { IDataContext } from '../Context'
 
 export interface IAnimationProps {
 	properties: IProperty;
 }
 
 const Animation: FC<IAnimationProps> = ({ properties }) => {
-	const { keyToggle } = useContext<IDataContext>(DataContext);
-	const { width: offset, isMobile } = useOutletContext<IOutletContext>();
+	const { keyToggle } = useContext<IDataContext>(DataContext)
+	const { width: offset, isMobile } = useOutletContext<IOutletContext>()
 
-	const { innerWidth, innerHeight, devicePixelRatio } = window;
-	const offsetWidth: number = isMobile ? 0 : offset;
+	const { innerWidth, innerHeight, devicePixelRatio } = window
+	const offsetWidth: number = isMobile ? 0 : offset
+
+	console.log('f')
 
 	const canvasRef = useCanvas<typeof FlyingLines>(FlyingLines, {
 		properties,
@@ -24,7 +26,7 @@ const Animation: FC<IAnimationProps> = ({ properties }) => {
 		innerHeight,
 		devicePixelRatio,
 		offset: offsetWidth
-	});
+	})
 
 	return (
 		<Canvas
@@ -40,7 +42,7 @@ const Animation: FC<IAnimationProps> = ({ properties }) => {
 				right: 0
 			}}
 		/>
-	);
-};
+	)
+}
 
-export default Animation;
+export default Animation

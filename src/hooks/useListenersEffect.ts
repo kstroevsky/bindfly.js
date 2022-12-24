@@ -1,5 +1,5 @@
-import { useCallback, useEffect } from 'react';
-import { TypeByKeyExist } from '../shared/types';
+import { useCallback, useEffect } from 'react'
+import { TypeByKeyExist } from '../shared/types'
 
 export type TLegacyListener<D> = TypeByKeyExist<
 	D,
@@ -9,51 +9,63 @@ export type TLegacyListener<D> = TypeByKeyExist<
 
 const useListenersEffect = <D extends object>(
 	domNode: D,
-	eventHandlerConfig: Record<string, Function>,
-	deps?: any[],
-	additionalCalls: (() => any) | null = null,
+	eventHandlerConfig: Record<string, (...args: unknown[]) => void>,
+	deps?: unknown[],
+	additionalCalls: (() => unknown) | null = null,
 	condition = true,
 	isInverse = false,
 	inverseCondition: boolean = deps?.every((x) => x) || false
 ): void => {
-	const addListenerMethod = useCallback(
-		(domNode: D, eName: string, handler: Function, isLegacy: boolean) =>
+	const addListenerMethod =
+	useCallback(
+		(
+			domNode: D,
+			eName: string,
+			handler: (...args: unknown[]) => void,
+			isLegacy: boolean
+		) =>
 			isLegacy
 				? (domNode as MediaQueryList)?.addListener(
-					...([handler] as Parameters<MediaQueryList['addListener']>)
-				)
+						...([handler] as Parameters<MediaQueryList['addListener']>)
+					)
 				: (domNode as Element)?.addEventListener(
-					...([
-						eName,
+						...([
+							eName,
 						handler as EventListenerOrEventListenerObject,
 						false
-					] as Parameters<Element['addEventListener']>)
-				),
+						] as Parameters<Element['addEventListener']>)
+					),
 		[]
-	);
+	)
 
-	const removeListenerMethod = useCallback(
-		(domNode: D, eName: string, handler: Function, isLegacy: boolean) =>
+	const removeListenerMethod =
+	useCallback(
+		(
+			domNode: D,
+			eName: string,
+			handler: (...args: unknown[]) => void,
+			isLegacy: boolean
+		) =>
 			isLegacy
 				? (domNode as MediaQueryList)?.removeListener(
-					...([handler] as Parameters<MediaQueryList['removeListener']>)
-				)
+						...([handler] as Parameters<MediaQueryList['removeListener']>)
+					)
 				: (domNode as Element)?.removeEventListener(
-					...([
-						eName,
+						...([
+							eName,
 						handler as EventListenerOrEventListenerObject,
 						false
-					] as Parameters<Element['removeEventListener']>)
-				),
+						] as Parameters<Element['removeEventListener']>)
+					),
 		[]
-	);
+	)
 
 	useEffect(() => {
-		additionalCalls && additionalCalls();
+		additionalCalls && additionalCalls()
 
 		if (condition) {
-			const isLegacy: boolean = domNode.hasOwnProperty('addListener');
-			const isInverseFalse: boolean = isInverse && !inverseCondition;
+			const isLegacy: boolean = Object.hasOwn(domNode, 'addListener')
+			const isInverseFalse: boolean = isInverse && !inverseCondition
 
 			Object.keys(eventHandlerConfig).forEach((eventName) =>
 				isInverseFalse || !isInverse
@@ -69,7 +81,7 @@ const useListenersEffect = <D extends object>(
 						eventHandlerConfig[eventName],
 						isLegacy
 					)
-			);
+			)
 
 			return () =>
 				Object.keys(eventHandlerConfig).forEach((eventName) => {
@@ -78,10 +90,10 @@ const useListenersEffect = <D extends object>(
 						eventName,
 						eventHandlerConfig[eventName],
 						isLegacy
-					);
-				});
+					)
+				})
 		}
-	}, deps);
-};
+	}, [domNode, ...Object.values(eventHandlerConfig)])
+}
 
-export default useListenersEffect;
+export default useListenersEffect
