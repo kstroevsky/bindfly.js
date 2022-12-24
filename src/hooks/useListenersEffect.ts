@@ -9,15 +9,20 @@ export type TLegacyListener<D> = TypeByKeyExist<
 
 const useListenersEffect = <D extends object>(
 	domNode: D,
-	eventHandlerConfig: Record<string, Function>,
-	deps?: any[],
-	additionalCalls: (() => any) | null = null,
+	eventHandlerConfig: Record<string, (...args: any[]) => void>,
+	deps?: unknown[],
+	additionalCalls: (() => unknown) | null = null,
 	condition = true,
 	isInverse = false,
 	inverseCondition: boolean = deps?.every((x) => x) || false
 ): void => {
 	const addListenerMethod = useCallback(
-		(domNode: D, eName: string, handler: Function, isLegacy: boolean) =>
+		(
+			domNode: D,
+			eName: string,
+			handler: (...args: any[]) => void,
+			isLegacy: boolean
+		) =>
 			isLegacy
 				? (domNode as MediaQueryList)?.addListener(
 					...([handler] as Parameters<MediaQueryList['addListener']>)
@@ -33,7 +38,12 @@ const useListenersEffect = <D extends object>(
 	);
 
 	const removeListenerMethod = useCallback(
-		(domNode: D, eName: string, handler: Function, isLegacy: boolean) =>
+		(
+			domNode: D,
+			eName: string,
+			handler: (...args: any[]) => void,
+			isLegacy: boolean
+		) =>
 			isLegacy
 				? (domNode as MediaQueryList)?.removeListener(
 					...([handler] as Parameters<MediaQueryList['removeListener']>)

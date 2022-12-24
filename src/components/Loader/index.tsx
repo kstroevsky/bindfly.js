@@ -15,7 +15,7 @@ export interface ILoaderState {
 
 export interface ILoaderProps {
 	size?: number;
-	style?: Record<string, any>;
+	style?: Record<string, unknown>;
 	center?: boolean;
 }
 

@@ -4,7 +4,7 @@ export interface ICanvasProps {
 	width: number;
 	height: number;
 	style?: CSSProperties;
-	props?: any[];
+	props?: unknown[];
 }
 
 export const Canvas = forwardRef<HTMLCanvasElement, ICanvasProps>(

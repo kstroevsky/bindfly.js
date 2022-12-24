@@ -8,9 +8,9 @@ export type TypeByKeyExist<
 	T,
 	K1 extends string | number,
 	K2 extends string | number
-> = T extends { [key in K1]: any }
+> = T extends { [key in K1]: unknown }
 	? T[K1]
-	: T extends { [key in K2]: any }
+	: T extends { [key in K2]: unknown }
 	? T[K2]
 	: never;
 
@@ -18,9 +18,9 @@ export type GetKeyByExist<
 	T,
 	K1 extends string | number,
 	K2 extends string | number
-> = T extends { [key in K1]: any }
+> = T extends { [key in K1]: unknown }
 	? K1
-	: T extends { [key in K2]: any }
+	: T extends { [key in K2]: unknown }
 	? K2
 	: never;
 
@@ -93,15 +93,15 @@ export type IAnimationWithParticles<A extends object> = I2DAnimationBaseType<A> 
 	particles: ISingleParticle[];
 };
 
-export interface IAnyInterface {
+export interface IunknownInterface {
 	[otherOptions: string]: unknown;
 }
 
-export type TSomeAbstractClass<T> = new (...args: any[]) => T;
+export type TSomeAbstractClass<T> = new (...args: unknown[]) => T;
 
-export type TSomeClass<T> = new (...args: any[]) => T;
+export type TSomeClass<T> = new (...args: unknown[]) => T;
 
-export type ConstructorOf<T> = { new(...args: unknown[]): T };
+export type ConstructorOf<T> = { new (...args: unknown[]): T };
 
 export interface WorkerClickData {
 	x: number;

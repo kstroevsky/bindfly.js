@@ -24,6 +24,10 @@ const PageLayout: React.FC<IPageLayoutProps> = ({ properties }) => {
 	const isVisible: boolean = isMobile ? true : !!width;
 
 	useEffect(() => {
+		console.log(isMobile);
+	}, [isMobile]);
+
+	useEffect(() => {
 		if (sidebarRef.current && !isMobile)
 			setWidth(+sidebarRef.current.getBoundingClientRect().width || 0);
 	}, [sidebarRef, isMobile]);
@@ -39,7 +43,7 @@ const PageLayout: React.FC<IPageLayoutProps> = ({ properties }) => {
 				/>,
 				root as Element
 			);
-	}, []);
+	});
 
 	return (
 		<>
