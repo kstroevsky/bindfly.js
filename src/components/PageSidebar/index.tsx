@@ -1,11 +1,11 @@
-import classNames from 'classnames';
-import React, { forwardRef, useCallback } from 'react';
+import classNames from 'classnames'
+import React, { forwardRef, useCallback } from 'react'
 
-import root from '../..';
-import { useLongPress } from '../../hooks';
-import { IProperty, TProperties } from '../../shared/types';
-import { isLayoutActive } from '../../shared/utils';
-import NavLinkItem from '../NavLinkItem';
+import root from '../..'
+import { useLongPress } from '../../hooks'
+import { IProperty, TProperties } from '../../shared/types'
+import { isLayoutActive } from '../../shared/utils'
+import NavLinkItem from '../NavLinkItem'
 
 export interface IPageSidebarProps {
 	properties: TProperties;
@@ -14,13 +14,13 @@ export interface IPageSidebarProps {
 
 export const PageSidebar = forwardRef<HTMLElement, IPageSidebarProps>(
 	({ properties, isModal = false }, ref) => {
-		const { touchInterval, setTouchInterval } = useLongPress(500, root, isModal);
+		const { touchInterval, setTouchInterval } = useLongPress(500, root, isModal)
 		const mobileVisibility =
-			isModal && isLayoutActive(touchInterval.start, touchInterval.end);
+			isModal && isLayoutActive(touchInterval.start, touchInterval.end)
 
 		const handleClose = useCallback(() => {
-			setTouchInterval({ start: 0, end: 0 });
-		}, []);
+			setTouchInterval({ start: 0, end: 0 })
+		}, [setTouchInterval])
 
 		return (
 			<aside
@@ -41,14 +41,11 @@ export const PageSidebar = forwardRef<HTMLElement, IPageSidebarProps>(
 						))}
 					</ul>
 				</nav>
-				{isModal ? (
-					<button className="CloseButton" onClick={handleClose}>
-						Close
-					</button>
-				) : (
-					<></>
-				)}
+				{isModal
+					? <button className="CloseButton" onClick={handleClose}>Close</button>
+					: <></>
+				}
 			</aside>
-		);
+		)
 	}
-);
+)

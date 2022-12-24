@@ -1,12 +1,12 @@
-import classNames from 'classnames';
-import React, { FC, useEffect, useRef, useState } from 'react';
+import classNames from 'classnames'
+import React, { FC, useEffect, useRef, useState } from 'react'
 
-import { LoaderTiles } from '../LoaderTiles';
+import { LoaderTiles } from '../LoaderTiles'
 
-import './styles.css';
+import './styles.css'
 
-const TIMER = 250; // Milliseconds between moving the next block
-const DEF_SIZE = 60; // Pixels height/width
+const TIMER = 250 // Milliseconds between moving the next block
+const DEF_SIZE = 60 // Pixels height/width
 
 export interface ILoaderState {
 	positions: Array<string | null>;
@@ -22,44 +22,44 @@ export interface ILoaderProps {
 const initialState: ILoaderState = {
 	positions: ['alpha', 'bravo', 'charlie', null, 'delta', 'echo', 'foxtrot'],
 	stateNumber: 0
-};
+}
 
 const Loader: FC<ILoaderProps> = ({ size, style, center }) => {
-	const timer = useRef<NodeJS.Timer>();
-	const [state, setState] = useState<ILoaderState>(initialState);
+	const timer = useRef<NodeJS.Timer>()
+	const [state, setState] = useState<ILoaderState>(initialState)
 
 	const tileIndexToMove = (state: ILoaderState) =>
-		state.stateNumber === 7 ? 4 : state.stateNumber % state.positions.length;
+		state.stateNumber === 7 ? 4 : state.stateNumber % state.positions.length
 
 	const positionForTile = (
 		positions: ILoaderState['positions'],
 		radioCommand: string | null
-	) => positions.findIndex((position: string | null) => position === radioCommand);
+	) => positions.findIndex((position: string | null) => position === radioCommand)
 
 	const setNextState = () =>
 		setState((prev) => {
-			const indexToMove = tileIndexToMove(prev);
-			const currentPositions = [...prev.positions];
+			const indexToMove = tileIndexToMove(prev)
+			const currentPositions = [...prev.positions]
 
 			currentPositions[positionForTile(currentPositions, null)] =
-				prev.positions[indexToMove];
-			currentPositions[indexToMove] = null;
+				prev.positions[indexToMove]
+			currentPositions[indexToMove] = null
 
 			return {
 				positions: [...currentPositions],
 				stateNumber: +(prev.stateNumber === 7 ? 0 : prev.stateNumber + 1)
-			};
-		});
+			}
+		})
 
 	const setTimer = (time: number) => {
-		timer.current && clearInterval(timer.current);
-		timer.current = setInterval(setNextState, time);
-	};
+		timer.current && clearInterval(timer.current)
+		timer.current = setInterval(setNextState, time)
+	}
 
 	useEffect(() => {
-		setTimer(TIMER);
-		return () => clearInterval(timer.current);
-	});
+		setTimer(TIMER)
+		return () => clearInterval(timer.current)
+	})
 
 	return (
 		<div
@@ -88,7 +88,7 @@ const Loader: FC<ILoaderProps> = ({ size, style, center }) => {
 				)}
 			</div>
 		</div>
-	);
-};
+	)
+}
 
-export default Loader;
+export default Loader

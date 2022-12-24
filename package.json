@@ -9,8 +9,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
-    "format": "prettier --write \"**/*.+(ts|tsx|js|jsx|json|css)\""
+    "lint:fix": "eslint --fix ."
   },
   "dependencies": {
     "classnames": "^2.3.2",
@@ -47,7 +46,6 @@
     "eslint-plugin-react": "^7.31.11",
     "html-webpack-plugin": "^5.5.0",
     "mini-css-extract-plugin": "^2.7.2",
-    "prettier": "^2.8.1",
     "process": "^0.11.10",
     "style-loader": "^3.3.1",
     "terser-webpack-plugin": "^5.3.6",
@@ -56,12 +54,6 @@
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -73,6 +65,189 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "eslintConfig": {
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },
+    "env": {
+      "browser": true,
+      "es2021": true
+    },
+    "plugins": [
+      "react",
+      "import",
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "plugin:react/recommended",
+      "eslint:recommended",
+      "standard"
+    ],
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "ecmaFeatures": {
+        "jsx": true,
+        "modules": true,
+        "spread": true,
+        "restParams": true
+      },
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-var": "error",
+      "no-tabs": "off",
+      "indent": [
+        "error",
+        "tab",
+        {
+          "SwitchCase": 1,
+          "VariableDeclarator": "first",
+          "MemberExpression": 1,
+          "ObjectExpression": 1,
+          "offsetTernaryExpressions": true
+        }
+      ],
+      "no-return-assign": "off",
+      "quotes": [
+        "error",
+        "single"
+      ],
+      "comma-dangle": [
+        "error",
+        "only-multiline"
+      ],
+      "no-console": [
+        "warn",
+        {
+          "allow": [
+            "warn",
+            "error",
+            "info"
+          ]
+        }
+      ],
+      "no-use-before-define": "off",
+      "react/jsx-filename-extension": [
+        2,
+        {
+          "extensions": [
+            ".jsx",
+            ".ts",
+            ".tsx"
+          ]
+        }
+      ],
+      "no-undef": "off",
+      "no-unused-vars": [
+        "error",
+        {
+          "varsIgnorePattern": "^_$",
+          "args": "all",
+          "argsIgnorePattern": "^_$"
+        }
+      ],
+      "react/jsx-sort-props": [
+        "error",
+        {
+          "callbacksLast": true,
+          "shorthandFirst": true,
+          "shorthandLast": false,
+          "multiline": "last",
+          "ignoreCase": true,
+          "noSortAlphabetically": true,
+          "reservedFirst": true,
+          "locale": "auto"
+        }
+      ],
+      "react/jsx-indent": [
+        2,
+        "tab"
+      ],
+      "react/jsx-indent-props": [
+        2,
+        "tab"
+      ],
+      "import/extensions": "off",
+      "react/display-name": "off"
+    },
+    "overrides": [
+      {
+        "files": [
+          "*.ts",
+          "*.tsx"
+        ],
+        "extends": [
+          "plugin:@typescript-eslint/recommended",
+          "plugin:@typescript-eslint/recommended-requiring-type-checking",
+          "plugin:@typescript-eslint/eslint-recommended"
+        ],
+        "parserOptions": {
+          "project": [
+            "./tsconfig.json"
+          ]
+        },
+        "rules": {
+          "@typescript-eslint/no-use-before-define": [
+            "error"
+          ],
+          "@typescript-eslint/no-misused-promises": [
+            "error",
+            {
+              "checksVoidReturn": false
+            }
+          ],
+          "@typescript-eslint/no-floating-promises": "off",
+          "@typescript-eslint/no-unsafe-assignment": "off",
+          "@typescript-eslint/no-unsafe-return": "off",
+          "@typescript-eslint/await-thenable": "off",
+          "@typescript-eslint/restrict-plus-operands": "error",
+          "@typescript-eslint/no-unsafe-member-access": "off",
+          "@typescript-eslint/no-unsafe-argument": "warn",
+          "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+              "varsIgnorePattern": "^_$",
+              "args": "all",
+              "argsIgnorePattern": "^_$"
+            }
+          ]
+        }
+      },
+      {
+        "env": {
+          "jest": true
+        },
+        "files": [
+          "*.test.js",
+          "*.test.ts",
+          "*.test.tsx",
+          "*.test.jsx"
+        ],
+        "extends": [
+          "plugin:testing-library/react",
+          "plugin:jest/all"
+        ],
+        "rules": {
+          "jest/globals": "off",
+          "jest/no-disabled-tests": "warn",
+          "jest/no-focused-tests": "error",
+          "jest/no-identical-title": "error",
+          "jest/prefer-to-have-length": "warn",
+          "jest/valid-expect": "error"
+        }
+      }
+    ],
+    "ignorePatterns": [
+      "node_modules",
+      "build",
+      "dist",
+      "public"
     ]
   }
 }

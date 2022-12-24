@@ -1,6 +1,6 @@
 export default abstract class Abstract {
-	public static factory<T extends Abstract>(this: new (...args: unknown[]) => T) {
-		return new this();
+	public static factory<T extends Abstract> (this: new (...args: unknown[]) => T) {
+		return new this()
 	}
 }
 

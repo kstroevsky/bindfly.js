@@ -1,39 +1,38 @@
-import React, { Suspense, useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { Outlet } from 'react-router-dom';
+import React, { Suspense, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { Outlet } from 'react-router-dom'
 
-import root from '../..';
-import useMediaQuery from '../../hooks/useMediaQuery';
-import { IOutletContext, TProperties } from '../../shared/types';
-import Loader from '../Loader';
-import { PageSidebar } from '../PageSidebar';
+import root from '../..'
+import useMediaQuery from '../../hooks/useMediaQuery'
+import { IOutletContext, TProperties } from '../../shared/types'
+import Loader from '../Loader'
+import { PageSidebar } from '../PageSidebar'
 
 interface IPageLayoutProps {
 	properties: TProperties;
 }
 
 const PageLayout: React.FC<IPageLayoutProps> = ({ properties }) => {
-	const sidebarRef = useRef<HTMLElement | null>(null);
-	const portalRef = useRef<HTMLElement | null>(null);
-	const [width, setWidth] = useState<IOutletContext['width']>(0);
+	const sidebarRef = useRef<HTMLElement | null>(null)
+	const portalRef = useRef<HTMLElement | null>(null)
+	const [width, setWidth] = useState<IOutletContext['width']>(0)
 
 	const isMobile: IOutletContext['isMobile'] = useMediaQuery(
 		'(max-width: 768px),(orientation: portrait)'
-	);
+	)
 
-	const isVisible: boolean = isMobile ? true : !!width;
-
-	useEffect(() => {
-		console.log(isMobile);
-	}, [isMobile]);
+	const isVisible: boolean = isMobile ? true : !!width
 
 	useEffect(() => {
-		if (sidebarRef.current && !isMobile)
-			setWidth(+sidebarRef.current.getBoundingClientRect().width || 0);
-	}, [sidebarRef, isMobile]);
+		console.log(isMobile)
+	}, [isMobile])
 
 	useEffect(() => {
-		if (isMobile && !portalRef.current)
+		if (sidebarRef.current && !isMobile) { setWidth(+sidebarRef.current.getBoundingClientRect().width || 0) }
+	}, [sidebarRef, isMobile])
+
+	useEffect(() => {
+		if (isMobile && !portalRef.current) {
 			createPortal(
 				<PageSidebar
 					ref={portalRef}
@@ -42,8 +41,9 @@ const PageLayout: React.FC<IPageLayoutProps> = ({ properties }) => {
 					properties={properties}
 				/>,
 				root as Element
-			);
-	});
+			)
+		}
+	})
 
 	return (
 		<>
@@ -57,7 +57,7 @@ const PageLayout: React.FC<IPageLayoutProps> = ({ properties }) => {
 				{isVisible && <Outlet context={{ width, isMobile }} />}
 			</Suspense>
 		</>
-	);
-};
+	)
+}
 
-export default PageLayout;
+export default PageLayout

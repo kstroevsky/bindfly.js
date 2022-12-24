@@ -1,19 +1,19 @@
-import React from 'react';
+import React from 'react'
 import {
 	Navigate,
 	Route,
 	createBrowserRouter,
 	createRoutesFromElements
-} from 'react-router-dom';
-import { DataContextProvider } from '../components/Context';
-import Loader from '../components/Loader';
+} from 'react-router-dom'
+import { DataContextProvider } from '../components/Context'
+import Loader from '../components/Loader'
 
-import properties from '../properties.json';
+import properties from '../properties.json'
 
-import './../App.css';
+import './../App.css'
 
-const Animation = React.lazy(async () => await import('../components/Animation'));
-const PageLayout = React.lazy(async () => await import('../components/PageLayout'));
+const Animation = React.lazy(async () => await import('../components/Animation'))
+const PageLayout = React.lazy(async () => await import('../components/PageLayout'))
 
 const router = createBrowserRouter(
 	createRoutesFromElements(
@@ -40,6 +40,6 @@ const router = createBrowserRouter(
 			</>
 		</Route>
 	)
-);
+)
 
-export default router;
+export default router

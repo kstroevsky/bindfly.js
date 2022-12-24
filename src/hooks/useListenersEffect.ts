@@ -1,5 +1,5 @@
-import { useCallback, useEffect } from 'react';
-import { TypeByKeyExist } from '../shared/types';
+import { useCallback, useEffect } from 'react'
+import { TypeByKeyExist } from '../shared/types'
 
 export type TLegacyListener<D> = TypeByKeyExist<
 	D,
@@ -25,17 +25,17 @@ const useListenersEffect = <D extends object>(
 		) =>
 			isLegacy
 				? (domNode as MediaQueryList)?.addListener(
-					...([handler] as Parameters<MediaQueryList['addListener']>)
-				)
+						...([handler] as Parameters<MediaQueryList['addListener']>)
+					)
 				: (domNode as Element)?.addEventListener(
-					...([
-						eName,
+						...([
+							eName,
 						handler as EventListenerOrEventListenerObject,
 						false
-					] as Parameters<Element['addEventListener']>)
-				),
+						] as Parameters<Element['addEventListener']>)
+					),
 		[]
-	);
+	)
 
 	const removeListenerMethod = useCallback(
 		(
@@ -46,24 +46,24 @@ const useListenersEffect = <D extends object>(
 		) =>
 			isLegacy
 				? (domNode as MediaQueryList)?.removeListener(
-					...([handler] as Parameters<MediaQueryList['removeListener']>)
-				)
+						...([handler] as Parameters<MediaQueryList['removeListener']>)
+					)
 				: (domNode as Element)?.removeEventListener(
-					...([
-						eName,
+						...([
+							eName,
 						handler as EventListenerOrEventListenerObject,
 						false
-					] as Parameters<Element['removeEventListener']>)
-				),
+						] as Parameters<Element['removeEventListener']>)
+					),
 		[]
-	);
+	)
 
 	useEffect(() => {
-		additionalCalls && additionalCalls();
+		additionalCalls && additionalCalls()
 
 		if (condition) {
-			const isLegacy: boolean = domNode.hasOwnProperty('addListener');
-			const isInverseFalse: boolean = isInverse && !inverseCondition;
+			const isLegacy: boolean = Object.hasOwn(domNode, 'addListener')
+			const isInverseFalse: boolean = isInverse && !inverseCondition
 
 			Object.keys(eventHandlerConfig).forEach((eventName) =>
 				isInverseFalse || !isInverse
@@ -79,7 +79,7 @@ const useListenersEffect = <D extends object>(
 						eventHandlerConfig[eventName],
 						isLegacy
 					)
-			);
+			)
 
 			return () =>
 				Object.keys(eventHandlerConfig).forEach((eventName) => {
@@ -88,10 +88,10 @@ const useListenersEffect = <D extends object>(
 						eventName,
 						eventHandlerConfig[eventName],
 						isLegacy
-					);
-				});
+					)
+				})
 		}
-	}, deps);
-};
+	}, deps)
+}
 
-export default useListenersEffect;
+export default useListenersEffect

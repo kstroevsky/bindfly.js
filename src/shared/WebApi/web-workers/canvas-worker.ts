@@ -1,14 +1,14 @@
-import CanvasAnimation from '../../2d/animations/abstract/canvas';
-import type { ConstructorOf, ICanvasWorkerProps } from '../../types';
+import CanvasAnimation from '../../2d/animations/abstract/canvas'
+import type { ConstructorOf, ICanvasWorkerProps } from '../../types'
 
 let canvas: OffscreenCanvas,
-	ctx: OffscreenCanvasRenderingContext2D,
-	dpr: number,
-	canvasClickHandler: (...args: unknown[]) => void,
-	Animation: ConstructorOf<CanvasAnimation>,
-	animationWorker: InstanceType<ConstructorOf<CanvasAnimation>>;
+				ctx: OffscreenCanvasRenderingContext2D,
+				dpr: number,
+				canvasClickHandler: (...args: unknown[]) => void,
+				Animation: ConstructorOf<CanvasAnimation>,
+				animationWorker: InstanceType<ConstructorOf<CanvasAnimation>>
 
-// const self = globalThis as unknown as DedicatedWorkerGlobalScope;
+const self = globalThis as unknown as DedicatedWorkerGlobalScope
 
 self.onmessage = async function (e: MessageEvent<ICanvasWorkerProps>) {
 	switch (e.data.msg) {
@@ -16,37 +16,37 @@ self.onmessage = async function (e: MessageEvent<ICanvasWorkerProps>) {
 			({ canvasClickHandler } = require('../../utils'));
 			({ default: Animation } = await import(
 				`../../2d/animations/${e.data.animationName}/index.js`
-			));
+			))
 
-			canvas = e.data.canvas;
-			dpr = e.data.animationParameters.devicePixelRatio;
+			canvas = e.data.canvas
+			dpr = e.data.animationParameters.devicePixelRatio
 			ctx = canvas.getContext('2d', {
 				alpha: false
-			}) as OffscreenCanvasRenderingContext2D;
+			}) as OffscreenCanvasRenderingContext2D
 
 			canvas.width =
 				(canvas.width !== e.data.animationParameters.innerWidth
 					? canvas.width
-					: e.data.animationParameters.innerWidth) * dpr;
+					: e.data.animationParameters.innerWidth) * dpr
 			canvas.height =
 				(canvas.height !== e.data.animationParameters.innerHeight
 					? canvas.height
-					: e.data.animationParameters.innerHeight) * dpr;
+					: e.data.animationParameters.innerHeight) * dpr
 
-			ctx.scale(dpr, dpr);
+			ctx.scale(dpr, dpr)
 
-			animationWorker = new Animation(ctx, e.data.animationParameters, false);
-			animationWorker.init();
+			animationWorker = new Animation(ctx, e.data.animationParameters, false)
+			animationWorker.init()
 
-			break;
+			break
 
 		case 'click':
-			canvasClickHandler?.(animationWorker, e.data);
+			canvasClickHandler?.(animationWorker, e.data)
 
-			break;
+			break
 
 		case 'stop':
 		default:
-			self.close();
+			self.close()
 	}
-};
+}

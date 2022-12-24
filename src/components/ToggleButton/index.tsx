@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 interface IToggleButtonProps {
 	keyInput: number;
@@ -27,7 +27,7 @@ const ToggleButton: React.FC<IToggleButtonProps> = ({
 				</span>
 			</label>
 		</>
-	);
-};
+	)
+}
 
-export default ToggleButton;
+export default ToggleButton
