@@ -15,7 +15,7 @@ const useMediaQuery = (query: string) => {
 		[query],
 		handleChange,
 		true,
-		true
+		false
 	)
 
 	return matches

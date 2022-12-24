@@ -62,6 +62,7 @@ export const canvasReload = (
 	webWorker: IDataContext['webWorker'],
 	canvasRef: MutableRefObject<HTMLCanvasElement | null>
 ): void => {
+	console.log(toggle, webWorker, canvasRef)
 	if (webWorker) {
 		webWorker?.current?.postMessage({ msg: 'stop' })
 		webWorker?.current?.terminate()

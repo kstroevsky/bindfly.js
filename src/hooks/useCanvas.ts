@@ -104,7 +104,7 @@ const useCanvas = <A extends object>(
 				reload()
 			}
 		}
-	}, [Animation, animationParameters, reload])
+	}, [Animation, animationParameters])
 
 	return canvasRef
 }

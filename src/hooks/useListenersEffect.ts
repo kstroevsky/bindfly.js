@@ -9,18 +9,19 @@ export type TLegacyListener<D> = TypeByKeyExist<
 
 const useListenersEffect = <D extends object>(
 	domNode: D,
-	eventHandlerConfig: Record<string, (...args: any[]) => void>,
+	eventHandlerConfig: Record<string, (...args: unknown[]) => void>,
 	deps?: unknown[],
 	additionalCalls: (() => unknown) | null = null,
 	condition = true,
 	isInverse = false,
 	inverseCondition: boolean = deps?.every((x) => x) || false
 ): void => {
-	const addListenerMethod = useCallback(
+	const addListenerMethod =
+	useCallback(
 		(
 			domNode: D,
 			eName: string,
-			handler: (...args: any[]) => void,
+			handler: (...args: unknown[]) => void,
 			isLegacy: boolean
 		) =>
 			isLegacy
@@ -37,11 +38,12 @@ const useListenersEffect = <D extends object>(
 		[]
 	)
 
-	const removeListenerMethod = useCallback(
+	const removeListenerMethod =
+	useCallback(
 		(
 			domNode: D,
 			eName: string,
-			handler: (...args: any[]) => void,
+			handler: (...args: unknown[]) => void,
 			isLegacy: boolean
 		) =>
 			isLegacy
@@ -91,7 +93,7 @@ const useListenersEffect = <D extends object>(
 					)
 				})
 		}
-	}, deps)
+	}, [domNode, ...Object.values(eventHandlerConfig)])
 }
 
 export default useListenersEffect
