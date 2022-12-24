@@ -1,10 +1,10 @@
 {
     "extends": "../../../../tsconfig.json",
-    "compilerOptions": {
-        "lib": [
-            "WebWorker"
-        ],
-        "module": "CommonJS",
-        "checkJs": false
-    }
+    // "compilerOptions": {
+    //     "lib": [
+    //         "WebWorker"
+    //     ],
+    //     // "module": "CommonJS",
+    //     "checkJs": false
+    // }
 }

@@ -20,15 +20,15 @@ const useListenersEffect = <D extends object>(
 		(domNode: D, eName: string, handler: Function, isLegacy: boolean) =>
 			isLegacy
 				? (domNode as MediaQueryList)?.addListener(
-						...([handler] as Parameters<MediaQueryList['addListener']>)
-				  )
+					...([handler] as Parameters<MediaQueryList['addListener']>)
+				)
 				: (domNode as Element)?.addEventListener(
-						...([
-							eName,
-							handler as EventListenerOrEventListenerObject,
-							false
-						] as Parameters<Element['addEventListener']>)
-				  ),
+					...([
+						eName,
+						handler as EventListenerOrEventListenerObject,
+						false
+					] as Parameters<Element['addEventListener']>)
+				),
 		[]
 	);
 
@@ -36,15 +36,15 @@ const useListenersEffect = <D extends object>(
 		(domNode: D, eName: string, handler: Function, isLegacy: boolean) =>
 			isLegacy
 				? (domNode as MediaQueryList)?.removeListener(
-						...([handler] as Parameters<MediaQueryList['removeListener']>)
-				  )
+					...([handler] as Parameters<MediaQueryList['removeListener']>)
+				)
 				: (domNode as Element)?.removeEventListener(
-						...([
-							eName,
-							handler as EventListenerOrEventListenerObject,
-							false
-						] as Parameters<Element['removeEventListener']>)
-				  ),
+					...([
+						eName,
+						handler as EventListenerOrEventListenerObject,
+						false
+					] as Parameters<Element['removeEventListener']>)
+				),
 		[]
 	);
 
@@ -62,13 +62,13 @@ const useListenersEffect = <D extends object>(
 						eventName,
 						eventHandlerConfig[eventName],
 						isLegacy
-					  )
+					)
 					: removeListenerMethod(
 						domNode,
 						eventName,
 						eventHandlerConfig[eventName],
 						isLegacy
-					  )
+					)
 			);
 
 			return () =>

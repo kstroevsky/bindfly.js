@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef } from 'react';
 import DataContext, { IDataContext } from '../components/Context';
+import CanvasAnimation from '../shared/2d/animations/abstract/canvas';
 import {
 	ConstructorOf,
 	ICanvasWorkerProps,
@@ -8,8 +9,8 @@ import {
 import { canvasClickHandler, canvasReload } from '../shared/utils';
 import useForceUpdate from './useForceUpdate';
 
-const useCanvas = <A extends ConstructorOf<any>>(
-	Animation: A,
+const useCanvas = <A extends object>(
+	Animation: ConstructorOf<CanvasAnimation & Omit<A, 'prototype'>>,
 	animationParameters: TAnimationProperties
 ) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -29,7 +30,6 @@ const useCanvas = <A extends ConstructorOf<any>>(
 						),
 						{ type: 'module' }
 					);
-					console.info('WORKER', worker);
 
 					webWorker.current = worker;
 
@@ -57,7 +57,6 @@ const useCanvas = <A extends ConstructorOf<any>>(
 							});
 						};
 				} catch {
-					console.info('MAIN');
 					const { innerWidth, innerHeight, devicePixelRatio } = animationParameters;
 					const canvas: HTMLCanvasElement = canvasRef.current;
 
@@ -73,14 +72,22 @@ const useCanvas = <A extends ConstructorOf<any>>(
 					});
 					ctx?.scale(devicePixelRatio, devicePixelRatio);
 
-					const animation: InstanceType<A> = new Animation(ctx, animationParameters);
+					const animation: InstanceType<typeof Animation> = new Animation(
+						ctx,
+						animationParameters
+					);
 
 					if (
 						animationParameters.properties.addByClick ||
 						animationParameters.properties.switchByClick
 					)
-						canvas.onclick = (e: any): void => {
-							canvasClickHandler(animation, e, animationParameters.offset);
+						canvas.onclick = (e) => {
+							canvasClickHandler(
+								// eslint-disable-next-line @typescript-eslint/no-explicit-any
+								animation as any,
+								{ pos: { x: e.clientX, y: e.clientY } },
+								animationParameters.offset
+							);
 						};
 
 					animation?.init();

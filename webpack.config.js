@@ -3,11 +3,16 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
 	mode: 'production',
 	entry: {
-		bundle: path.resolve(__dirname, 'src/index.tsx')
+		bundle: path.resolve(__dirname, 'src/index.tsx'),
+		webworker: path.resolve(
+			__dirname,
+			'src/shared/WebApi/web-workers/canvas-worker.ts'
+		)
 	},
 	output: {
 		path: path.resolve(__dirname, 'dist'),
@@ -15,6 +20,9 @@ module.exports = {
 		filename: '[name].[contenthash].js',
 		clean: true,
 		assetModuleFilename: '[name][ext]'
+	},
+	cache: {
+		type: 'memory'
 	},
 	devtool: 'source-map',
 	devServer: {
@@ -35,19 +43,9 @@ module.exports = {
 	module: {
 		rules: [
 			{
-				test: /\.(js|jsx)$/,
+				test: /\.(js|jsx|ts|tsx)$/,
 				exclude: /node_modules/,
-				use: {
-					loader: 'babel-loader',
-					options: {
-						presets: ['@babel/preset-env']
-					}
-				}
-			},
-			{
-				test: /\.(ts|tsx)?$/,
-				use: 'ts-loader',
-				exclude: /node_modules/
+				use: ['babel-loader']
 			},
 			{
 				test: /\.(png|jpg|jpeg|gif|ico)$/,
@@ -62,14 +60,6 @@ module.exports = {
 			{
 				test: /\.css$/i,
 				use: ['style-loader', 'css-loader']
-			},
-			{
-				test: /\.Worker.ts$/,
-				loader: 'babel-loader',
-				options: {
-					instance: 'web-worker',
-					configFileName: './src/shared/WebApi/web-workers/tsconfig.json'
-				}
 			}
 		]
 	},
@@ -91,6 +81,21 @@ module.exports = {
 	],
 	resolve: {
 		extensions: ['*', '.js', '.jsx', '.ts', '.tsx']
+	},
+	optimization: {
+		splitChunks: {
+			chunks: 'all'
+		},
+		minimize: true,
+		minimizer: [
+			new TerserPlugin({
+				parallel: true,
+				terserOptions: {
+					keep_classnames: true,
+					keep_fnames: true
+				}
+			})
+		]
 	},
 	performance: {
 		hints: false,

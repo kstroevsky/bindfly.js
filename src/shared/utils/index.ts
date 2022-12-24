@@ -18,7 +18,7 @@ export const getPosition = (
 ): number =>
 	velocity *
 	((position + velocity > size - margin && velocity > 0) ||
-	(position + velocity < margin && velocity < margin)
+		(position + velocity < margin && velocity < margin)
 		? -1
 		: 1);
 
@@ -100,6 +100,6 @@ export const parametersToString = (
 			return RGBAToHexA(value as string);
 		case typeof value === 'boolean':
 		default:
-			return value!.toString();
+			return value?.toString() || '';
 	}
 };

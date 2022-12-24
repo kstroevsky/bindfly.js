@@ -1,50 +1,28 @@
-// import { canvasClickHandler } from '../../utils/index.js';
-// import FlyingLines from '../../2d/animations/FlyingLines/index.js';
-// import { ICanvasWorkerProps } from '../../../hooks/useCanvas';
+import CanvasAnimation from '../../2d/animations/abstract/canvas';
+import type { ConstructorOf, ICanvasWorkerProps } from '../../types';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// import { ICanvasWorkerProps } = require('../../types');
-
-import { ICanvasWorkerProps } from '../../types';
-
-// export interface ICanvasWorkerProps {
-// 	msg: 'init' | 'click' | 'stop';
-// 	canvas: OffscreenCanvas;
-// 	animationName: string;
-// 	animationParameters: TAnimationProperties;
-// }
-
-interface IWorkerEvent {
-	data: ICanvasWorkerProps;
-}
-
-let animationWorker: InstanceType<any> = null;
-let animation: any,
-	canvas: OffscreenCanvas,
+let canvas: OffscreenCanvas,
 	ctx: OffscreenCanvasRenderingContext2D,
 	dpr: number,
-	canvasClickHandler: (...args: any) => void;
-
-// let animationWorker = null;
-// let canvas, ctx, dpr;
-
-// declare const self: DedicatedWorkerGlobalScope;
-// export { };
+	canvasClickHandler: (...args: unknown[]) => void,
+	Animation: ConstructorOf<CanvasAnimation>,
+	animationWorker: InstanceType<ConstructorOf<CanvasAnimation>>;
 
 // const self = globalThis as unknown as DedicatedWorkerGlobalScope;
 
-self.onmessage = function (e: IWorkerEvent) {
+self.onmessage = async function (e: MessageEvent<ICanvasWorkerProps>) {
 	switch (e.data.msg) {
 		case 'init':
-			animation = require(`../../2d/animations/${e.data.animationName}`);
 			({ canvasClickHandler } = require('../../utils'));
+			({ default: Animation } = await import(
+				`../../2d/animations/${e.data.animationName}/index.js`
+			));
 
 			canvas = e.data.canvas;
 			dpr = e.data.animationParameters.devicePixelRatio;
 			ctx = canvas.getContext('2d', {
 				alpha: false
 			}) as OffscreenCanvasRenderingContext2D;
-			console.info('CONTEXT', ctx);
 
 			canvas.width =
 				(canvas.width !== e.data.animationParameters.innerWidth
@@ -56,17 +34,9 @@ self.onmessage = function (e: IWorkerEvent) {
 					: e.data.animationParameters.innerHeight) * dpr;
 
 			ctx.scale(dpr, dpr);
-			console.info('WORK', e.data.animationName);
 
-			animationWorker = new animation.default(
-				ctx,
-				e.data.animationParameters,
-				false
-			);
+			animationWorker = new Animation(ctx, e.data.animationParameters, false);
 			animationWorker.init();
-
-			console.info('WORK', animationWorker);
-			console.log(canvasClickHandler);
 
 			break;
 
@@ -77,9 +47,6 @@ self.onmessage = function (e: IWorkerEvent) {
 
 		case 'stop':
 		default:
-			console.log('close is not working now');
-		// this.cancelAnimationFrame(this.canvasRafId);
-		// this.cancelAnimationFrame(this.timerRafId);
-		// this.close();
+			self.close();
 	}
 };

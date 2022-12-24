@@ -1,9 +1,9 @@
+import CanvasAnimation from '../abstract/canvas';
 import FlyingPoints from '../../templates/FlyingPoints';
 
-console.log(import.meta.url);
-
-export default class FlyingLines {
+export default class FlyingLines extends CanvasAnimation {
 	constructor(ctx, parameters) {
+		super();
 		this.properties = parameters.properties;
 
 		this.ctx = ctx;

@@ -1,3 +1,9 @@
+export default abstract class Abstract {
+	public static factory<T extends Abstract>(this: new (...args: unknown[]) => T) {
+		return new this();
+	}
+}
+
 export type TypeByKeyExist<
 	T,
 	K1 extends string | number,
@@ -87,11 +93,15 @@ export type IAnimationWithParticles<A extends object> = I2DAnimationBaseType<A> 
 	particles: ISingleParticle[];
 };
 
+export interface IAnyInterface {
+	[otherOptions: string]: unknown;
+}
+
 export type TSomeAbstractClass<T> = new (...args: any[]) => T;
 
 export type TSomeClass<T> = new (...args: any[]) => T;
 
-export type ConstructorOf<T> = { new (...args: any[]): T };
+export type ConstructorOf<T> = { new(...args: unknown[]): T };
 
 export interface WorkerClickData {
 	x: number;
