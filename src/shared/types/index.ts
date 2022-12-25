@@ -1,9 +1,3 @@
-export default abstract class Abstract {
-	public static factory<T extends Abstract> (this: new (...args: unknown[]) => T) {
-		return new this()
-	}
-}
-
 export type TypeByKeyExist<
 	T,
 	K1 extends string | number,
@@ -26,6 +20,7 @@ export type GetKeyByExist<
 
 export interface IProperty {
 	[key: string]: IProperty[keyof IProperty];
+	name: string;
 	bgColor?: string;
 	particleColors?: string[];
 	generativeColorsCounts: number;
@@ -115,4 +110,8 @@ export interface ICanvasWorkerProps {
 	canvas: OffscreenCanvas;
 	animationName: string;
 	animationParameters: TAnimationProperties;
+}
+
+export interface IVectorsForIntersect {
+	[key: string]: number
 }

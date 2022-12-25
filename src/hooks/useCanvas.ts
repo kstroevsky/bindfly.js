@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from 'react'
 import DataContext, { IDataContext } from '../components/Context'
-import CanvasAnimation from '../shared/2d/animations/abstract/canvas'
+import CanvasAnimation from '../shared/abstract/canvas'
 import {
 	ConstructorOf,
 	ICanvasWorkerProps,

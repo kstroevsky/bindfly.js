@@ -1,4 +1,4 @@
-import CanvasAnimation from '../../2d/animations/abstract/canvas'
+import CanvasAnimation from '../../abstract/canvas'
 import type { ConstructorOf, ICanvasWorkerProps } from '../../types'
 
 let canvas: OffscreenCanvas,

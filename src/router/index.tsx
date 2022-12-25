@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom'
 import { DataContextProvider } from '../components/Context'
 import Loader from '../components/Loader'
+import * as animations from '../shared/2d/animations'
 
 import properties from '../properties.json'
 
@@ -27,16 +28,16 @@ const router = createHashRouter(
 			<>
 				<Route
 					path="/"
-					element={<Navigate replace to={'/animation-0'} />}
+					element={<Navigate replace to={`/${Object.values(animations)[0].name}-Simple`} />}
 					errorElement={<Loader size={200} />}
 				/>
-				{properties?.map((x, i) => (
+				{Object.values(animations).map((y) => properties?.map((x, i) => (
 					<Route
 						key={i}
-						path={`/animation-${i}`}
-						element={<Animation properties={x} />}
+						path={`/${y.name}-${x.name}`}
+						element={<Animation properties={x} classId={y.name} />}
 					/>
-				))}
+				)))}
 			</>
 		</Route>
 	)

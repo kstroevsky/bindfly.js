@@ -6,6 +6,7 @@ import {
 	IAnimationWithParticles,
 	IProperty,
 	ISingleParticle,
+	IVectorsForIntersect,
 	TPropertiesValues,
 	WorkerClickData
 } from '../types'
@@ -101,5 +102,15 @@ export const parametersToString = (
 		case typeof value === 'boolean':
 		default:
 			return value?.toString() || ''
+	}
+}
+
+export const isVectorsIntersected = ({ a, b, c, d, p, q, r, s }: IVectorsForIntersect): boolean => {
+	const det = (c - a) * (s - q) - (r - p) * (d - b)
+	if (det === 0) return false
+	else {
+		const lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det
+		const gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det
+		return (lambda > 0 && lambda < 1) && (gamma > 0 && gamma < 1)
 	}
 }

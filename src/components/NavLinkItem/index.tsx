@@ -6,6 +6,8 @@ import { IProperty } from '../../shared/types'
 import DropDownContent from '../DropdownContent'
 import ToggleButton from '../ToggleButton'
 
+import * as animations from '../../shared/2d/animations'
+
 export interface INavLinkItemProps {
 	id: number;
 	propertySet: IProperty;
@@ -15,7 +17,6 @@ export interface INavLinkItemProps {
 const NavLinkItem: FC<INavLinkItemProps> = ({ id, propertySet, onCleanUp }) => {
 	const [checked, setChecked] = useState<boolean>(false)
 	const location = useLocation()
-	const navPath = `/animation-${id}`
 
 	const handleChange = () => {
 		setChecked(!checked)
@@ -23,21 +24,24 @@ const NavLinkItem: FC<INavLinkItemProps> = ({ id, propertySet, onCleanUp }) => {
 
 	return (
 		<li className="ListLinkItem">
-			<p>
-				<NavLink
-					{...((location.pathname === navPath
-						? {
+			<p>{`${propertySet.name}`}</p>
+			{Object.values(animations).map((x, i) => (
+				<p key={`${x.name}-${i}`}>
+					<NavLink
+						{...((location.pathname === `/${x.name}-${propertySet.name}`
+							? {
 								onClick: (e) => e.preventDefault()
 							}
-						: {
+							: {
 								onClick: () => onCleanUp?.(),
-								to: navPath
+								to: `/${x.name}-${propertySet.name}`
 							}) as LinkProps)}
-					className={({ isActive }) => classNames({ 'current-page': isActive })}>
-					{`Animation-${id}`}
-				</NavLink>
-				<ToggleButton keyInput={id} value={checked} onChange={handleChange} />
-			</p>
+						className={({ isActive }) => classNames({ 'current-page': isActive })}>
+						{`${x.name}`}
+					</NavLink>
+				</p>
+			))}
+			<ToggleButton keyInput={id} value={checked} onChange={handleChange} />
 			{checked && <DropDownContent propertySet={propertySet} />}
 		</li>
 	)

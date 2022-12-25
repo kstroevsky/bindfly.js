@@ -1,4 +1,4 @@
-import CanvasAnimation from '../abstract/canvas'
+import CanvasAnimation from '../../../abstract/canvas'
 import FlyingPoints from '../../templates/FlyingPoints'
 
 export default class FlyingLines extends CanvasAnimation {

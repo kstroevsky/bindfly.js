@@ -3,6 +3,7 @@
   overflow: hidden;
   background-color: transparent;
   transition: 0.3s;
+  overflow-x: hidden;
 }
 
 a {
@@ -51,6 +52,7 @@ a:visited {
   color: white;
   margin: 0;
   padding: 0;
+  width: 100%;
 }
 
 .CloseButton {
@@ -93,6 +95,12 @@ a:visited {
 }
 
 .ListLinkItem > p {
+  color: green;
+  padding-top: 5px;
+  padding-right: 10px;
+}
+
+.ListLinkItem p {
   padding-bottom: 10px;
 }
 
@@ -149,7 +157,6 @@ a:visited {
   border: 1px solid #36c373;
   display: inline-block;
   position: relative;
-  bottom: -5px;
   cursor: pointer;
 }
 
@@ -260,7 +267,7 @@ canvas {
   }
 
   .ListLinkItem:not(:last-child) {
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
   }
 
   .CardPanel {
@@ -291,8 +298,9 @@ canvas {
     z-index: 2;
   }
 
-  .sidebar.modal nav {
-    width: 60vw;
+  .ListLinkItem p {
+    padding-bottom: 5px;
+    font-size: 0.8rem;
   }
 }
 
