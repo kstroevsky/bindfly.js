@@ -12,7 +12,7 @@ export interface IPageSidebarProps {
 	isModal: boolean;
 }
 
-export const PageSidebar = forwardRef<HTMLElement, IPageSidebarProps>(
+const PageSidebar = forwardRef<HTMLElement, IPageSidebarProps>(
 	({ properties, isModal = false }, ref) => {
 		const { touchInterval, setTouchInterval } = useLongPress(500, root, isModal)
 		const mobileVisibility =
@@ -49,3 +49,5 @@ export const PageSidebar = forwardRef<HTMLElement, IPageSidebarProps>(
 		)
 	}
 )
+
+export default React.memo(PageSidebar)

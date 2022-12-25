@@ -2,7 +2,6 @@ import React, { FC, useContext } from 'react'
 import { useOutletContext } from 'react-router-dom'
 
 import { useCanvas } from '../../hooks'
-// import * as animations from '../shared/2d/animations'
 import FlyingLines from '../../shared/2d/animations/FlyingLines'
 import SpiralFlyingLines from '../../shared/2d/animations/SpiralFlyingLines'
 import { IOutletContext, IProperty } from '../../shared/types'
@@ -48,4 +47,4 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 	)
 }
 
-export default Animation
+export default React.memo(Animation)

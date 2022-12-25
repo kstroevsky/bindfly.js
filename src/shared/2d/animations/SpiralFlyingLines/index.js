@@ -16,8 +16,12 @@ export default class SpiralFlyingLines extends CanvasAnimation {
 
         this.isStarted = false
         this.colorOffset = 0
-        this.spiralRadius = 0 // Add a variable to track the radius of the spiral
+
+        this.spiralRadius = this.properties.radius || 0 // Add a variable to track the radius of the spiral
         this.spiralAngle = 0 // Add a variable to track the angle of the spiral
+
+        this.positionX = this.sizes.width / 2
+        this.positionY = this.sizes.height / 2
 
         this.particleColors =
             parameters.properties.particleColors &&
@@ -34,15 +38,15 @@ export default class SpiralFlyingLines extends CanvasAnimation {
                     }
                 )
 
-        this.color = this.properties.switchByClick
-            ? this.properties.isMonochrome
-                ? this.monochrome
-                : this.propsColors
+        this.color = this.properties.isMonochrome
+            ? this.monochrome
             : this.propsColors
 
         this.drawLines = this.drawLinesWithoutAdding
 
-        this.reCalculateSpiral = this.increaseSpiral
+        this.reCalculateSpiral = this.properties.reverse
+            ? () => this.decreaseAngle() || this.properties.radius || this.decreaseRadius()
+            : () => this.increaseAngle() || this.properties.radius || this.increaseRadius()
 
         this.boundAnimate = this.loop.bind(this)
     }
@@ -62,14 +66,20 @@ export default class SpiralFlyingLines extends CanvasAnimation {
         this.ctx.fillRect(0, 0, this.sizes.width, this.sizes.height)
     }
 
-    increaseSpiral() {
-        this.spiralRadius += 0.05 // Increase the radius of the spiral
+    increaseAngle() {
         this.spiralAngle += 0.1 // Increase the angle of the spiral
     }
 
-    decreaseSpiral() {
-        this.spiralRadius -= 0.05 // Increase the radius of the spiral
+    decreaseAngle() {
         this.spiralAngle -= 0.1 // Increase the angle of the spiral
+    }
+
+    increaseRadius() {
+        this.spiralRadius += 0.05 // Increase the radius of the spiral
+    }
+
+    decreaseRadius() {
+        this.spiralRadius -= 0.05 // Increase the radius of the spiral
     }
 
     drawLinesWithoutAdding() {
@@ -77,8 +87,8 @@ export default class SpiralFlyingLines extends CanvasAnimation {
 
         for (const i in this.particles) {
             // Modify the position of the particle to follow a spiral pattern
-            this.particles[i].x = this.sizes.width / 2 + this.spiralRadius * Math.cos(this.spiralAngle * 0.5)
-            this.particles[i].y = this.sizes.height / 2 + this.spiralRadius * Math.sin(this.spiralAngle * 0.5)
+            this.particles[i].x = this.positionX + this.spiralRadius * Math.cos(this.spiralAngle * 0.5)
+            this.particles[i].y = this.positionY + this.spiralRadius * Math.sin(this.spiralAngle * 0.5)
             this.reCalculateSpiral()
 
             x1 = this.particles[i].x
@@ -126,8 +136,15 @@ export default class SpiralFlyingLines extends CanvasAnimation {
         this.isStarted = true
 
         setInterval(() => {
-            if (this.spiralRadius > this.sizes.width * 6) this.reCalculateSpiral = this.decreaseSpiral
-            else if (this.spiralRadius < 10) this.reCalculateSpiral = this.increaseSpiral
+            if (this.properties.isPulsatile) {
+                if (this.spiralRadius > this.sizes.width * 6) {
+                    this.reCalculateSpiral =
+                        () => this.decreaseAngle() || this.decreaseRadius()
+                } else if (this.spiralRadius < 10) {
+                    this.reCalculateSpiral =
+                        () => this.increaseAngle() || this.properties.radius || this.increaseRadius()
+                }
+            }
 
             this.particles.push(
                 { ...this.particles[0], x: this.sizes.width / 2, y: this.sizes.height / 2 },
@@ -138,6 +155,12 @@ export default class SpiralFlyingLines extends CanvasAnimation {
         }, 20000)
 
         this.loop()
+    }
+
+    reInit(x, y) {
+        // cancelAnimationFrame(this.boundAnimate)
+        this.positionX = x
+        this.positionY = y
     }
 
     clear() {

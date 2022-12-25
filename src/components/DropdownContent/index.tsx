@@ -38,4 +38,4 @@ const DropdownContent: FC<IDropdownContent> = ({ propertySet }) => {
 	)
 }
 
-export default DropdownContent
+export default React.memo(DropdownContent)

@@ -6,7 +6,7 @@ import root from '../..'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import { IOutletContext, TProperties } from '../../shared/types'
 import Loader from '../Loader'
-import { PageSidebar } from '../PageSidebar'
+import PageSidebar from '../PageSidebar'
 
 interface IPageLayoutProps {
 	properties: TProperties;
@@ -56,4 +56,4 @@ const PageLayout: React.FC<IPageLayoutProps> = ({ properties }) => {
 	)
 }
 
-export default PageLayout
+export default React.memo(PageLayout)

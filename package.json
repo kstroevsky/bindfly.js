@@ -3,6 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "description": "An optimised canvas beautiful something with multiple parameters. A library and a web-socket based game in future.",
+  "homepage": "https://bindfly.onrender.com",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": {
+    "name": "Kostiantyn Stroievskyi",
+    "url": "https://www.linkedin.com/in/kstroevsky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kstroevsky/bindfly.js.git"
+  },
   "engines": {
     "node": "^16.15.1"
   },

@@ -86,7 +86,7 @@ const useCanvas = <A extends object>(
 							canvasClickHandler(
 								// eslint-disable-next-line @typescript-eslint/no-explicit-any
 								animation as any,
-								{ pos: { x: e.clientX, y: e.clientY } },
+								{ pos: { x: e.clientX - animationParameters.offset, y: e.clientY } },
 								animationParameters.offset
 							)
 						}

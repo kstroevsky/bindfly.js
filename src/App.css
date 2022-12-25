@@ -109,10 +109,6 @@ a:visited {
   bottom: 3px;
 }
 
-.ListLinkItem:not(:last-child) {
-  margin-bottom: 2rem;
-}
-
 .ListLinkItem > *:not(.DropdownContent),
 .CloseButton {
   -webkit-user-select: none;
@@ -267,7 +263,9 @@ canvas {
   }
 
   .ListLinkItem:not(:last-child) {
-    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    padding-top: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
   }
 
   .CardPanel {
@@ -283,10 +281,12 @@ canvas {
 
   .sidebar.modal.active * {
     z-index: 2;
+    margin: auto;
   }
 
   .sidebar.modal {
     width: 100vw;
+    height: 100vh;
     position: absolute;
     opacity: 0.8;
     z-index: 2;
@@ -298,9 +298,21 @@ canvas {
     z-index: 2;
   }
 
+  .ListLinkItem {
+    padding-bottom: 10px;
+  }
+
   .ListLinkItem p {
-    padding-bottom: 5px;
+    padding-bottom: 0px;
     font-size: 0.8rem;
+  }
+
+  .DropdownContent {
+    width: 60%;
+  }
+
+  .CardPanel p {
+    font-size: 0.7rem;
   }
 }
 

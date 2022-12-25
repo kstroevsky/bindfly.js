@@ -3,7 +3,7 @@ import React, { FC } from 'react'
 import '../Loader/styles.css'
 
 const GUTTER = 5 // Spacing in percentage between tiles
-const TRANSITION = 0.5 // Seconds to actually move one block
+const TRANSITION = 0.2 // Seconds to actually move one block
 
 export interface ILoaderTilesProps {
 	radioCommand: string | null;

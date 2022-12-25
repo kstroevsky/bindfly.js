@@ -34,7 +34,7 @@ const router = createHashRouter(
 				{Object.values(animations).map((y) => properties?.map((x, i) => (
 					<Route
 						key={i}
-						path={`/${y.name}-${x.name}`}
+						path={`/${y.name}-${x.name.replaceAll(' ', '')}`}
 						element={<Animation properties={x} classId={y.name} />}
 					/>
 				)))}

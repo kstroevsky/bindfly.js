@@ -31,10 +31,8 @@ export default class FlyingLines extends CanvasAnimation {
 					}
 				)
 
-		this.color = this.properties.switchByClick
-			? this.properties.isMonochrome
-				? this.monochrome
-				: this.propsColors
+		this.color = this.properties.isMonochrome
+			? this.monochrome
 			: this.propsColors
 
 		this.drawLines = this.properties.addByClick

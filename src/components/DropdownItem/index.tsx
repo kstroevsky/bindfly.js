@@ -35,4 +35,4 @@ const DropdownItem: FC<IDropdownItemProps> = ({ propertyKey, propertyValue }) =>
 	)
 }
 
-export default DropdownItem
+export default React.memo(DropdownItem)

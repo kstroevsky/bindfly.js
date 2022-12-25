@@ -21,6 +21,7 @@ export type GetKeyByExist<
 export interface IProperty {
 	[key: string]: IProperty[keyof IProperty];
 	name: string;
+	for?: string | string[];
 	bgColor?: string;
 	particleColors?: string[];
 	generativeColorsCounts: number;
@@ -29,11 +30,15 @@ export interface IProperty {
 	lineLength: number;
 	particleLife: number;
 	margin: number;
+	radius?: number;
+	reverse?: boolean;
+	isPulsatile?: boolean;
 	isMonochrome: boolean;
 	isCountStable: boolean;
 	isImmortal: boolean;
 	addByClick: boolean;
 	switchByClick: boolean;
+	moveByClick?: boolean;
 	isStatic: boolean;
 }
 
@@ -69,6 +74,8 @@ export interface I2DAnimationBaseType<T extends object> {
 	};
 	boundAnimate: () => void;
 	loop: () => void;
+	reInit?: (x: number, y: number) => void
+	clear: () => void;
 	isStarted: boolean;
 }
 

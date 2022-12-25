@@ -23,41 +23,6 @@ export const getPosition = (
 		? -1
 		: 1)
 
-export const canvasClickHandler = <A extends IAnimationWithParticles<IProperty>>(
-	animation: A,
-	e: { pos: WorkerClickData },
-	offset = 0
-) => {
-	if (animation.properties.addByClick) {
-		animation.particles.push(
-			Object.assign(
-				{},
-				{
-					...animation.particles[0],
-					life: Math.random() * animation.properties.particleLife * 60,
-					x: e.pos.x - offset,
-					y: e.pos.y,
-					isStart: true,
-					start: 0
-				}
-			)
-		)
-		if (animation.properties.isStatic) {
-			if (!animation.isStarted) {
-				animation.isStarted = true
-				animation.loop()
-			}
-		}
-		if (animation.properties.isCountStable) {
-			animation.particles.shift()
-			if (animation.colorOffset) animation.colorOffset += 1
-		}
-	}
-
-	animation.properties.switchByClick &&
-		animation.particles.push(animation.particles.shift() as ISingleParticle)
-}
-
 export const canvasReload = (
 	toggle: IDataContext['keyToggle'],
 	webWorker: IDataContext['webWorker'],
@@ -91,6 +56,9 @@ export const RGBAToHexA = (rgbaString: string, forceRemoveAlpha = false): string
 		})
 		.reduce((acc, item) => acc + (item.length === 1 ? `0${item}` : item), '')
 
+export const RGBAToNegative = (rgbaString: string): string =>
+	`${rgbaString.match(/^rgba?/g)![0]}(${rgbaString.match(/[0-9]+/g)!.map((x, i) => i < 3 ? 255 - parseInt(x) : x).join(',')})`
+
 export const parametersToString = (
 	value: TPropertiesValues | TPropertiesValues[]
 ): string => {
@@ -113,4 +81,42 @@ export const isVectorsIntersected = ({ a, b, c, d, p, q, r, s }: IVectorsForInte
 		const gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det
 		return (lambda > 0 && lambda < 1) && (gamma > 0 && gamma < 1)
 	}
+}
+
+export const canvasClickHandler = <A extends IAnimationWithParticles<IProperty>>(
+	animation: A,
+	e: { pos: WorkerClickData },
+	offset = 0
+) => {
+	if (animation.properties.moveByClick) animation.reInit?.(e.pos.x, e.pos.y)
+	if (animation.properties.addByClick) {
+		animation.particles.push(
+			Object.assign(
+				{},
+				{
+					...animation.particles[0],
+					life: Math.random() * animation.properties.particleLife * 60,
+					x: e.pos.x - offset,
+					y: e.pos.y,
+					isStart: true,
+					start: 0
+				}
+			)
+		)
+		if (animation.properties.isStatic) {
+			if (!animation.isStarted) {
+				animation.isStarted = true
+				animation.loop()
+			}
+		}
+		if (animation.properties.isCountStable) {
+			animation.particles.shift()
+			if (animation.colorOffset) animation.colorOffset += 1
+		}
+	}
+
+	animation.properties.switchByClick &&
+		animation.properties.isMonochrome
+		? animation.properties.bgColor = RGBAToNegative(animation.properties.bgColor || 'rgba(255, 255, 255, 1)')
+		: animation.particles.push(animation.particles.shift() as ISingleParticle)
 }

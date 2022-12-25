@@ -26,20 +26,27 @@ const NavLinkItem: FC<INavLinkItemProps> = ({ id, propertySet, onCleanUp }) => {
 		<li className="ListLinkItem">
 			<p>{`${propertySet.name}`}</p>
 			{Object.values(animations).map((x, i) => (
-				<p key={`${x.name}-${i}`}>
-					<NavLink
-						{...((location.pathname === `/${x.name}-${propertySet.name}`
-							? {
-								onClick: (e) => e.preventDefault()
-							}
-							: {
-								onClick: () => onCleanUp?.(),
-								to: `/${x.name}-${propertySet.name}`
-							}) as LinkProps)}
-						className={({ isActive }) => classNames({ 'current-page': isActive })}>
-						{`${x.name}`}
-					</NavLink>
-				</p>
+				(Object.hasOwn(propertySet, 'for')
+					? Array.isArray(propertySet.for)
+						? propertySet.for.includes(x.name)
+						: propertySet.for === x.name
+					: true
+				) && (
+					<p key={`${x.name}-${i}`}>
+						<NavLink
+							{...((location.pathname === `/${x.name}-${propertySet.name.replaceAll(' ', '')}`
+								? {
+										onClick: (e) => e.preventDefault()
+									}
+								: {
+										onClick: () => onCleanUp?.(),
+										to: `/${x.name}-${propertySet.name.replaceAll(' ', '')}`
+									}) as LinkProps)}
+							className={({ isActive }) => classNames({ 'current-page': isActive })}>
+							{`${x.name}`}
+						</NavLink>
+					</p>
+				)
 			))}
 			<ToggleButton keyInput={id} value={checked} onChange={handleChange} />
 			{checked && <DropDownContent propertySet={propertySet} />}
@@ -47,4 +54,4 @@ const NavLinkItem: FC<INavLinkItemProps> = ({ id, propertySet, onCleanUp }) => {
 	)
 }
 
-export default NavLinkItem
+export default React.memo(NavLinkItem)
