@@ -1,10 +1,5 @@
-import React, {
-	createContext,
-	FC,
-	MutableRefObject,
-	ReactNode,
-	useRef
-} from 'react'
+import React, { createContext, useRef } from 'react'
+import type { FC, MutableRefObject, ReactNode } from 'react'
 
 export interface IDataContext {
 	keyToggle: MutableRefObject<boolean>;

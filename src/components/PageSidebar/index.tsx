@@ -2,10 +2,10 @@ import classNames from 'classnames'
 import React, { forwardRef, useCallback } from 'react'
 
 import root from '../..'
-import { useLongPress } from '../../hooks'
-import { IProperty, TProperties } from '../../shared/types'
-import { isLayoutActive } from '../../shared/utils'
 import NavLinkItem from '../NavLinkItem'
+import { useLongPress } from '../../hooks'
+import { isLayoutActive } from '../../shared/utils'
+import type { IProperty, TProperties } from '../../shared/types'
 
 export interface IPageSidebarProps {
 	properties: TProperties;

@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { TypeByKeyExist } from '../shared/types'
+import { TCallable, TypeByKeyExist } from '../shared/types'
 
 export type TLegacyListener<D> = TypeByKeyExist<
 	D,
@@ -9,7 +9,7 @@ export type TLegacyListener<D> = TypeByKeyExist<
 
 const useListenersEffect = <D extends object>(
 	domNode: D,
-	eventHandlerConfig: Record<string, (...args: unknown[]) => void>,
+	eventHandlerConfig: Record<string, TCallable>,
 	deps?: unknown[],
 	additionalCalls: (() => unknown) | null = null,
 	condition = true,
@@ -17,48 +17,48 @@ const useListenersEffect = <D extends object>(
 	inverseCondition: boolean = deps?.every((x) => x) || false
 ): void => {
 	const addListenerMethod =
-	useCallback(
-		(
-			domNode: D,
-			eName: string,
-			handler: (...args: unknown[]) => void,
-			isLegacy: boolean
-		) =>
-			isLegacy
-				? (domNode as MediaQueryList)?.addListener(
-						...([handler] as Parameters<MediaQueryList['addListener']>)
-					)
-				: (domNode as Element)?.addEventListener(
-						...([
-							eName,
-						handler as EventListenerOrEventListenerObject,
-						false
-						] as Parameters<Element['addEventListener']>)
-					),
-		[]
-	)
+		useCallback(
+			(
+				domNode: D,
+				eName: string,
+				handler: TCallable,
+				isLegacy: boolean
+			) =>
+				isLegacy
+					? (domNode as MediaQueryList)?.addListener(
+							...([handler] as Parameters<MediaQueryList['addListener']>)
+						)
+					: (domNode as Element)?.addEventListener(
+							...([
+								eName,
+							handler as EventListenerOrEventListenerObject,
+							false
+							] as Parameters<Element['addEventListener']>)
+						),
+			[]
+		)
 
 	const removeListenerMethod =
-	useCallback(
-		(
-			domNode: D,
-			eName: string,
-			handler: (...args: unknown[]) => void,
-			isLegacy: boolean
-		) =>
-			isLegacy
-				? (domNode as MediaQueryList)?.removeListener(
-						...([handler] as Parameters<MediaQueryList['removeListener']>)
-					)
-				: (domNode as Element)?.removeEventListener(
-						...([
-							eName,
-						handler as EventListenerOrEventListenerObject,
-						false
-						] as Parameters<Element['removeEventListener']>)
-					),
-		[]
-	)
+		useCallback(
+			(
+				domNode: D,
+				eName: string,
+				handler: TCallable,
+				isLegacy: boolean
+			) =>
+				isLegacy
+					? (domNode as MediaQueryList)?.removeListener(
+							...([handler] as Parameters<MediaQueryList['removeListener']>)
+						)
+					: (domNode as Element)?.removeEventListener(
+							...([
+								eName,
+							handler as EventListenerOrEventListenerObject,
+							false
+							] as Parameters<Element['removeEventListener']>)
+						),
+			[]
+		)
 
 	useEffect(() => {
 		additionalCalls && additionalCalls()

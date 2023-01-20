@@ -1,4 +1,5 @@
 import React from 'react'
+import type { FC } from 'react'
 
 interface IToggleButtonProps {
 	keyInput: number;
@@ -6,7 +7,7 @@ interface IToggleButtonProps {
 	onChange: () => void;
 }
 
-const ToggleButton: React.FC<IToggleButtonProps> = ({
+const ToggleButton: FC<IToggleButtonProps> = ({
 	keyInput,
 	value,
 	onChange

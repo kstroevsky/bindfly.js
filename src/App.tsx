@@ -1,7 +1,9 @@
-import React, { FC, MouseEvent, PointerEvent, Suspense } from 'react'
+import React, { MouseEvent, PointerEvent, Suspense } from 'react'
 import { RouterProvider } from 'react-router-dom'
-import Loader from './components/Loader'
+import type { FC } from 'react'
+
 import router from './router'
+import Loader from './components/Loader'
 
 export const App: FC = () => (
 	<div

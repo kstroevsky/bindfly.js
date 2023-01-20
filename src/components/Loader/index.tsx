@@ -1,5 +1,6 @@
 import classNames from 'classnames'
-import React, { FC, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import type { FC } from 'react'
 
 import { LoaderTiles } from '../LoaderTiles'
 

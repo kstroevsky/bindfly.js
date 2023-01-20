@@ -1,8 +1,10 @@
-import React, { FC, useCallback, useState } from 'react'
-import { COPY_ANIMATION_DURATION } from '../../shared/constants'
-import { IProperty, TPropertiesValues } from '../../shared/types'
+import React, { useCallback, useState } from 'react'
+import type { FC } from 'react'
+
 import DropdownItem from '../DropdownItem'
 import CopyIcon from '../../assets/copyIcon.svg'
+import { COPY_ANIMATION_DURATION } from '../../shared/constants'
+import type { IProperty, TPropertiesValues } from '../../shared/types'
 
 export interface IDropdownContent {
 	propertySet: IProperty;

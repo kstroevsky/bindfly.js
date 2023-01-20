@@ -74,7 +74,7 @@ export interface I2DAnimationBaseType<T extends object> {
 	};
 	boundAnimate: () => void;
 	loop: () => void;
-	reInit?: (x: number, y: number) => void
+	reInit?: (x: number, y: number) => void;
 	clear: () => void;
 	isStarted: boolean;
 }
@@ -91,9 +91,10 @@ export type ISingleParticle = {
 	y: number;
 };
 
-export type IAnimationWithParticles<A extends object> = I2DAnimationBaseType<A> & {
-	particles: ISingleParticle[];
-};
+export type IAnimationWithParticles<A extends object> =
+	I2DAnimationBaseType<A> & {
+		particles: ISingleParticle[];
+	};
 
 export interface IunknownInterface {
 	[otherOptions: string]: unknown;
@@ -113,12 +114,16 @@ export interface WorkerClickData {
 export type TKeys<O extends object> = keyof O;
 
 export interface ICanvasWorkerProps {
-	msg: 'init' | 'click' | 'stop';
+	msg: 'init' | 'click' | 'stop' | 'count' | 'radius';
 	canvas: OffscreenCanvas;
 	animationName: string;
 	animationParameters: TAnimationProperties;
+	count?: number;
+	radius?: number;
 }
 
 export interface IVectorsForIntersect {
-	[key: string]: number
+	[key: string]: number;
 }
+
+export type TCallable<R = void, A = unknown> = (...args: A[]) => R;

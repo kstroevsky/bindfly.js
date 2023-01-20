@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import CanvasAnimation from '../../../abstract/canvas'
+import { generateColorsByCount } from '../../../utils'
 import FlyingPoints from '../../templates/FlyingPoints'
 
 export default class FlyingLines extends CanvasAnimation {
@@ -20,16 +22,7 @@ export default class FlyingLines extends CanvasAnimation {
 			parameters.properties.particleColors &&
 				parameters.properties.particleColors.length
 				? parameters.properties.particleColors
-				: Array.from(new Array(parameters.properties.generativeColorsCounts)).map(
-					(_, i) => {
-						const frequency = 5 / parameters.properties.generativeColorsCounts
-						return `rgba(${Math.floor(
-							Math.sin(frequency * i + 0) * 127 + 128
-						)}, ${Math.floor(
-							Math.sin(frequency * i + 2) * 127 + 128
-						)}, ${Math.floor(Math.sin(frequency * i + 4) * 127 + 128)}, 1)`
-					}
-				)
+				: generateColorsByCount(parameters.properties.generativeColorsCounts)
 
 		this.color = this.properties.isMonochrome
 			? this.monochrome

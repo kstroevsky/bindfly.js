@@ -1,18 +1,19 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Outlet } from 'react-router-dom'
+import type { FC } from 'react'
 
 import root from '../..'
 import useMediaQuery from '../../hooks/useMediaQuery'
-import { IOutletContext, TProperties } from '../../shared/types'
 import Loader from '../Loader'
 import PageSidebar from '../PageSidebar'
+import type { IOutletContext, TProperties } from '../../shared/types'
 
 interface IPageLayoutProps {
 	properties: TProperties;
 }
 
-const PageLayout: React.FC<IPageLayoutProps> = ({ properties }) => {
+const PageLayout: FC<IPageLayoutProps> = ({ properties }) => {
 	const sidebarRef = useRef<HTMLElement | null>(null)
 	const portalRef = useRef<HTMLElement | null>(null)
 	const [width, setWidth] = useState<IOutletContext['width']>(0)

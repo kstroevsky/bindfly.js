@@ -1,8 +1,10 @@
 import classNames from 'classnames'
-import React, { FC, useCallback, useState } from 'react'
+import React, { useCallback, useState } from 'react'
+import type { FC } from 'react'
+
 import { COPY_ANIMATION_DURATION } from '../../shared/constants'
-import { TPropertiesValues } from '../../shared/types'
 import { parametersToString } from '../../shared/utils'
+import type { TPropertiesValues } from '../../shared/types'
 
 export interface IDropdownItemProps {
 	propertyKey: string;
