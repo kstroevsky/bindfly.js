@@ -1,8 +1,9 @@
+import { useEffect } from 'react'
 import CanvasAnimation from '../../../abstract/canvas'
-import FlyingPoints from '../../templates/FlyingPoints'
 import { generateColorsByCount } from '../../../utils'
+import FlyingPoints from '../../templates/FlyingPoints'
 
-export default class FlyingLines extends CanvasAnimation {
+export default class DroopingLines extends CanvasAnimation {
 	constructor(ctx, parameters) {
 		super()
 		this.properties = parameters.properties
@@ -56,7 +57,7 @@ export default class FlyingLines extends CanvasAnimation {
 			this.particles[i].reCalculateLife()
 			this.particles[i].position()
 
-			x1 = this.particles[i].x
+			x1 = Math.tan(this.particles[i].x)
 			y1 = this.particles[i].y
 
 			for (const j in this.particles) {
@@ -90,7 +91,7 @@ export default class FlyingLines extends CanvasAnimation {
 			this.particles[i].position()
 
 			x1 = this.particles[i].x
-			y1 = this.particles[i].y
+			y1 = Math.atan(this.particles[i].y)
 
 			for (const j in this.particles) {
 				x2 = this.particles[j].x
