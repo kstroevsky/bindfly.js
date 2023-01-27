@@ -1,23 +1,58 @@
-import { useContext, useEffect, useRef } from 'react'
-import DataContext, { IDataContext } from '../components/Context'
+import { useCallback, useContext, useEffect, useRef } from 'react'
+import type { MutableRefObject } from 'react'
+
 import CanvasAnimation from '../shared/abstract/canvas'
+import useForceUpdate from './useForceUpdate'
+import DataContext, { IDataContext } from '../components/Context'
+import { animationParamChangerFactory } from '../shared/HOF'
 import {
+	canvasClickHandler,
+	canvasParticlesCountChange,
+	canvasReload,
+} from '../shared/utils'
+import type {
 	ConstructorOf,
 	ICanvasWorkerProps,
-	TAnimationProperties
-} from '../shared/types/index'
-import { canvasClickHandler, canvasReload } from '../shared/utils'
-import useForceUpdate from './useForceUpdate'
+	TAnimationProperties,
+	TCallable,
+} from '../shared/types'
 
 const useCanvas = <A extends object>(
 	Animation: ConstructorOf<CanvasAnimation & Omit<A, 'prototype'>>,
 	animationParameters: TAnimationProperties
-) => {
+): [
+	MutableRefObject<HTMLCanvasElement | null>,
+	TCallable<void, number>,
+	TCallable<void, number>
+] => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null)
+	const animationRef = useRef<InstanceType<typeof Animation> | null>(null)
+
 	const { keyToggle, webWorker } = useContext<IDataContext>(DataContext)
 	const reload = useForceUpdate()
 
-	canvasReload(keyToggle, webWorker, canvasRef)
+	const changeParticlesCount = useCallback(
+		animationParamChangerFactory<A, number>(
+			webWorker,
+			animationRef.current,
+			'count',
+			canvasParticlesCountChange
+		),
+		[animationRef.current, webWorker.current]
+	)
+
+	const changeRadius = useCallback(
+		animationParamChangerFactory<A, number>(
+			webWorker,
+			animationRef.current,
+			'radius',
+			(radius) =>
+				Object.assign({}, animationRef.current, { spiralRadius: radius || 0 })
+		),
+		[animationRef.current, webWorker.current]
+	)
+
+	canvasReload<A>(keyToggle, webWorker, canvasRef, animationRef)
 
 	useEffect(() => {
 		if (canvasRef.current) {
@@ -41,7 +76,7 @@ const useCanvas = <A extends object>(
 							msg: 'init',
 							canvas: offscreen,
 							animationName: Animation.name,
-							animationParameters
+							animationParameters,
 						} as ICanvasWorkerProps,
 						[offscreen]
 					)
@@ -53,12 +88,16 @@ const useCanvas = <A extends object>(
 						canvasRef.current.onclick = (e) => {
 							webWorker.current?.postMessage({
 								msg: 'click',
-								pos: { x: e.clientX - animationParameters.offset, y: e.clientY }
+								pos: {
+									x: e.clientX - animationParameters.offset,
+									y: e.clientY,
+								},
 							})
 						}
 					}
 				} catch {
-					const { innerWidth, innerHeight, devicePixelRatio } = animationParameters
+					const { innerWidth, innerHeight, devicePixelRatio } =
+						animationParameters
 					const canvas: HTMLCanvasElement = canvasRef.current
 
 					canvas.width =
@@ -69,33 +108,36 @@ const useCanvas = <A extends object>(
 						devicePixelRatio
 
 					const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d', {
-						alpha: false
+						alpha: false,
 					})
 					ctx?.scale(devicePixelRatio, devicePixelRatio)
 
-					const animation: InstanceType<typeof Animation> = new Animation(
-						ctx,
-						animationParameters
-					)
+					animationRef.current = new Animation(ctx, animationParameters)
 
 					if (
 						animationParameters.properties.addByClick ||
 						animationParameters.properties.switchByClick
 					) {
 						canvas.onclick = (e) => {
-							canvasClickHandler(
-								// eslint-disable-next-line @typescript-eslint/no-explicit-any
-								animation as any,
-								{ pos: { x: e.clientX - animationParameters.offset, y: e.clientY } },
-								animationParameters.offset
-							)
+							if (animationRef.current) {
+								canvasClickHandler(
+									animationRef.current as any,
+									{
+										pos: {
+											x: e.clientX - animationParameters.offset,
+											y: e.clientY,
+										},
+									},
+									animationParameters.offset
+								)
+							}
 						}
 					}
 
-					animation?.init()
+					animationRef.current?.init()
 
 					return () => {
-						animation.clear()
+						animationRef.current?.clear()
 					}
 				}
 			} catch {
@@ -104,7 +146,7 @@ const useCanvas = <A extends object>(
 		}
 	}, [Animation, animationParameters])
 
-	return canvasRef
+	return [canvasRef, changeParticlesCount, changeRadius]
 }
 
 export default useCanvas

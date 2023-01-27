@@ -94,7 +94,7 @@ a:visited {
   text-shadow: 0px 3px 3px #ff002b;
 }
 
-.ListLinkItem > p {
+.ListLinkItem>p {
   color: green;
   padding-top: 5px;
   padding-right: 10px;
@@ -109,7 +109,7 @@ a:visited {
   bottom: 3px;
 }
 
-.ListLinkItem > *:not(.DropdownContent),
+.ListLinkItem>*:not(.DropdownContent),
 .CloseButton {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -132,16 +132,16 @@ a:visited {
   display: none;
 }
 
-.checkbox-bipolar-input:checked + label .checkbox-bipolar:after {
+.checkbox-bipolar-input:checked+label .checkbox-bipolar:after {
   left: 18px;
   right: 2px;
 }
 
-.checkbox-bipolar-input:checked + label .checkbox-bipolar .on {
+.checkbox-bipolar-input:checked+label .checkbox-bipolar .on {
   opacity: 0.5;
 }
 
-.checkbox-bipolar-input:checked + label .checkbox-bipolar .off {
+.checkbox-bipolar-input:checked+label .checkbox-bipolar .off {
   opacity: 0;
 }
 
@@ -265,7 +265,7 @@ canvas {
   .ListLinkItem:not(:last-child) {
     padding-bottom: 1rem;
     padding-top: 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   }
 
   .CardPanel {
@@ -274,7 +274,8 @@ canvas {
   }
 }
 
-@media (max-width: 768px), (orientation: portrait) {
+@media (max-width: 768px),
+(orientation: portrait) {
   .sidebar.modal {
     z-index: -1;
   }
@@ -326,4 +327,9 @@ canvas {
   margin-top: 8px;
   cursor: pointer;
   transition: 0s;
+}
+
+.animation-handlers {
+  position: absolute;
+  height: 60px;
 }
