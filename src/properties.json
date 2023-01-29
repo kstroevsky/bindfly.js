@@ -1,11 +1,18 @@
 [
   {
     "name": "Simple",
+    "for": [
+      "Spiral",
+      "DroopingLines",
+      "FlyingLines",
+      "FlyingLinesGL",
+      "FlyingCubesGL"
+    ],
     "bgColor": "rgba(0, 0, 0, 0.7)",
     "generativeColorsCounts": 10,
-    "particleCount": 100,
+    "particleCount": 150,
     "particleMaxVelocity": 1,
-    "lineLength": 150,
+    "lineLength": 250,
     "particleLife": 20,
     "margin": 20,
     "isMonochrome": false,
@@ -17,6 +24,13 @@
   },
   {
     "name": "Switch Color",
+    "for": [
+      "SpiralFlyingLines",
+      "Spiral",
+      "DroopingLines",
+      "FlyingLines",
+      "FlyingLinesGL"
+    ],
     "bgColor": "rgba(255, 255, 0, 0.7)",
     "particleColors": [
       "rgba(0, 0, 255, 1)",
@@ -38,6 +52,12 @@
   },
   {
     "name": "Monochrome & Clickable",
+    "for": [
+      "SpiralFlyingLines",
+      "Spiral",
+      "DroopingLines",
+      "FlyingLines"
+    ],
     "bgColor": "rgb(255, 255, 255)",
     "generativeColorsCounts": 10,
     "particleCount": 100,
@@ -54,11 +74,17 @@
   },
   {
     "name": "Add By Click",
+    "for": [
+      "SpiralFlyingLines",
+      "Spiral",
+      "DroopingLines",
+      "FlyingLines"
+    ],
     "bgColor": "rgba(0, 0, 0, 0.7)",
     "generativeColorsCounts": 10,
     "particleCount": 100,
     "particleMaxVelocity": 1,
-    "lineLength": 150,
+    "lineLength": 200,
     "particleLife": 20,
     "margin": 20,
     "isMonochrome": false,
@@ -132,12 +158,19 @@
   },
   {
     "name": "Blank",
+    "for": [
+      "SpiralFlyingLines",
+      "Spiral",
+      "DroopingLines",
+      "FlyingLines"
+    ],
     "bgColor": "rgba(0, 0, 0, 0.7)",
     "generativeColorsCounts": 10,
     "particleCount": 1,
     "particleMaxVelocity": 1,
     "lineLength": 200,
     "particleLife": 20,
+    "radius": 400,
     "margin": 20,
     "isMonochrome": false,
     "isCountStable": false,
