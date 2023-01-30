@@ -94,7 +94,7 @@ a:visited {
   text-shadow: 0px 3px 3px #ff002b;
 }
 
-.ListLinkItem>p {
+.ListLinkItem > p {
   color: green;
   padding-top: 5px;
   padding-right: 10px;
@@ -109,7 +109,7 @@ a:visited {
   bottom: 3px;
 }
 
-.ListLinkItem>*:not(.DropdownContent),
+.ListLinkItem > *:not(.DropdownContent),
 .CloseButton {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -132,16 +132,16 @@ a:visited {
   display: none;
 }
 
-.checkbox-bipolar-input:checked+label .checkbox-bipolar:after {
+.checkbox-bipolar-input:checked + label .checkbox-bipolar:after {
   left: 18px;
   right: 2px;
 }
 
-.checkbox-bipolar-input:checked+label .checkbox-bipolar .on {
+.checkbox-bipolar-input:checked + label .checkbox-bipolar .on {
   opacity: 0.5;
 }
 
-.checkbox-bipolar-input:checked+label .checkbox-bipolar .off {
+.checkbox-bipolar-input:checked + label .checkbox-bipolar .off {
   opacity: 0;
 }
 
@@ -331,5 +331,6 @@ canvas {
 
 .animation-handlers {
   position: absolute;
-  height: 60px;
+  right: 0;
+  width: 72vw;
 }
