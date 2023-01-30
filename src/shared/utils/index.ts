@@ -7,6 +7,7 @@ import type CanvasAnimation from '../abstract/canvas';
 import type {
 	IAnimationWithParticles,
 	IProperty,
+	ConstructorOf,
 	ISingleParticle,
 	IVectorsForIntersect,
 	TPropertiesValues,
@@ -24,6 +25,32 @@ export const getPosition = (
 	(position + velocity < margin && velocity < margin)
 		? -1
 		: 1);
+
+export const getPositionGL = (
+	position: number,
+	size: number,
+	velocity: number,
+	margin: number
+): number => {
+	const isVelocityPositive = velocity > 0;
+
+	return (
+		velocity *
+		((
+			position > 0
+				? position + velocity > size - margin && isVelocityPositive
+				: position - velocity < -size + margin && !isVelocityPositive
+		)
+			? -1
+			: 1)
+	);
+};
+
+// velocity *
+// 		((position - velocity < -size - margin && velocity > 0) ||
+// 		(position + velocity > margin && velocity < margin)
+// 			? -1
+// 			: 1)
 
 export const canvasReload = <A extends object>(
 	toggle: IDataContext['keyToggle'],
@@ -157,7 +184,8 @@ export const canvasClickHandler = <
 
 export const canvasParticlesCountChange = (
 	count: number,
-	animation: CanvasAnimation
+	animation: CanvasAnimation,
+	Template: ConstructorOf<{ particles: unknown[] }> = FlyingPoints
 ) => {
 	const particlesCount = animation?.particles?.length || 0;
 
@@ -165,7 +193,7 @@ export const canvasParticlesCountChange = (
 		animation?.particles?.splice(0, particlesCount - count);
 	} else {
 		animation?.particles?.push(
-			...new FlyingPoints(animation?.sizes?.width, animation?.sizes?.height, {
+			...new Template(animation?.sizes?.width, animation?.sizes?.height, {
 				...animation?.properties,
 				particleCount: count - particlesCount,
 			}).particles

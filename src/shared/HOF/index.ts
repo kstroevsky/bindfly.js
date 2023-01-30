@@ -22,14 +22,14 @@ export const getThrottle = <R = void, A = any>(
 };
 
 export const animationParamChangerFactory = <A extends object, V>(
-	webWorker: MutableRefObject<Worker | null>,
+	webWorker: MutableRefObject<Worker | null> | null,
 	animationRef: (CanvasAnimation & Omit<A, 'prototype'>) | null,
 	paramName: ICanvasWorkerProps['msg'],
 	paramCallback: (...args: [V, ...any[]]) => void
 ) => {
 	const handleAnimationParamChange = (value: V) => {
-		if (webWorker.current) {
-			webWorker.current.postMessage({
+		if (webWorker?.current) {
+			webWorker?.current.postMessage({
 				msg: paramName,
 				[paramName]: value,
 			});

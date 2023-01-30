@@ -1,11 +1,10 @@
 import * as THREE from 'three'
-import { MeshLineMaterial } from 'three.meshline'
 
 import FlyingPointsGL from '../../templates/FlyingPointsGL'
 import { generateColorsByCount, RGBAToHexA } from '../../../utils'
 
 export default class FlyingLinesGL extends THREE.Object3D {
-	constructor (renderer, camera, scene, parameters) {
+	constructor(renderer, camera, scene, parameters) {
 		super()
 		this.properties = parameters.properties
 
@@ -29,10 +28,10 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		this.lineMaterial = null
 
 		this.lineGeometry = new THREE.BufferGeometry()
-		this.boundCube = this.animate.bind(this)
+		this.boundCube = this.loop.bind(this)
 	}
 
-	drawLines () {
+	drawLines() {
 		let x1, y1, z1, x2, y2, z2, length
 
 		for (const i in this.particles) {
@@ -66,7 +65,7 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		}
 	}
 
-	texture () {
+	texture() {
 		const width = 256
 		const height = 256
 
@@ -93,21 +92,22 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		return texture
 	}
 
-	animate () {
+	loop() {
+		// console.log(this.particles?.length)
 		let x1, x2, y1, y2, z1, z2, length
 		this.vertices = []
 
 		this.particles.forEach((_, i) => {
 			this.particles[i].position()
 
-			x1 = this.particles[i].x / this.particles[i].w * 2
-			y1 = this.particles[i].y / this.particles[i].h * 2
-			z1 = this.particles[i].z / this.particles[i].d * 2
+			x1 = this.particles[i].x / this.particles[i].w * 3
+			y1 = this.particles[i].y / this.particles[i].h * 3
+			z1 = this.particles[i].z / this.particles[i].d * 3
 
 			for (let j = i + 1; j < this.particles.length; j++) {
-				x2 = this.particles[j].x / this.particles[j].w * 2
-				y2 = this.particles[j].y / this.particles[j].h * 2
-				z2 = this.particles[j].z / this.particles[j].d * 2
+				x2 = this.particles[j].x / this.particles[j].w * 3
+				y2 = this.particles[j].y / this.particles[j].h * 3
+				z2 = this.particles[j].z / this.particles[j].d * 3
 
 				length = Math.sqrt(
 					Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2) + Math.pow(z2 - z1, 2)
@@ -125,14 +125,16 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		requestAnimationFrame(this.boundCube)
 	}
 
-	init () {
+	init() {
 		this.particles = new FlyingPointsGL(
 			this.sizes.width,
 			this.sizes.height,
-			50,
 			this.properties,
-			this.isParticleColors
+			50
 		).particles
+
+		// document.onclick = () => this.particles = this.particles.filter((item) => item.x < 400)
+		document.onclick = () => console.log(Math.max(...this.particles.map((item) => item.x)))
 
 		for (let i = 0; i < this.particles.length; i++) {
 			for (let j = i + 1; j < this.particles.length; j++) {
@@ -188,10 +190,10 @@ export default class FlyingLinesGL extends THREE.Object3D {
 			this.scene.add(line)
 		})
 
-		this.animate()
+		this.loop()
 	}
 
-	clear () {
+	clear() {
 		if (this.isStarted) {
 			this.isStarted = false
 			cancelAnimationFrame(this.boundAnimate)
