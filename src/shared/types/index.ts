@@ -114,13 +114,21 @@ export interface WorkerClickData {
 export type TKeys<O extends object> = keyof O;
 
 export interface ICanvasWorkerProps {
-	msg: 'init' | 'click' | 'stop' | 'count' | 'radius' | 'velocity';
+	msg:
+		| 'init'
+		| 'click'
+		| 'stop'
+		| 'count'
+		| 'radius'
+		| 'velocity'
+		| 'lineLength';
 	canvas: OffscreenCanvas;
 	animationName: string;
 	animationParameters: TAnimationProperties;
 	count?: number;
 	radius?: number;
 	velocity?: number;
+	lineLength?: number;
 }
 
 export interface IVectorsForIntersect {

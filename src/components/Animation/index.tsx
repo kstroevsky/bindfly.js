@@ -16,6 +16,7 @@ import type { IOutletContext, IProperty } from '../../shared/types';
 const RadiusCounter = lazy(() => import('../RadiusCounter'));
 const ParticlesCounter = lazy(() => import('../ParticlesCounter'));
 const VelocityCounter = lazy(() => import('../VelocityCounter'));
+const LineLengthCounter = lazy(() => import('../LineLengthCounter'));
 
 export interface IAnimationProps {
 	classId: string;
@@ -45,14 +46,19 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 			AnimationClass = FlyingLines;
 	}
 
-	const [canvasRef, changeParticlesCount, changeRadius, changeVelocity] =
-		useCanvas<typeof AnimationClass>(AnimationClass, {
-			properties,
-			innerWidth,
-			innerHeight,
-			devicePixelRatio,
-			offset: offsetWidth,
-		});
+	const [
+		canvasRef,
+		changeParticlesCount,
+		changeRadius,
+		changeVelocity,
+		changeLineLength,
+	] = useCanvas<typeof AnimationClass>(AnimationClass, {
+		properties,
+		innerWidth,
+		innerHeight,
+		devicePixelRatio,
+		offset: offsetWidth,
+	});
 
 	return (
 		<>
@@ -73,9 +79,14 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 					onChange={changeParticlesCount}
 				/>
 				<VelocityCounter
-					key={`${+keyToggle.current}-particles`}
+					key={`${+keyToggle.current}-velocity`}
 					initialValue={properties.particleMaxVelocity}
 					onChange={changeVelocity}
+				/>
+				<LineLengthCounter
+					key={`${+keyToggle.current}-length`}
+					initialValue={properties.lineLength}
+					onChange={changeLineLength}
 				/>
 			</div>
 			<Canvas

@@ -25,6 +25,7 @@ const useCanvas = <A extends object>(
 	MutableRefObject<HTMLCanvasElement | null>,
 	TCallable<void, number>,
 	TCallable<void, number>,
+	TCallable<void, number>,
 	TCallable<void, number>
 ] => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -63,6 +64,34 @@ const useCanvas = <A extends object>(
 				Object.assign({}, animationRef.current?.properties, {
 					...animationRef.current?.properties,
 					particleMaxVelocity: velocity || 0,
+				});
+
+				if (animationRef.current?.particles) {
+					animationRef.current.particles = animationRef.current?.particles?.map(
+						(item) => {
+							const newVelocity = getVelocity(velocity || 0);
+							return {
+								...item,
+								velocityX: newVelocity,
+								velocityY: newVelocity,
+							};
+						}
+					);
+				}
+			}
+		),
+		[animationRef.current, webWorker.current]
+	);
+
+	const changeLineLength = useCallback(
+		animationParamChangerFactory<A, number>(
+			webWorker,
+			animationRef.current,
+			'lineLength',
+			(lineLength) => {
+				Object.assign({}, animationRef.current?.properties, {
+					...animationRef.current?.properties,
+					lineLength: lineLength || 0,
 				});
 			}
 		),
@@ -163,7 +192,13 @@ const useCanvas = <A extends object>(
 		}
 	}, [Animation, animationParameters]);
 
-	return [canvasRef, changeParticlesCount, changeRadius, changeVelocity];
+	return [
+		canvasRef,
+		changeParticlesCount,
+		changeRadius,
+		changeVelocity,
+		changeLineLength,
+	];
 };
 
 export default useCanvas;
