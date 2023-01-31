@@ -12,7 +12,7 @@ import type {
 } from './../shared/types/index'
 
 const useWebGL = <A extends ConstructorOf<CanvasAnimation>>(
-	Animation: TSomeAbstractClass<CanvasAnimation & Omit<A, 'prototype'>>,
+	Animation: TSomeAbstractClass<CanvasAnimation>,
 	animationParameters: TAnimationProperties
 ): [
 	MutableRefObject<HTMLCanvasElement | null>,
