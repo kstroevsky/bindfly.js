@@ -13,6 +13,7 @@ import type {
 	TPropertiesValues,
 	WorkerClickData,
 } from '../types'
+import {TSomeAbstractClass} from "../types";
 
 export const getPosition = (
 	position: number,
@@ -187,7 +188,7 @@ export const canvasClickHandler = <
 export const canvasParticlesCountChange = (
 	count: number,
 	animation: CanvasAnimation,
-	Template: ConstructorOf<{ particles: unknown[] }> = FlyingPoints
+	Template: TSomeAbstractClass<{ particles: unknown[] }> = FlyingPoints
 ) => {
 	const particlesCount = animation?.particles?.length || 0
 

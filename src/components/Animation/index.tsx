@@ -1,22 +1,22 @@
-import React, { lazy, useContext } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import type { FC } from 'react';
+import React, { lazy, useContext } from 'react'
+import { useOutletContext } from 'react-router-dom'
+import type { FC } from 'react'
 
 import {
 	FlyingLines,
 	DroopingLines,
 	SpiralFlyingLines,
 	Spiral,
-} from '../../shared/2d/animations';
-import DataContext, { IDataContext } from '../Context';
-import { useCanvas } from '../../hooks';
-import { Canvas } from '../Canvas';
-import type { IOutletContext, IProperty } from '../../shared/types';
+} from '../../shared/2d/animations'
+import DataContext, { IDataContext } from '../Context'
+import { useCanvas } from '../../hooks'
+import { Canvas } from '../Canvas'
+import type { IOutletContext, IProperty } from '../../shared/types'
 
-const RadiusCounter = lazy(() => import('../RadiusCounter'));
-const ParticlesCounter = lazy(() => import('../ParticlesCounter'));
-const VelocityCounter = lazy(() => import('../VelocityCounter'));
-const LineLengthCounter = lazy(() => import('../LineLengthCounter'));
+const RadiusCounter = lazy(() => import('../RadiusCounter'))
+const ParticlesCounter = lazy(() => import('../ParticlesCounter'))
+const VelocityCounter = lazy(() => import('../VelocityCounter'))
+const LineLengthCounter = lazy(() => import('../LineLengthCounter'))
 
 export interface IAnimationProps {
 	classId: string;
@@ -24,26 +24,26 @@ export interface IAnimationProps {
 }
 
 const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
-	const { keyToggle } = useContext<IDataContext>(DataContext);
-	const { width: offset, isMobile } = useOutletContext<IOutletContext>();
+	const { keyToggle } = useContext<IDataContext>(DataContext)
+	const { width: offset, isMobile } = useOutletContext<IOutletContext>()
 
-	const { innerWidth, innerHeight, devicePixelRatio } = window;
-	const offsetWidth: number = isMobile ? 0 : offset;
+	const { innerWidth, innerHeight, devicePixelRatio } = window
+	const offsetWidth: number = isMobile ? 0 : offset
 
-	let AnimationClass;
+	let AnimationClass
 
 	switch (classId) {
 		case SpiralFlyingLines.name:
-			AnimationClass = SpiralFlyingLines;
-			break;
+			AnimationClass = SpiralFlyingLines
+			break
 		case Spiral.name:
-			AnimationClass = Spiral;
-			break;
+			AnimationClass = Spiral
+			break
 		case DroopingLines.name:
-			AnimationClass = DroopingLines;
-			break;
+			AnimationClass = DroopingLines
+			break
 		default:
-			AnimationClass = FlyingLines;
+			AnimationClass = FlyingLines
 	}
 
 	const [
@@ -58,7 +58,7 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 		innerHeight,
 		devicePixelRatio,
 		offset: offsetWidth,
-	});
+	})
 
 	return (
 		<>
@@ -88,12 +88,12 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 				{classId === SpiralFlyingLines.name &&
 					properties.radius &&
 					!properties.isPulsatile && (
-						<RadiusCounter
-							key={`${+keyToggle.current}-radius`}
-							initialValue={properties.radius || 0}
-							onChange={changeRadius}
-						/>
-					)}
+					<RadiusCounter
+						key={`${+keyToggle.current}-radius`}
+						initialValue={properties.radius || 0}
+						onChange={changeRadius}
+					/>
+				)}
 			</div>
 			<Canvas
 				key={+keyToggle.current}
@@ -109,7 +109,7 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 				}}
 			/>
 		</>
-	);
-};
+	)
+}
 
-export default React.memo(Animation);
+export default React.memo(Animation)
