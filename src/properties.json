@@ -134,7 +134,7 @@
     "isMonochrome": false,
     "isCountStable": false,
     "isImmortal": false,
-    "addByClick": true,
+    "addByClick": false,
     "switchByClick": false,
     "moveByClick": true,
     "isStatic": false

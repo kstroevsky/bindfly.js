@@ -3,7 +3,7 @@ import { generateColorsByCount } from '../../../utils'
 import FlyingPoints from '../../templates/FlyingPoints'
 
 export default class Spiral extends CanvasAnimation {
-	constructor (ctx, parameters) {
+	constructor(ctx, parameters) {
 		super()
 		this.properties = parameters.properties
 		this.a = 2.6
@@ -18,6 +18,9 @@ export default class Spiral extends CanvasAnimation {
 
 		this.isStarted = false
 		this.colorOffset = 0
+
+		this.positionX = this.sizes.width / 2
+		this.positionY = this.sizes.height / 2
 
 		this.particleColors =
 			parameters.properties.particleColors &&
@@ -36,17 +39,17 @@ export default class Spiral extends CanvasAnimation {
 		this.boundAnimate = this.loop.bind(this)
 	}
 
-	monochrome (i, opacity) {
+	monochrome(i, opacity) {
 		return `rgba(${i % 2 === 0 ? '0, 0, 0' : '255, 255, 255'}, ${opacity})`
 	}
 
-	propsColors (i, opacity) {
+	propsColors(i, opacity) {
 		return this.particleColors[
 			(this.colorOffset + i) % this.particleColors.length
 		].replace(/\d+(?=\)$)/, opacity)
 	}
 
-	reDrawBackground () {
+	reDrawBackground() {
 		this.ctx.fillStyle = this.properties.bgColor
 		this.ctx.fillRect(0, 0, this.sizes.width, this.sizes.height)
 	}
@@ -113,10 +116,8 @@ export default class Spiral extends CanvasAnimation {
 	// 	  }
 	// 	}
 
-	drawLinesWithoutAdding () {
+	drawLinesWithoutAdding() {
 		// Set up some constants for the spiral galaxy pattern
-		const centerX = this.sizes.width / 2
-		const centerY = this.sizes.height / 2
 		const radius = Math.min(this.sizes.width, this.sizes.height) / 2
 		const maxParticles = this.properties.maxParticles || 100
 		const particleSpacing = 2 * Math.PI / maxParticles
@@ -128,32 +129,32 @@ export default class Spiral extends CanvasAnimation {
 		// Iterate through the particles and calculate their positions
 		for (let i = 0; i < this.particles.length; i++) {
 			this.a += this.back ? 1 : -1
-		  if (this.back) this.a -= 0.000005
-		  else this.a += 0.000005
-		  // Calculate the angle and distance from the center of the spiral
-		  const arm = Math.floor(i / maxParticles)
-		  this.angle = (particleSpacing * i + arm * Math.PI / numArms)
+			if (this.back) this.a -= 0.000005
+			else this.a += 0.000005
+			// Calculate the angle and distance from the center of the spiral
+			const arm = Math.floor(i / maxParticles)
+			this.angle = (particleSpacing * i + arm * Math.PI / numArms)
 			//   this.angle %= 2 * Math.PI;
-		  const distance = radius * (this.angle / (2 * Math.PI)) * 2
+			const distance = radius * (this.angle / (2 * Math.PI)) * 2
 
-		  // Calculate the x and y position of the particle
-		  const x = centerX + distance * Math.cos(this.angle * Math.exp(this.a)) * Math.sin(this.a)
-		  const y = centerY + distance * Math.cos(this.a) * (-1)
+			// Calculate the x and y position of the particle
+			const x = this.positionX + distance * Math.cos(this.angle * Math.exp(this.a)) * Math.sin(this.a)
+			const y = this.positionY + distance * Math.cos(this.a) * (-1)
 
-		  // Update the particle's position
-		  this.particles[i].x = x
-		  this.particles[i].y = y
+			// Update the particle's position
+			this.particles[i].x = x
+			this.particles[i].y = y
 		}
 
 		// Iterate through the particles again and draw the lines between them
 		for (let i = 0; i < this.particles.length; i++) {
-		  // Get the current particle's position
-		  const x1 = this.particles[i].x
-		  const y1 = this.particles[i].y
+			// Get the current particle's position
+			const x1 = this.particles[i].x
+			const y1 = this.particles[i].y
 
-		  // Iterate through all the other particles and draw a line between them if they are close enough
-		  for (let j = i + 1; j < this.particles.length; j++) {
-			// Get the other particle's position
+			// Iterate through all the other particles and draw a line between them if they are close enough
+			for (let j = i + 1; j < this.particles.length; j++) {
+				// Get the other particle's position
 				const x2 = this.particles[j].x
 				const y2 = this.particles[j].y
 
@@ -162,18 +163,18 @@ export default class Spiral extends CanvasAnimation {
 
 				// Draw a line between the two particles if they are close enough
 				if (length < this.properties.lineLength) {
-			  this.ctx.lineWidth = 0.5
-			  this.ctx.strokeStyle = this.color(i, 1 - length / this.properties.lineLength, x1)
-			  this.ctx.beginPath()
-			  this.ctx.moveTo(x1, y1)
-			  this.ctx.lineTo(x2, y2)
-			  this.ctx.stroke()
+					this.ctx.lineWidth = 0.5
+					this.ctx.strokeStyle = this.color(i, 1 - length / this.properties.lineLength, x1)
+					this.ctx.beginPath()
+					this.ctx.moveTo(x1, y1)
+					this.ctx.lineTo(x2, y2)
+					this.ctx.stroke()
 				}
-		  }
+			}
 		}
-	  }
+	}
 
-	drawLinesWithAdding () {
+	drawLinesWithAdding() {
 		let x1, y1, x2, y2, length, opacity
 
 		for (const i in this.particles) {
@@ -212,14 +213,14 @@ export default class Spiral extends CanvasAnimation {
 		}
 	}
 
-	loop () {
+	loop() {
 		this.reDrawBackground()
 		this.drawLines()
 
 		requestAnimationFrame(this.boundAnimate)
 	}
 
-	init () {
+	init() {
 		this.particles = new FlyingPoints(
 			this.sizes.width,
 			this.sizes.height,
@@ -237,7 +238,13 @@ export default class Spiral extends CanvasAnimation {
 		this.loop()
 	}
 
-	clear () {
+	reInit(x, y) {
+		// cancelAnimationFrame(this.boundAnimate)
+		this.positionX = x
+		this.positionY = y
+	}
+
+	clear() {
 		cancelAnimationFrame(this.boundAnimate)
 		this.particles = null
 		delete this

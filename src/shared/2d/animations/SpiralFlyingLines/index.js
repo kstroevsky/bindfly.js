@@ -3,7 +3,7 @@ import { generateColorsByCount } from '../../../utils'
 import FlyingPoints from '../../templates/FlyingPoints'
 
 export default class SpiralFlyingLines extends CanvasAnimation {
-	constructor(ctx, parameters) {
+	constructor (ctx, parameters) {
 		super()
 		this.properties = parameters.properties
 
@@ -43,38 +43,38 @@ export default class SpiralFlyingLines extends CanvasAnimation {
 		this.boundAnimate = this.loop.bind(this)
 	}
 
-	monochrome(i, opacity) {
+	monochrome (i, opacity) {
 		return `rgba(${i % 2 === 0 ? '0, 0, 0' : '255, 255, 255'}, ${opacity})`
 	}
 
-	propsColors(i, opacity) {
+	propsColors (i, opacity) {
 		return this.particleColors[
 			(this.colorOffset + i) % this.particleColors.length
 		].replace(/\d+(?=\)$)/, opacity)
 	}
 
-	reDrawBackground() {
+	reDrawBackground () {
 		this.ctx.fillStyle = this.properties.bgColor
 		this.ctx.fillRect(0, 0, this.sizes.width, this.sizes.height)
 	}
 
-	increaseAngle() {
+	increaseAngle () {
 		this.spiralAngle += 0.1 // Increase the angle of the spiral
 	}
 
-	decreaseAngle() {
+	decreaseAngle () {
 		this.spiralAngle -= 0.1 // Increase the angle of the spiral
 	}
 
-	increaseRadius() {
+	increaseRadius () {
 		this.spiralRadius += 0.05 // Increase the radius of the spiral
 	}
 
-	decreaseRadius() {
+	decreaseRadius () {
 		this.spiralRadius -= 0.05 // Increase the radius of the spiral
 	}
 
-	drawLinesWithoutAdding() {
+	drawLinesWithoutAdding () {
 		let x1, y1, x2, y2
 
 		for (const i in this.particles) {
@@ -104,14 +104,14 @@ export default class SpiralFlyingLines extends CanvasAnimation {
 		}
 	}
 
-	loop() {
+	loop () {
 		this.reDrawBackground()
 		this.drawLines()
 
 		requestAnimationFrame(this.boundAnimate)
 	}
 
-	init() {
+	init () {
 		this.particles = new FlyingPoints(
 			this.sizes.width,
 			this.sizes.height,
@@ -148,13 +148,12 @@ export default class SpiralFlyingLines extends CanvasAnimation {
 		this.loop()
 	}
 
-	reInit(x, y) {
-		// cancelAnimationFrame(this.boundAnimate)
+	reInit (x, y) {
 		this.positionX = x
 		this.positionY = y
 	}
 
-	clear() {
+	clear () {
 		cancelAnimationFrame(this.boundAnimate)
 		this.particles = null
 		delete this

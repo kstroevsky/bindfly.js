@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { lazy, useContext } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import type { FC } from 'react';
 
@@ -7,7 +7,9 @@ import { Canvas } from '../Canvas';
 import { useWebGL } from '../../hooks';
 import { FlyingCubesGL, FlyingLinesGL } from '../../shared/2d/animations';
 import type { IOutletContext, IProperty } from '../../shared/types';
-import ParticlesCounter from '../ParticlesCounter';
+
+const ParticlesCounter = lazy(() => import('../ParticlesCounter'));
+const VelocityCounter = lazy(() => import('../VelocityCounter'));
 
 export interface IAnimationGLProps {
 	properties: IProperty;
@@ -21,8 +23,6 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 	const { innerWidth, innerHeight, devicePixelRatio } = window;
 	const offsetWidth: number = isMobile ? 0 : offset;
 
-	console.log(innerWidth - offsetWidth);
-
 	let AnimationClass;
 
 	switch (classId) {
@@ -34,16 +34,15 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 			AnimationClass = FlyingLinesGL;
 	}
 
-	const [canvasRef, changeParticlesCount] = useWebGL<typeof AnimationClass>(
-		AnimationClass,
-		{
-			properties,
-			innerWidth,
-			innerHeight,
-			devicePixelRatio,
-			offset: offsetWidth,
-		}
-	);
+	const [canvasRef, changeParticlesCount, changeVelocity] = useWebGL<
+		typeof AnimationClass
+	>(AnimationClass, {
+		properties,
+		innerWidth,
+		innerHeight,
+		devicePixelRatio,
+		offset: offsetWidth,
+	});
 
 	return (
 		<>
@@ -53,6 +52,11 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 						key={`${+keyToggle.current}-particles`}
 						initialValue={properties.particleCount}
 						onChange={changeParticlesCount}
+					/>
+					<VelocityCounter
+						key={`${+keyToggle.current}-velocity`}
+						initialValue={properties.particleMaxVelocity}
+						onChange={changeVelocity}
 					/>
 				</div>
 			)}

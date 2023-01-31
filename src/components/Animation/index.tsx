@@ -66,28 +66,34 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 				key={`${+keyToggle.current}-ranges`}
 				className={'animation-handlers'}
 			>
-				{classId === SpiralFlyingLines.name && !properties.isPulsatile && (
-					<RadiusCounter
-						key={`${+keyToggle.current}-radius`}
-						initialValue={properties.radius || 0}
-						onChange={changeRadius}
-					/>
-				)}
 				<ParticlesCounter
 					key={`${+keyToggle.current}-particles`}
 					initialValue={properties.particleCount}
 					onChange={changeParticlesCount}
 				/>
-				<VelocityCounter
-					key={`${+keyToggle.current}-velocity`}
-					initialValue={properties.particleMaxVelocity}
-					onChange={changeVelocity}
-				/>
-				<LineLengthCounter
-					key={`${+keyToggle.current}-length`}
-					initialValue={properties.lineLength}
-					onChange={changeLineLength}
-				/>
+				{classId !== SpiralFlyingLines.name && (
+					<LineLengthCounter
+						key={`${+keyToggle.current}-length`}
+						initialValue={properties.lineLength}
+						onChange={changeLineLength}
+					/>
+				)}
+				{classId !== Spiral.name && classId !== SpiralFlyingLines.name && (
+					<VelocityCounter
+						key={`${+keyToggle.current}-velocity`}
+						initialValue={properties.particleMaxVelocity}
+						onChange={changeVelocity}
+					/>
+				)}
+				{classId === SpiralFlyingLines.name &&
+					properties.radius &&
+					!properties.isPulsatile && (
+						<RadiusCounter
+							key={`${+keyToggle.current}-radius`}
+							initialValue={properties.radius || 0}
+							onChange={changeRadius}
+						/>
+					)}
 			</div>
 			<Canvas
 				key={+keyToggle.current}

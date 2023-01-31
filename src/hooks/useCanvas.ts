@@ -129,7 +129,8 @@ const useCanvas = <A extends object>(
 
 					if (
 						animationParameters.properties.addByClick ||
-						animationParameters.properties.switchByClick
+						animationParameters.properties.switchByClick ||
+						animationParameters.properties.moveByClick
 					) {
 						canvasRef.current.onclick = (e) => {
 							webWorker.current?.postMessage({
@@ -162,7 +163,8 @@ const useCanvas = <A extends object>(
 
 					if (
 						animationParameters.properties.addByClick ||
-						animationParameters.properties.switchByClick
+						animationParameters.properties.switchByClick ||
+						animationParameters.properties.moveByClick
 					) {
 						canvas.onclick = (e) => {
 							if (animationRef.current) {
