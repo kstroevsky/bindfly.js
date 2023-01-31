@@ -1,21 +1,22 @@
-import { useCallback, useContext, useEffect, useRef } from 'react'
-import type { MutableRefObject } from 'react'
+import { useCallback, useContext, useEffect, useRef } from 'react';
+import type { MutableRefObject } from 'react';
 
-import CanvasAnimation from '../shared/abstract/canvas'
-import useForceUpdate from './useForceUpdate'
-import DataContext, { IDataContext } from '../components/Context'
-import { animationParamChangerFactory } from '../shared/HOF'
+import CanvasAnimation from '../shared/abstract/canvas';
+import useForceUpdate from './useForceUpdate';
+import DataContext, { IDataContext } from '../components/Context';
+import { animationParamChangerFactory } from '../shared/HOF';
 import {
 	canvasClickHandler,
 	canvasParticlesCountChange,
 	canvasReload,
-} from '../shared/utils'
+	getVelocity,
+} from '../shared/utils';
 import type {
 	ConstructorOf,
 	ICanvasWorkerProps,
 	TAnimationProperties,
 	TCallable,
-} from '../shared/types'
+} from '../shared/types';
 
 const useCanvas = <A extends object>(
 	Animation: ConstructorOf<CanvasAnimation & Omit<A, 'prototype'>>,
@@ -23,13 +24,14 @@ const useCanvas = <A extends object>(
 ): [
 	MutableRefObject<HTMLCanvasElement | null>,
 	TCallable<void, number>,
+	TCallable<void, number>,
 	TCallable<void, number>
 ] => {
-	const canvasRef = useRef<HTMLCanvasElement | null>(null)
-	const animationRef = useRef<InstanceType<typeof Animation> | null>(null)
+	const canvasRef = useRef<HTMLCanvasElement | null>(null);
+	const animationRef = useRef<InstanceType<typeof Animation> | null>(null);
 
-	const { keyToggle, webWorker } = useContext<IDataContext>(DataContext)
-	const reload = useForceUpdate()
+	const { keyToggle, webWorker } = useContext<IDataContext>(DataContext);
+	const reload = useForceUpdate();
 
 	const changeParticlesCount = useCallback(
 		animationParamChangerFactory<A, number>(
@@ -39,7 +41,7 @@ const useCanvas = <A extends object>(
 			canvasParticlesCountChange
 		),
 		[animationRef.current, webWorker.current]
-	)
+	);
 
 	const changeRadius = useCallback(
 		animationParamChangerFactory<A, number>(
@@ -50,9 +52,24 @@ const useCanvas = <A extends object>(
 				Object.assign({}, animationRef.current, { spiralRadius: radius || 0 })
 		),
 		[animationRef.current, webWorker.current]
-	)
+	);
 
-	canvasReload<A>(keyToggle, webWorker, canvasRef, animationRef)
+	const changeVelocity = useCallback(
+		animationParamChangerFactory<A, number>(
+			webWorker,
+			animationRef.current,
+			'velocity',
+			(velocity) => {
+				Object.assign({}, animationRef.current?.properties, {
+					...animationRef.current?.properties,
+					particleMaxVelocity: velocity || 0,
+				});
+			}
+		),
+		[animationRef.current, webWorker.current]
+	);
+
+	canvasReload<A>(keyToggle, webWorker, canvasRef, animationRef);
 
 	useEffect(() => {
 		if (canvasRef.current) {
@@ -64,12 +81,12 @@ const useCanvas = <A extends object>(
 							import.meta.url
 						),
 						{ type: 'module' }
-					)
+					);
 
-					webWorker.current = worker
+					webWorker.current = worker;
 
 					const offscreen: OffscreenCanvas =
-						canvasRef.current.transferControlToOffscreen()
+						canvasRef.current.transferControlToOffscreen();
 
 					webWorker.current.postMessage(
 						{
@@ -79,7 +96,7 @@ const useCanvas = <A extends object>(
 							animationParameters,
 						} as ICanvasWorkerProps,
 						[offscreen]
-					)
+					);
 
 					if (
 						animationParameters.properties.addByClick ||
@@ -92,27 +109,27 @@ const useCanvas = <A extends object>(
 									x: e.clientX - animationParameters.offset,
 									y: e.clientY,
 								},
-							})
-						}
+							});
+						};
 					}
 				} catch {
 					const { innerWidth, innerHeight, devicePixelRatio } =
-						animationParameters
-					const canvas: HTMLCanvasElement = canvasRef.current
+						animationParameters;
+					const canvas: HTMLCanvasElement = canvasRef.current;
 
 					canvas.width =
 						(canvas.width !== innerWidth ? canvas.width : innerWidth) *
-						devicePixelRatio
+						devicePixelRatio;
 					canvas.height =
 						(canvas.height !== innerHeight ? canvas.height : innerHeight) *
-						devicePixelRatio
+						devicePixelRatio;
 
 					const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d', {
 						alpha: false,
-					})
-					ctx?.scale(devicePixelRatio, devicePixelRatio)
+					});
+					ctx?.scale(devicePixelRatio, devicePixelRatio);
 
-					animationRef.current = new Animation(ctx, animationParameters)
+					animationRef.current = new Animation(ctx, animationParameters);
 
 					if (
 						animationParameters.properties.addByClick ||
@@ -129,24 +146,24 @@ const useCanvas = <A extends object>(
 										},
 									},
 									animationParameters.offset
-								)
+								);
 							}
-						}
+						};
 					}
 
-					animationRef.current?.init()
+					animationRef.current?.init();
 
 					return () => {
-						animationRef.current?.clear()
-					}
+						animationRef.current?.clear();
+					};
 				}
 			} catch {
-				reload()
+				reload();
 			}
 		}
-	}, [Animation, animationParameters])
+	}, [Animation, animationParameters]);
 
-	return [canvasRef, changeParticlesCount, changeRadius]
-}
+	return [canvasRef, changeParticlesCount, changeRadius, changeVelocity];
+};
 
-export default useCanvas
+export default useCanvas;

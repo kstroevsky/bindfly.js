@@ -6,12 +6,12 @@ import type { TCallable } from '../../shared/types'
 
 import './styles.css'
 
-export interface IRadiusHandlerProps {
+export interface IRadiusCounterProps {
     initialValue: number
     onChange: TCallable<void, number>
 }
 
-const RadiusHandler: FC<IRadiusHandlerProps> = ({ onChange, initialValue }) => {
+const RadiusCounter: FC<IRadiusCounterProps> = ({ onChange, initialValue }) => {
 	const [radius, setRadius] = useState<number>(initialValue)
 
 	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,4 +37,4 @@ const RadiusHandler: FC<IRadiusHandlerProps> = ({ onChange, initialValue }) => {
 	)
 }
 
-export default memo(RadiusHandler)
+export default memo(RadiusCounter)

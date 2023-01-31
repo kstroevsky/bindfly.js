@@ -117,7 +117,10 @@
   },
   {
     "name": "Fixed & Movable",
-    "for": "SpiralFlyingLines",
+    "for": [
+      "Spiral",
+      "SpiralFlyingLines"
+    ],
     "bgColor": "rgba(0, 0, 0, 0.7)",
     "generativeColorsCounts": 10,
     "particleCount": 100,
