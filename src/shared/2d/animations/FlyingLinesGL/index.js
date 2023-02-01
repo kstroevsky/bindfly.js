@@ -1,16 +1,19 @@
 import * as THREE from 'three'
 
 import FlyingPointsGL from '../../templates/FlyingPointsGL'
-import { generateColorsByCount, getPosition, RGBAToHexA } from '../../../utils'
+import { generateColorsByCount, getPosition, getPositionGL, RGBAToHexA } from '../../../utils'
 
 export default class FlyingLinesGL extends THREE.Object3D {
 	constructor(renderer, camera, scene, parameters) {
 		super()
 		this.properties = {
-			...parameters.properties, d: 50, getPositionMethod: {
-				x: getPosition,
-				y: getPosition,
-				z: getPosition
+			...parameters.properties,
+			lineLength: parameters.properties.lineLength * (window.innerWidth / (5 * parameters.properties.lineLength)),
+			d: 60,
+			getPositionMethod: {
+				x: getPositionGL,
+				y: getPositionGL,
+				z: parameters.properties.isPulsative ? getPositionGL : getPosition
 			}
 		}
 
@@ -103,6 +106,8 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		let x1, x2, y1, y2, z1, z2, length
 		this.vertices = []
 
+		// console.log(this.properties.lineLength)
+
 		this.particles.forEach((_, i) => {
 			this.particles[i].position()
 
@@ -146,12 +151,15 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		}
 
 		this.lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(this.vertices, 3))
-
+		// console.log(this.scene)
 		this.lineMaterial = new THREE.ShaderMaterial({
 			uniforms: {
 				color: { value: new THREE.Color(RGBAToHexA(generateColorsByCount(1)[0])) },
-				glowColor: { value: new THREE.Color(0xff0000) },
-				time: { value: 1.0 }
+				glowColor: { value: new THREE.Color(0xff0800) },
+				time: { value: 1.0 },
+				fogColor: { value: this.scene.fog.color },
+				fogNear: { value: this.scene.fog.near },
+				fogFar: { value: this.scene.fog.far },
 			},
 			linewidth: 10,
 			blending: THREE.AdditiveBlending,
@@ -160,11 +168,14 @@ export default class FlyingLinesGL extends THREE.Object3D {
 			
 				varying vec3 vColor;
 				uniform float time;
+
+				varying float fogDepth;
 			
 				void main() {
 					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 					vPosition = position;
 					vColor = vec3(fract(sin(dot(position.xy, vec2(12.9898, 78.233))) * 43758.5453), fract(sin(dot(position.yz, vec2(12.9898, 78.233))) * 43758.5453), fract(sin(dot(position.xz, vec2(12.9898, 78.233))) * 43758.5453));
+					fogDepth = -vPosition.z;
 				}
 			`,
 			fragmentShader: `
@@ -172,13 +183,19 @@ export default class FlyingLinesGL extends THREE.Object3D {
 			  varying vec3 vColor;
 			  uniform vec3 glowColor;
 			  uniform float time;
+
+			  varying float fogDepth;
+			  uniform vec3 fogColor;
+			  uniform float fogFar;
+			  uniform float fogNear;
 		  
 			  void main() {
 				vec3 finalColor = vColor;
-				finalColor += glowColor * (1.0 * sin(time));
-				gl_FragColor = vec4(finalColor, 1.0);
+				float fogFactor = smoothstep(fogNear, fogFar, fogDepth);
+				finalColor += glowColor * (1.0 * sin(time * fogFar));
+				gl_FragColor = vec4(mix(finalColor, mix(glowColor, fogColor, fogFactor), fogFactor ), 1.0);
 			  }
-			`
+			`,
 		})
 
 		this.lineMaterial.needsUpdate = true
@@ -192,15 +209,12 @@ export default class FlyingLinesGL extends THREE.Object3D {
 			this.scene.add(line)
 		})
 
+		this.isStarted = true
 		this.loop()
 	}
 
 	clear() {
 		if (this.isStarted) {
-			this.particles = null
-			this.renderer = null
-			this.camera = null
-			this.scene = null
 			this.isStarted = false
 			cancelAnimationFrame(this.boundAnimate)
 		}

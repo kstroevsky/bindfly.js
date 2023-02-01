@@ -2,16 +2,18 @@ import * as THREE from 'three'
 import * as noise from 'noisejs'
 
 import FlyingPointsGL from '../../templates/FlyingPointsGL'
-import { generateColorsByCount, getPosition, getPositionGL, RGBAToHexA } from '../../../utils'
+import { generateColorsByCount, getPositionGL, RGBAToHexA } from '../../../utils'
 
 export default class FlyingCubesGL extends THREE.Object3D {
 	constructor(renderer, camera, scene, parameters) {
 		super()
 		this.properties = {
-			...parameters.properties, d: 1000, getPositionMethod: {
+			...parameters.properties,
+			d: 1000,
+			getPositionMethod: {
 				x: getPositionGL,
 				y: getPositionGL,
-				z: getPosition
+				z: getPositionGL
 			}
 		}
 
@@ -772,6 +774,7 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		// 		})
 		// 	}
 		// });
+		this.isStarted = true
 
 		this.loop()
 	}

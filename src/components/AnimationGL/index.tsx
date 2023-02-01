@@ -10,6 +10,7 @@ import type { IOutletContext, IProperty } from '../../shared/types';
 
 const ParticlesCounter = lazy(() => import('../ParticlesCounter'));
 const VelocityCounter = lazy(() => import('../VelocityCounter'));
+const LineLengthCounter = lazy(() => import('../LineLengthCounter'));
 
 export interface IAnimationGLProps {
 	properties: IProperty;
@@ -34,15 +35,14 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 			AnimationClass = FlyingLinesGL;
 	}
 
-	const [canvasRef, changeParticlesCount, changeVelocity] = useWebGL<
-		typeof AnimationClass
-	>(AnimationClass, {
-		properties,
-		innerWidth,
-		innerHeight,
-		devicePixelRatio,
-		offset: offsetWidth,
-	});
+	const [canvasRef, changeParticlesCount, changeVelocity, changeLineLength] =
+		useWebGL(AnimationClass, {
+			properties,
+			innerWidth,
+			innerHeight,
+			devicePixelRatio,
+			offset: offsetWidth,
+		});
 
 	return (
 		<>
@@ -52,6 +52,11 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 						key={`${+keyToggle.current}-particles`}
 						initialValue={properties.particleCount}
 						onChange={changeParticlesCount}
+					/>
+					<LineLengthCounter
+						key={`${+keyToggle.current}-length`}
+						initialValue={properties.lineLength}
+						onChange={changeLineLength}
 					/>
 					<VelocityCounter
 						key={`${+keyToggle.current}-velocity`}

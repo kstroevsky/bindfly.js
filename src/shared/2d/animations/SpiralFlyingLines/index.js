@@ -127,7 +127,7 @@ export default class SpiralFlyingLines extends CanvasAnimation {
 		this.isStarted = true
 
 		setInterval(() => {
-			if (this.properties.isPulsatile) {
+			if (this.properties.isPulsative) {
 				if (this.spiralRadius > this.sizes.width * 6) {
 					this.reCalculateSpiral =
 						() => this.decreaseAngle() || this.decreaseRadius()

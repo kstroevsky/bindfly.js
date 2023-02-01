@@ -3,7 +3,7 @@ import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
 
 import FlyingPointsGL from '../shared/2d/templates/FlyingPointsGL';
-import { canvasParticlesCountChange, getVelocity } from '../shared/utils';
+import { canvasParticlesCountChange } from '../shared/utils';
 import type CanvasAnimation from '../shared/abstract/canvas';
 import type {
 	ConstructorOf,
@@ -11,11 +11,12 @@ import type {
 	TCallable,
 } from './../shared/types/index';
 
-const useWebGL = <A extends ConstructorOf<CanvasAnimation>>(
+const useWebGL = (
 	Animation: ConstructorOf<CanvasAnimation>,
 	animationParameters: TAnimationProperties
 ): [
 	MutableRefObject<HTMLCanvasElement | null>,
+	TCallable<void, number>,
 	TCallable<void, number>,
 	TCallable<void, number>
 ] => {
@@ -32,15 +33,18 @@ const useWebGL = <A extends ConstructorOf<CanvasAnimation>>(
 
 	const changeVelocity = useCallback(
 		(velocity: number) => {
-			Object.assign({}, animationRef.current?.properties, {
-				...animationRef.current?.properties,
-				particleMaxVelocity: velocity || 0,
-			});
-
 			if (animationRef.current?.particles) {
+				Object.assign({}, animationRef.current?.properties, {
+					...animationRef.current?.properties,
+					particleMaxVelocity: velocity,
+				});
+
 				animationRef.current.particles = animationRef.current?.particles?.map(
 					(item) => {
-						const newVelocity = getVelocity(velocity || 0);
+						const newVelocity = (
+							Math.random() * (velocity * 1.5) -
+							velocity
+						).toFixed(2);
 						return {
 							...item,
 							velocityX: newVelocity,
@@ -53,10 +57,17 @@ const useWebGL = <A extends ConstructorOf<CanvasAnimation>>(
 		[animationRef.current]
 	);
 
+	const changeLineLength = useCallback(
+		(lineLength: number) => {
+			if (animationRef.current) {
+				animationRef.current.properties.lineLength = lineLength || 0;
+			}
+		},
+		[animationRef.current]
+	);
+
 	useEffect(() => {
 		if (canvasRef.current) {
-			const { devicePixelRatio } = animationParameters;
-
 			const camera = new THREE.PerspectiveCamera(
 				75,
 				canvasRef.current.width / canvasRef.current.height,
@@ -65,11 +76,15 @@ const useWebGL = <A extends ConstructorOf<CanvasAnimation>>(
 			);
 			camera.position.z = 5;
 
-			const renderer = new THREE.WebGLRenderer({
+			const rendererParams = {
 				canvas: canvasRef.current,
-				alpha: true,
-				antialias: true,
-			});
+				alpha: false,
+				antialias: false,
+			};
+
+			const renderer = THREE.WebGL1Renderer
+				? new THREE.WebGL1Renderer(rendererParams)
+				: new THREE.WebGLRenderer(rendererParams);
 
 			renderer.setSize(
 				canvasRef.current.width,
@@ -77,10 +92,10 @@ const useWebGL = <A extends ConstructorOf<CanvasAnimation>>(
 				false
 			);
 			renderer.setPixelRatio(window.devicePixelRatio);
-			renderer.setClearColor(0x666666, 1);
+			renderer.setClearColor(0x000, 1);
 
 			const scene = new THREE.Scene();
-			scene.fog = new THREE.Fog(0xffffff, 0, 750);
+			scene.fog = new THREE.Fog(0x000, 0.015, 2);
 			scene.scale.set(2, 2, 2);
 
 			animationRef.current = new Animation(
@@ -92,13 +107,26 @@ const useWebGL = <A extends ConstructorOf<CanvasAnimation>>(
 
 			animationRef.current.init();
 
+			if (animationParameters.properties.addByClick) {
+				canvasRef.current.onclick = (e) =>
+					animationRef.current?.particles?.push({
+						...animationRef.current?.particles[1],
+						x:
+							-animationParameters.innerWidth / 2 +
+							animationParameters.offset / 2 +
+							e.offsetX,
+						y: animationParameters.innerHeight / 2 - e.offsetY,
+					});
+			}
+
 			return () => {
 				animationRef.current?.clear();
+				animationRef.current = null;
 			};
 		}
 	}, [animationParameters, canvasRef.current]);
 
-	return [canvasRef, changeParticlesCount, changeVelocity];
+	return [canvasRef, changeParticlesCount, changeVelocity, changeLineLength];
 };
 
 export default useWebGL;

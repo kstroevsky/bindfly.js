@@ -32,7 +32,7 @@ export interface IProperty {
 	margin: number;
 	radius?: number;
 	reverse?: boolean;
-	isPulsatile?: boolean;
+	isPulsative?: boolean;
 	isMonochrome: boolean;
 	isCountStable: boolean;
 	isImmortal: boolean;

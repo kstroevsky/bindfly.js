@@ -34,7 +34,7 @@ const VelocityCounter: FC<IVelocityCounterProps> = ({
 		<input
 			className={'counter'}
 			type={'range'}
-			min={0}
+			min={-20}
 			max={20}
 			value={velocity}
 			step={0.1}
