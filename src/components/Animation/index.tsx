@@ -87,7 +87,7 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 				)}
 				{classId === SpiralFlyingLines.name &&
 					properties.radius &&
-					!properties.isPulsatile && (
+					!properties.isPulsative && (
 					<RadiusCounter
 						key={`${+keyToggle.current}-radius`}
 						initialValue={properties.radius || 0}

@@ -10,6 +10,8 @@ import type {
 	TAnimationProperties,
 	TCallable,
 } from './../shared/types/index';
+import { FlyingCubesGL } from '../shared/2d/animations';
+import useForceUpdate from './useForceUpdate';
 
 const useWebGL = (
 	Animation: ConstructorOf<CanvasAnimation>,
@@ -22,6 +24,7 @@ const useWebGL = (
 ] => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const animationRef = useRef<CanvasAnimation | null>();
+	const reload = useForceUpdate();
 
 	const changeParticlesCount = useCallback(
 		(count: number) => {
@@ -67,7 +70,7 @@ const useWebGL = (
 	);
 
 	useEffect(() => {
-		if (canvasRef.current) {
+		if (canvasRef.current && !animationRef.current) {
 			const camera = new THREE.PerspectiveCamera(
 				75,
 				canvasRef.current.width / canvasRef.current.height,
@@ -82,9 +85,7 @@ const useWebGL = (
 				antialias: false,
 			};
 
-			const renderer = THREE.WebGL1Renderer
-				? new THREE.WebGL1Renderer(rendererParams)
-				: new THREE.WebGLRenderer(rendererParams);
+			const renderer = new THREE.WebGLRenderer(rendererParams);
 
 			renderer.setSize(
 				canvasRef.current.width,
@@ -95,7 +96,7 @@ const useWebGL = (
 			renderer.setClearColor(0x000, 1);
 
 			const scene = new THREE.Scene();
-			scene.fog = new THREE.Fog(0x000, 0.015, 2);
+			scene.fog = new THREE.Fog(0x000, 0.015, 200);
 			scene.scale.set(2, 2, 2);
 
 			animationRef.current = new Animation(
@@ -108,7 +109,7 @@ const useWebGL = (
 			animationRef.current.init();
 
 			if (animationParameters.properties.addByClick) {
-				canvasRef.current.onclick = (e) =>
+				canvasRef.current.addEventListener('click', (e) =>
 					animationRef.current?.particles?.push({
 						...animationRef.current?.particles[1],
 						x:
@@ -116,10 +117,21 @@ const useWebGL = (
 							animationParameters.offset / 2 +
 							e.offsetX,
 						y: animationParameters.innerHeight / 2 - e.offsetY,
-					});
+					})
+				);
 			}
 
 			return () => {
+				canvasRef.current?.removeEventListener('click', (e) =>
+					animationRef.current?.particles?.push({
+						...animationRef.current?.particles[1],
+						x:
+							-animationParameters.innerWidth / 2 +
+							animationParameters.offset / 2 +
+							e.offsetX,
+						y: animationParameters.innerHeight / 2 - e.offsetY,
+					})
+				);
 				animationRef.current?.clear();
 				animationRef.current = null;
 			};

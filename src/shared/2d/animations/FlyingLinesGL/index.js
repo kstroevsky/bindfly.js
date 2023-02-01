@@ -102,11 +102,8 @@ export default class FlyingLinesGL extends THREE.Object3D {
 	}
 
 	loop() {
-		// console.log(this.particles?.length)
 		let x1, x2, y1, y2, z1, z2, length
 		this.vertices = []
-
-		// console.log(this.properties.lineLength)
 
 		this.particles.forEach((_, i) => {
 			this.particles[i].position()
@@ -151,15 +148,15 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		}
 
 		this.lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(this.vertices, 3))
-		// console.log(this.scene)
+
 		this.lineMaterial = new THREE.ShaderMaterial({
 			uniforms: {
 				color: { value: new THREE.Color(RGBAToHexA(generateColorsByCount(1)[0])) },
 				glowColor: { value: new THREE.Color(0xff0800) },
 				time: { value: 1.0 },
-				fogColor: { value: this.scene.fog.color },
-				fogNear: { value: this.scene.fog.near },
-				fogFar: { value: this.scene.fog.far },
+				fogColor: { value: new THREE.Color(0x000) },
+				fogNear: { value: 0.015 },
+				fogFar: { value: 2 },
 			},
 			linewidth: 10,
 			blending: THREE.AdditiveBlending,
