@@ -2,12 +2,18 @@ import * as THREE from 'three'
 import * as noise from 'noisejs'
 
 import FlyingPointsGL from '../../templates/FlyingPointsGL'
-import { generateColorsByCount, RGBAToHexA } from '../../../utils'
+import { generateColorsByCount, getPosition, getPositionGL, RGBAToHexA } from '../../../utils'
 
 export default class FlyingCubesGL extends THREE.Object3D {
-	constructor (renderer, camera, scene, parameters) {
+	constructor(renderer, camera, scene, parameters) {
 		super()
-		this.properties = parameters.properties
+		this.properties = {
+			...parameters.properties, d: 1000, getPositionMethod: {
+				x: getPositionGL,
+				y: getPositionGL,
+				z: getPosition
+			}
+		}
 
 		this.renderer = renderer
 		this.camera = camera
@@ -35,7 +41,7 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		this.boundAnimate = this.loop.bind(this)
 	}
 
-	texture () {
+	texture() {
 		const width = 256
 		const height = 256
 
@@ -62,11 +68,11 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		return texture
 	}
 
-	map (value, min1, max1, min2, max2) {
+	map(value, min1, max1, min2, max2) {
 		return min2 + (max2 - min2) * ((value - min1) / (max1 - min1))
 	}
 
-	mandelbrot () {
+	mandelbrot() {
 		const width = 1024
 		const height = 1024
 		const data = new Uint8Array(width * height * 4)
@@ -138,7 +144,7 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		return texture
 	}
 
-	mandelbrotSet () {
+	mandelbrotSet() {
 		const width = 256
 		const height = 256
 		const maxIterations = 250
@@ -206,7 +212,7 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		return texture
 	}
 
-	texture3D () {
+	texture3D() {
 		const width = 128
 		const height = 128
 		const depth = 128
@@ -253,7 +259,7 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		return texture
 	}
 
-	generateNormalMap () {
+	generateNormalMap() {
 		const width = 256
 		const height = 256
 		const depth = 256
@@ -302,7 +308,7 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		return texture
 	}
 
-	generateDisplacementMap () {
+	generateDisplacementMap() {
 		const width = 256
 		const height = 256
 		const depth = 256
@@ -349,7 +355,7 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		return texture
 	}
 
-	refraction () {
+	refraction() {
 		// define the colors and positions for the gradient
 		const colors = [
 			new THREE.Color(0xFF0000), // red
@@ -424,7 +430,7 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		return gradientMap
 	}
 
-	loop () {
+	loop() {
 		this.vertices = []
 
 		this.cubes.forEach((item, idx) => {
@@ -442,13 +448,11 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		requestAnimationFrame(this.boundAnimate)
 	}
 
-	init () {
+	init() {
 		this.particles = new FlyingPointsGL(
 			this.sizes.width,
 			this.sizes.height,
-			1000,
-			this.properties,
-			this.isParticleColors
+			this.properties
 		).particles
 
 		const baseLight = new THREE.AmbientLight(0xFFFFFF, 0.1)
@@ -772,7 +776,7 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		this.loop()
 	}
 
-	clear () {
+	clear() {
 		if (this.isStarted) {
 			this.isStarted = false
 			cancelAnimationFrame(this.boundAnimate)

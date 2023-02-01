@@ -1,12 +1,18 @@
 import * as THREE from 'three'
 
 import FlyingPointsGL from '../../templates/FlyingPointsGL'
-import { generateColorsByCount, RGBAToHexA } from '../../../utils'
+import { generateColorsByCount, getPosition, RGBAToHexA } from '../../../utils'
 
 export default class FlyingLinesGL extends THREE.Object3D {
-	constructor (renderer, camera, scene, parameters) {
+	constructor(renderer, camera, scene, parameters) {
 		super()
-		this.properties = parameters.properties
+		this.properties = {
+			...parameters.properties, d: 50, getPositionMethod: {
+				x: getPosition,
+				y: getPosition,
+				z: getPosition
+			}
+		}
 
 		this.renderer = renderer
 		this.camera = camera
@@ -17,7 +23,7 @@ export default class FlyingLinesGL extends THREE.Object3D {
 			height: parameters.innerHeight
 		}
 
-		this.scaleSize = this.properties.innerWidth / (2 * Math.tan((camera.fov / 2) * (Math.PI / 180)))
+		// this.scaleSize = this.properties.innerWidth / (2 * Math.tan((camera.fov / 2) * (Math.PI / 180)))
 
 		this.isStarted = false
 
@@ -31,7 +37,7 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		this.boundCube = this.loop.bind(this)
 	}
 
-	drawLines () {
+	drawLines() {
 		let x1, y1, z1, x2, y2, z2, length
 
 		for (const i in this.particles) {
@@ -65,7 +71,7 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		}
 	}
 
-	texture () {
+	texture() {
 		const width = 256
 		const height = 256
 
@@ -92,7 +98,7 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		return texture
 	}
 
-	loop () {
+	loop() {
 		// console.log(this.particles?.length)
 		let x1, x2, y1, y2, z1, z2, length
 		this.vertices = []
@@ -125,16 +131,12 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		requestAnimationFrame(this.boundCube)
 	}
 
-	init () {
+	init() {
 		this.particles = new FlyingPointsGL(
 			this.sizes.width,
 			this.sizes.height,
 			this.properties,
-			50
 		).particles
-
-		// document.onclick = () => this.particles = this.particles.filter((item) => item.x < 400)
-		document.onclick = () => console.log(Math.max(...this.particles.map((item) => item.x)))
 
 		for (let i = 0; i < this.particles.length; i++) {
 			for (let j = i + 1; j < this.particles.length; j++) {
@@ -193,7 +195,7 @@ export default class FlyingLinesGL extends THREE.Object3D {
 		this.loop()
 	}
 
-	clear () {
+	clear() {
 		if (this.isStarted) {
 			this.particles = null
 			this.renderer = null
