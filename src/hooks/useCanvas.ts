@@ -17,10 +17,9 @@ import type {
 	TAnimationProperties,
 	TCallable,
 } from '../shared/types';
-import {TSomeAbstractClass} from "../shared/types";
 
 const useCanvas = <A extends object>(
-	Animation: TSomeAbstractClass<CanvasAnimation & Omit<A, 'prototype'>>,
+	Animation: ConstructorOf<CanvasAnimation & Omit<A, 'prototype'>>,
 	animationParameters: TAnimationProperties
 ): [
 	MutableRefObject<HTMLCanvasElement | null>,

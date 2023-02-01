@@ -1,13 +1,12 @@
 import CanvasAnimation from '../../abstract/canvas';
 import type { ConstructorOf, ICanvasWorkerProps } from '../../types';
 import { canvasParticlesCountChange, getVelocity } from '../../utils';
-import {TSomeAbstractClass} from "../../types";
 
 let canvas: OffscreenCanvas,
 	ctx: OffscreenCanvasRenderingContext2D,
 	dpr: number,
 	canvasClickHandler: (...args: unknown[]) => void,
-	Animation: TSomeAbstractClass<CanvasAnimation>,
+	Animation: ConstructorOf<CanvasAnimation>,
 	animationWorker: InstanceType<ConstructorOf<CanvasAnimation>>;
 
 const self = globalThis as unknown as DedicatedWorkerGlobalScope;

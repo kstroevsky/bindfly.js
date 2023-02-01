@@ -100,11 +100,9 @@ export interface IunknownInterface {
 	[otherOptions: string]: unknown;
 }
 
-export type TSomeAbstractClass<T> = new (...args: unknown[]) => T;
+export type ConstructorOf<T> = new (...args: unknown[]) => T;
 
-export type TSomeClass<T> = new (...args: unknown[]) => T;
-
-export type ConstructorOf<T> = { new (...args: []): T };
+export type TAbstractClass<T> = new (...args: unknown[]) => T;
 
 export interface WorkerClickData {
 	x: number;
