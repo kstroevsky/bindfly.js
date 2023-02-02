@@ -6,15 +6,14 @@ import DataContext, { IDataContext } from '../Context';
 import { Canvas } from '../Canvas';
 import { useWebGL } from '../../hooks';
 import { FlyingCubesGL, FlyingLinesGL } from '../../shared/2d/animations';
+import type { CanvasAnimationsNames } from '../../router';
 import type { IOutletContext, IProperty } from '../../shared/types';
 
-const ParticlesCounter = lazy(() => import('../ParticlesCounter'));
-const VelocityCounter = lazy(() => import('../VelocityCounter'));
-const LineLengthCounter = lazy(() => import('../LineLengthCounter'));
+const ParamHandlerContainer = lazy(() => import('../ParamHandlerContainer'));
 
 export interface IAnimationGLProps {
 	properties: IProperty;
-	classId: string;
+	classId: CanvasAnimationsNames;
 }
 
 const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
@@ -35,36 +34,19 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 			AnimationClass = FlyingLinesGL;
 	}
 
-	const [canvasRef, changeParticlesCount, changeVelocity, changeLineLength] =
-		useWebGL(AnimationClass, {
-			properties,
-			innerWidth,
-			innerHeight,
-			devicePixelRatio,
-			offset: offsetWidth,
-		});
+	const [canvasRef, handlers] = useWebGL(AnimationClass, {
+		properties,
+		innerWidth,
+		innerHeight,
+		devicePixelRatio,
+		offset: offsetWidth,
+	});
 
 	return (
 		<>
-			{classId === FlyingLinesGL.name && (
-				<div className={'animation-handlers'}>
-					<ParticlesCounter
-						key={`${+keyToggle.current}-particles`}
-						initialValue={properties.particleCount}
-						onChange={changeParticlesCount}
-					/>
-					<LineLengthCounter
-						key={`${+keyToggle.current}-length`}
-						initialValue={properties.lineLength}
-						onChange={changeLineLength}
-					/>
-					<VelocityCounter
-						key={`${+keyToggle.current}-velocity`}
-						initialValue={properties.particleMaxVelocity}
-						onChange={changeVelocity}
-					/>
-				</div>
-			)}
+			<ParamHandlerContainer
+				{...{ properties, handlers, classId, keyToggle: keyToggle.current }}
+			/>
 			<Canvas
 				key={+keyToggle.current}
 				ref={canvasRef}

@@ -1,0 +1,19 @@
+.animation-handlers {
+  position: absolute;
+  right: 0;
+  width: 72vw;
+  z-index: 2;
+  display: flex;
+  row-gap: 2px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px),
+(orientation: portrait) {
+  .animation-handlers {
+    width: 100%;
+    row-gap: 10px;
+  }
+}
