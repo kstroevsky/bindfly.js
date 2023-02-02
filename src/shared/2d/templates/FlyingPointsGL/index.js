@@ -1,9 +1,9 @@
 export default class FlyingPointsGL {
-	constructor(w, h, properties) {
+	constructor (w, h, properties) {
 		const getPositionX = properties.getPositionMethod.x
 		const getPositionY = properties.getPositionMethod.y
 		const getPositionZ = properties.getPositionMethod.z
-		this.particles = Array.from(new Array(properties.particleCount)).map((_) => {
+		this.particles = Array.from(new Array(properties.particlesCount)).map((_) => {
 			const velocityX =
 				(Math.random() * (properties.particleMaxVelocity * 1.5) -
 					properties.particleMaxVelocity).toFixed(2)
@@ -26,7 +26,7 @@ export default class FlyingPointsGL {
 				velocityZ,
 				isStart: false,
 				start: 0,
-				position() {
+				position () {
 					this.velocityX = getPositionX(this.x, this.w / 2, this.velocityX, properties.margin)
 					this.velocityY = getPositionY(this.y, this.h / 2, this.velocityY, properties.margin)
 					this.velocityZ = getPositionZ(this.z, this.d, this.velocityZ, properties.margin)

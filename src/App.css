@@ -296,7 +296,7 @@ canvas {
 
   .sidebar.modal.active {
     transform: translateX(0px);
-    z-index: 2;
+    z-index: 3;
   }
 
   .ListLinkItem {
@@ -327,10 +327,4 @@ canvas {
   margin-top: 8px;
   cursor: pointer;
   transition: 0s;
-}
-
-.animation-handlers {
-  position: absolute;
-  right: 0;
-  width: 72vw;
 }

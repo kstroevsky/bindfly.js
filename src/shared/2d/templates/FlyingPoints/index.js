@@ -1,8 +1,8 @@
 import { getPosition, getVelocity } from '../../../utils'
 
 export default class FlyingPoints {
-	constructor(w, h, properties) {
-		this.particles = Array.from(new Array(properties.particleCount)).map((_) => {
+	constructor (w, h, properties) {
+		this.particles = Array.from(new Array(properties.particlesCount)).map((_) => {
 			const velocity = getVelocity(properties.particleMaxVelocity)
 
 			return {
@@ -13,13 +13,13 @@ export default class FlyingPoints {
 				life: Math.random() * properties.particleLife * 60,
 				isStart: false,
 				start: 0,
-				position() {
+				position () {
 					this.velocityX = getPosition(this.x, w, this.velocityX, properties.margin)
 					this.velocityY = getPosition(this.y, h, this.velocityY, properties.margin)
 					this.x += this.velocityX
 					this.y += this.velocityY
 				},
-				reCalculateLife() {
+				reCalculateLife () {
 					if (!properties.isImmortal) {
 						if (this.life < 1) {
 							this.x = Math.random() * w

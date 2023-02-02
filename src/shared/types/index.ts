@@ -1,22 +1,43 @@
+/* =================================== */
+/* CUSTOM UTILITY TYPES */
+/* =================================== */
+
+export type TFirstExistKey<T, K extends (string | number)[]> = {
+	[I in keyof K]: K[I] extends keyof T ? K[I] : never;
+}[keyof K];
+
 export type TypeByKeyExist<
-	T,
-	K1 extends string | number,
-	K2 extends string | number
-> = T extends { [key in K1]: unknown }
-	? T[K1]
-	: T extends { [key in K2]: unknown }
-	? T[K2]
+	O extends object,
+	K extends (string | number)[]
+> = O[TFirstExistKey<O, K>];
+
+export type TKeys<O extends object> = keyof O;
+
+export type TValues<O extends object> = O[TKeys<O>];
+
+export type TCallable<R = void, A = unknown> = (...args: A[]) => R;
+
+export type TAbstractClass<T> = abstract new (...args: unknown[]) => T;
+
+export type TConstructorOf<T = unknown> = new (...args: unknown[]) => T;
+
+export type TNamespace<C> = C extends { [key: string]: infer T }
+	? T
+	: Partial<C>;
+
+export type TClassesNamespace<N extends TNamespace<object>> = N extends object
+	? {
+			[K in keyof N]: N[K] extends TConstructorOf ? K : never;
+	  }
 	: never;
 
-export type GetKeyByExist<
-	T,
-	K1 extends string | number,
-	K2 extends string | number
-> = T extends { [key in K1]: unknown }
-	? K1
-	: T extends { [key in K2]: unknown }
-	? K2
+export type TClassesNames<N extends TNamespace<object>> = N extends object
+	? Array<keyof TClassesNamespace<N>>[number]
 	: never;
+
+/* =================================== */
+/* APPLICATION TYPES */
+/* =================================== */
 
 export interface IProperty {
 	[key: string]: IProperty[keyof IProperty];
@@ -25,7 +46,7 @@ export interface IProperty {
 	bgColor?: string;
 	particleColors?: string[];
 	generativeColorsCounts: number;
-	particleCount: number;
+	particlesCount: number;
 	particleMaxVelocity: number;
 	lineLength: number;
 	particleLife: number;
@@ -44,6 +65,27 @@ export interface IProperty {
 
 export type TProperties = IProperty[];
 
+export type TParamsHandlersNames = Partial<keyof Pick<
+	IProperty,
+	'particlesCount' | 'lineLength' | 'particleMaxVelocity' | 'radius'
+>>;
+
+export type TParamHandleChangeName<N extends string> = `change${Capitalize<N>}`;
+
+export type TParamsHandlers = Record<
+	TParamHandleChangeName<TParamsHandlersNames>,
+	TCallable<void, number>
+>;
+
+export interface IAnimationHandlerConfig<T extends string> {
+	name: TParamsHandlersNames;
+	visibility: T[];
+	step: number;
+	min: number;
+	getMax: (initialValue: number) => number;
+	visibilityChecking?: (properties: IProperty) => boolean;
+}
+
 export interface IOutletContext {
 	width: number;
 	isMobile: boolean;
@@ -53,8 +95,6 @@ export interface ILongPressInitialTouch {
 	start: number;
 	end: number;
 }
-
-export type TPropertiesValues = IProperty[keyof IProperty];
 
 export interface TAnimationProperties {
 	properties: IProperty;
@@ -96,20 +136,10 @@ export type IAnimationWithParticles<A extends object> =
 		particles: ISingleParticle[];
 	};
 
-export interface IunknownInterface {
-	[otherOptions: string]: unknown;
-}
-
-export type ConstructorOf<T> = new (...args: unknown[]) => T;
-
-export type TAbstractClass<T> = new (...args: unknown[]) => T;
-
 export interface WorkerClickData {
 	x: number;
 	y: number;
 }
-
-export type TKeys<O extends object> = keyof O;
 
 export interface ICanvasWorkerProps {
 	msg:
@@ -132,5 +162,3 @@ export interface ICanvasWorkerProps {
 export interface IVectorsForIntersect {
 	[key: string]: number;
 }
-
-export type TCallable<R = void, A = unknown> = (...args: A[]) => R;
