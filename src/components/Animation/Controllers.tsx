@@ -27,7 +27,6 @@ const Controllers: React.FC<IAnimationProps & Props> = ({
 	const { keyToggle } = useContext<IDataContext>(DataContext)
 
 	useEffect(() => {
-		console.log(123)
 		const items = document.querySelector('.animation-handlers')
 
 		if (items) {

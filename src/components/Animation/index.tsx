@@ -58,14 +58,18 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 
 	return (
 		<>
-			<Controllers
-				changeParticlesCount={changeParticlesCount}
-				changeLineLength={changeLineLength}
-				changeVelocity={changeVelocity}
-				changeRadius={changeRadius}
-				properties={properties}
-				classId={classId}
-			/>
+			{
+				AnimationClass && (
+					<Controllers
+						changeParticlesCount={changeParticlesCount}
+						changeLineLength={changeLineLength}
+						changeVelocity={changeVelocity}
+						changeRadius={changeRadius}
+						properties={properties}
+						classId={classId}
+					/>
+				)
+			}
 			<Canvas
 				key={+keyToggle.current}
 				ref={canvasRef}
