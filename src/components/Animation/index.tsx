@@ -1,4 +1,4 @@
-import React, { lazy, useContext } from 'react'
+import React, { useContext } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import type { FC } from 'react'
 
@@ -12,11 +12,7 @@ import DataContext, { IDataContext } from '../Context'
 import { useCanvas } from '../../hooks'
 import { Canvas } from '../Canvas'
 import type { IOutletContext, IProperty } from '../../shared/types'
-
-const RadiusCounter = lazy(() => import('../RadiusCounter'))
-const ParticlesCounter = lazy(() => import('../ParticlesCounter'))
-const VelocityCounter = lazy(() => import('../VelocityCounter'))
-const LineLengthCounter = lazy(() => import('../LineLengthCounter'))
+import { Controllers } from './Controllers'
 
 export interface IAnimationProps {
 	classId: string;
@@ -62,39 +58,14 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 
 	return (
 		<>
-			<div
-				key={`${+keyToggle.current}-ranges`}
-				className={'animation-handlers'}
-			>
-				<ParticlesCounter
-					key={`${+keyToggle.current}-particles`}
-					initialValue={properties.particleCount}
-					onChange={changeParticlesCount}
-				/>
-				{classId !== SpiralFlyingLines.name && (
-					<LineLengthCounter
-						key={`${+keyToggle.current}-length`}
-						initialValue={properties.lineLength}
-						onChange={changeLineLength}
-					/>
-				)}
-				{classId !== Spiral.name && classId !== SpiralFlyingLines.name && (
-					<VelocityCounter
-						key={`${+keyToggle.current}-velocity`}
-						initialValue={properties.particleMaxVelocity}
-						onChange={changeVelocity}
-					/>
-				)}
-				{classId === SpiralFlyingLines.name &&
-					properties.radius &&
-					!properties.isPulsatile && (
-					<RadiusCounter
-						key={`${+keyToggle.current}-radius`}
-						initialValue={properties.radius || 0}
-						onChange={changeRadius}
-					/>
-				)}
-			</div>
+			<Controllers
+				changeParticlesCount={changeParticlesCount}
+				changeLineLength={changeLineLength}
+				changeVelocity={changeVelocity}
+				changeRadius={changeRadius}
+				properties={properties}
+				classId={classId}
+			/>
 			<Canvas
 				key={+keyToggle.current}
 				ref={canvasRef}

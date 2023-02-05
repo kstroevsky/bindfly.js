@@ -31,14 +31,17 @@ const ParticlesCounter: FC<IParticlesCounterProps> = ({
 	}, [count]);
 
 	return (
-		<input
-			className={'counter'}
-			type={'range'}
-			min={0}
-			max={initialValue < 20 ? 300 : initialValue * 5}
-			value={count}
-			onChange={handleChange}
-		/>
+		<>
+			<span className={'count'}>Particles: {count}</span>
+			<input
+				className={'counter'}
+				type={'range'}
+				min={0}
+				max={initialValue < 20 ? 300 : initialValue * 5}
+				value={count}
+				onChange={handleChange}
+			/>
+		</>
 	);
 };
 

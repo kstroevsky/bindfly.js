@@ -25,15 +25,18 @@ const RadiusCounter: FC<IRadiusCounterProps> = ({ onChange, initialValue }) => {
 	}, [radius])
 
 	return (
-		<input
-			className={'counter'}
-			type={'range'}
-			min={0}
-			max={initialValue * 3}
-			value={radius}
-			step={0.5}
-			onChange={handleChange}
-		/>
+		<>
+			<span className={'count'}>Radius: {radius}</span>
+			<input
+				className={'counter'}
+				type={'range'}
+				min={0}
+				max={initialValue * 3}
+				value={radius}
+				step={0.5}
+				onChange={handleChange}
+			/>
+		</>
 	)
 }
 

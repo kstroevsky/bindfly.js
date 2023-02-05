@@ -31,14 +31,17 @@ const LineLengthCounter: FC<ILineLengthCounterProps> = ({
 	}, [lineLength]);
 
 	return (
-		<input
-			className={'counter'}
-			type={'range'}
-			min={0}
-			max={initialValue * 4}
-			value={lineLength}
-			onChange={handleChange}
-		/>
+		<>
+			<span className={'count'}>LineLength: {lineLength}</span>
+			<input
+				className={'counter'}
+				type={'range'}
+				min={0}
+				max={initialValue * 4}
+				value={lineLength}
+				onChange={handleChange}
+			/>
+		</>
 	);
 };
 

@@ -23,7 +23,7 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 	const { innerWidth, innerHeight, devicePixelRatio } = window;
 	const offsetWidth: number = isMobile ? 0 : offset;
 
-	let AnimationClass: typeof FlyingCubesGL | typeof FlyingLinesGL;
+	let AnimationClass
 
 	switch (classId) {
 		case FlyingCubesGL.name:
