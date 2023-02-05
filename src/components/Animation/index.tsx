@@ -12,7 +12,7 @@ import DataContext, { IDataContext } from '../Context'
 import { useCanvas } from '../../hooks'
 import { Canvas } from '../Canvas'
 import type { IOutletContext, IProperty } from '../../shared/types'
-import { Controllers } from './Controllers'
+import Controllers from './Controllers'
 
 export interface IAnimationProps {
 	classId: string;

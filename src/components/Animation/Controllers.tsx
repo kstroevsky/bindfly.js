@@ -15,7 +15,7 @@ type Props = {
   changeLineLength: any
 } // which types do we need here
 
-export const Controllers: React.FC<IAnimationProps & Props> = ({
+const Controllers: React.FC<IAnimationProps & Props> = ({
 	properties,
 	classId,
 	changeParticlesCount,
@@ -27,6 +27,7 @@ export const Controllers: React.FC<IAnimationProps & Props> = ({
 	const { keyToggle } = useContext<IDataContext>(DataContext)
 
 	useEffect(() => {
+		console.log(123)
 		const items = document.querySelector('.animation-handlers')
 
 		if (items) {
@@ -92,7 +93,7 @@ export const Controllers: React.FC<IAnimationProps & Props> = ({
 
 			items.removeEventListener('mouseout', handleOnMouseOut)
 		}
-	}, [currentRange])
+	}, [currentRange, classId])
 
 	return (
 		<div
@@ -142,3 +143,5 @@ export const Controllers: React.FC<IAnimationProps & Props> = ({
 		</div>
 	)
 }
+
+export default React.memo(Controllers)
