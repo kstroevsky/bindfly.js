@@ -1,13 +1,87 @@
-.animation-handlers {
+/* .animation-handlers {
   position: absolute;
   right: 0;
   width: 72vw;
   z-index: 2;
   display: flex;
   row-gap: 2px;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+} */
+.animation-handlers {
+  display: flex;
+  /* gap: 20px; */
+
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  width: calc(100vw - 260px);
+}
+
+.count {
+  display: block;
+  position: relative;
+  z-index: 10;
+  color: #fff;
+}
+
+
+.animation-handlers__item {
+  width: 100%;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.animation-handlers .animation-handlers__item:not(.active) {
+  width: 150px;
+  padding: 5px;
+}
+
+.animation-handlers__item.active,
+.animation-handlers__item:not(.active):hover {
+  display: block;
+  background: red;
+  padding: 5px;
+  width: calc(100vw - 260px);
+  z-index: 10;
+}
+
+
+.animation-handlers__item:hover ~ .animation-handlers__item.active {
+  width: 150px;
+  padding: 5px;
+  background: none;
+}
+
+.animation-handlers__item .counter {
+  display: none;
+}
+
+/* active */
+.animation-handlers__item.active .count {
+  display: none;
+}
+
+.animation-handlers__item.active .counter {
+  display: block;
+}
+
+/* hover */
+.animation-handlers__item:hover .count {
+  display: none;
+}
+
+.animation-handlers__item:hover {
+  display: block;
+  background: red;
+  padding: 5px;
+  width: calc(100vw - 260px);
+  z-index: 10;
+}
+
+.animation-handlers__item:hover .counter {
+  display: block;
 }
 
 @media (max-width: 768px),

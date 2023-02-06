@@ -40,15 +40,18 @@ const ParamHandler: FC<IParamHandlerProps> = ({
 	}, [state]);
 
 	return (
-		<input
-			className={'counter'}
-			type={'range'}
-			min={min}
-			max={max || initialValue * 2}
-			step={step}
-			value={state}
-			onChange={handleChange}
-		/>
+		<>
+			<span className={'count'}>Particles: {state}</span>
+			<input
+				className={'counter'}
+				type={'range'}
+				min={min}
+				max={max || initialValue * 2}
+				step={step}
+				value={state}
+				onChange={handleChange}
+			/>
+		</>
 	);
 };
 
