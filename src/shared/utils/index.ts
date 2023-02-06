@@ -7,13 +7,12 @@ import type CanvasAnimation from '../abstract/canvas'
 import type {
 	IAnimationWithParticles,
 	IProperty,
-	ConstructorOf,
+	TConstructorOf,
 	ISingleParticle,
 	IVectorsForIntersect,
 	TPropertiesValues,
 	WorkerClickData,
 } from '../types'
-import {TSomeAbstractClass} from "../types";
 
 export const getPosition = (
 	position: number,
@@ -40,7 +39,7 @@ export const getPositionGL = (
 		((
 			position > 0
 				? position + velocity > size - margin && isVelocityPositive
-				: position - velocity < -size + margin && !isVelocityPositive
+				: position + velocity < -size + margin && !isVelocityPositive
 		)
 			? -1
 			: 1)
@@ -53,7 +52,8 @@ export const getPositionGL = (
 // 			? -1
 // 			: 1)
 
-export const getVelocity = (maxVelocity: number) => Math.random() * (maxVelocity * 2) - maxVelocity
+export const getVelocity = (maxVelocity: number) =>
+	Math.random() * (maxVelocity * 2) - maxVelocity
 
 export const canvasReload = <A extends object>(
 	toggle: IDataContext['keyToggle'],
@@ -188,7 +188,7 @@ export const canvasClickHandler = <
 export const canvasParticlesCountChange = (
 	count: number,
 	animation: CanvasAnimation,
-	Template: TSomeAbstractClass<{ particles: unknown[] }> = FlyingPoints
+	Template: TConstructorOf<{ particles: unknown[] }> = FlyingPoints
 ) => {
 	const particlesCount = animation?.particles?.length || 0
 
@@ -198,7 +198,7 @@ export const canvasParticlesCountChange = (
 		animation?.particles?.push(
 			...new Template(animation?.sizes?.width, animation?.sizes?.height, {
 				...animation?.properties,
-				particleCount: count - particlesCount,
+				particlesCount: count - particlesCount,
 			}).particles
 		)
 	}

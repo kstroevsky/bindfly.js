@@ -6,14 +6,14 @@ import DataContext, { IDataContext } from '../Context';
 import { Canvas } from '../Canvas';
 import { useWebGL } from '../../hooks';
 import { FlyingCubesGL, FlyingLinesGL } from '../../shared/2d/animations';
+import type { CanvasAnimationsNames } from '../../router';
 import type { IOutletContext, IProperty } from '../../shared/types';
 
-const ParticlesCounter = lazy(() => import('../ParticlesCounter'));
-const VelocityCounter = lazy(() => import('../VelocityCounter'));
+const ParamHandlerContainer = lazy(() => import('../ParamHandlerContainer'));
 
 export interface IAnimationGLProps {
 	properties: IProperty;
-	classId: string;
+	classId: CanvasAnimationsNames;
 }
 
 const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
@@ -34,9 +34,7 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 			AnimationClass = FlyingLinesGL;
 	}
 
-	const [canvasRef, changeParticlesCount, changeVelocity] = useWebGL<
-		typeof AnimationClass
-	>(AnimationClass, {
+	const [canvasRef, handlers] = useWebGL(AnimationClass, {
 		properties,
 		innerWidth,
 		innerHeight,
@@ -46,20 +44,9 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 
 	return (
 		<>
-			{classId === FlyingLinesGL.name && (
-				<div className={'animation-handlers'}>
-					<ParticlesCounter
-						key={`${+keyToggle.current}-particles`}
-						initialValue={properties.particleCount}
-						onChange={changeParticlesCount}
-					/>
-					<VelocityCounter
-						key={`${+keyToggle.current}-velocity`}
-						initialValue={properties.particleMaxVelocity}
-						onChange={changeVelocity}
-					/>
-				</div>
-			)}
+			<ParamHandlerContainer
+				{...{ properties, handlers, classId, keyToggle: keyToggle.current }}
+			/>
 			<Canvas
 				key={+keyToggle.current}
 				ref={canvasRef}

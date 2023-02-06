@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react'
 import { TCallable, TypeByKeyExist } from '../shared/types'
 
-export type TLegacyListener<D> = TypeByKeyExist<
-	D,
-	'removeListener',
-	'removeEventListener'
+export type TLegacyListener<T extends object> = TypeByKeyExist<
+	T,
+	['removeListener',
+	'removeEventListener']
 >;
 
 const useListenersEffect = <D extends object>(

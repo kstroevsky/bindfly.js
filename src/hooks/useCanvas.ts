@@ -12,23 +12,16 @@ import {
 	getVelocity,
 } from '../shared/utils';
 import type {
-	ConstructorOf,
+	TConstructorOf,
 	ICanvasWorkerProps,
 	TAnimationProperties,
-	TCallable,
+	TParamsHandlers,
 } from '../shared/types';
-import {TSomeAbstractClass} from "../shared/types";
 
 const useCanvas = <A extends object>(
-	Animation: TSomeAbstractClass<CanvasAnimation & Omit<A, 'prototype'>>,
+	Animation: TConstructorOf<CanvasAnimation & Omit<A, 'prototype'>>,
 	animationParameters: TAnimationProperties
-): [
-	MutableRefObject<HTMLCanvasElement | null>,
-	TCallable<void, number>,
-	TCallable<void, number>,
-	TCallable<void, number>,
-	TCallable<void, number>
-] => {
+): [MutableRefObject<HTMLCanvasElement | null>, TParamsHandlers] => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const animationRef = useRef<InstanceType<typeof Animation> | null>(null);
 
@@ -56,7 +49,7 @@ const useCanvas = <A extends object>(
 		[animationRef.current, webWorker.current]
 	);
 
-	const changeVelocity = useCallback(
+	const changeParticleMaxVelocity = useCallback(
 		animationParamChangerFactory<A, number>(
 			webWorker,
 			animationRef.current,
@@ -170,7 +163,7 @@ const useCanvas = <A extends object>(
 						canvas.onclick = (e) => {
 							if (animationRef.current) {
 								canvasClickHandler(
-									animationRef.current as any,
+									animationRef.current,
 									{
 										pos: {
 											x: e.clientX - animationParameters.offset,
@@ -197,10 +190,12 @@ const useCanvas = <A extends object>(
 
 	return [
 		canvasRef,
-		changeParticlesCount,
-		changeRadius,
-		changeVelocity,
-		changeLineLength,
+		{
+			changeParticlesCount,
+			changeRadius,
+			changeParticleMaxVelocity,
+			changeLineLength,
+		},
 	];
 };
 

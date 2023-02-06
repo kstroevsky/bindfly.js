@@ -1,0 +1,5 @@
+export const TOUCH_EXPIRATION = 500;
+
+export const COPY_ANIMATION_DURATION = 500;
+
+export const PARAMS_HANDLER_DEBOUNCE_DELAY = 150;

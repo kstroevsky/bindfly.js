@@ -296,7 +296,7 @@ canvas {
 
   .sidebar.modal.active {
     transform: translateX(0px);
-    z-index: 2;
+    z-index: 3;
   }
 
   .ListLinkItem {
@@ -376,3 +376,4 @@ canvas {
 .animation-handlers__item:hover .counter {
   display: block;
 }
+

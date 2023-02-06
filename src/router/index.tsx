@@ -5,21 +5,75 @@ import {
 	createRoutesFromElements,
 	createHashRouter,
 } from 'react-router-dom'
-import { DataContextProvider } from '../components/Context'
-import Loader from '../components/Loader'
+
 import * as animations from '../shared/2d/animations'
+import Loader from '../components/Loader'
+import { DataContextProvider } from '../components/Context'
+import type { IAnimationHandlerConfig, IProperty, TClassesNames } from '../shared/types'
 
 import properties from '../properties.json'
-
 import './../App.css'
-import AnimationGL from '../components/AnimationGL'
 
 const Animation = React.lazy(
 	async () => await import('../components/Animation')
 )
+const AnimationGL = React.lazy(
+	async () => await import('../components/AnimationGL')
+)
 const PageLayout = React.lazy(
 	async () => await import('../components/PageLayout')
 )
+
+export type CanvasAnimationsNames = TClassesNames<typeof animations>;
+
+export const CanvasHandlersConfig: IAnimationHandlerConfig<CanvasAnimationsNames>[] = [
+	{
+		name: 'particlesCount',
+		visibility: [
+			animations.FlyingLines.name,
+			animations.DroopingLines.name,
+			animations.SpiralFlyingLines.name,
+			animations.Spiral.name,
+			animations.FlyingLinesGL.name
+		] as CanvasAnimationsNames[],
+		step: 1,
+		min: 0,
+		getMax: (initialValue: number) =>
+			initialValue < 20 ? 300 : initialValue * 5,
+	},
+	{
+		name: 'lineLength',
+		visibility: [
+			animations.FlyingLines.name,
+			animations.DroopingLines.name,
+			animations.Spiral.name,
+			animations.FlyingLinesGL.name
+		] as CanvasAnimationsNames[],
+		step: 1,
+		min: 0,
+		getMax: (initialValue: number) => initialValue * 4,
+	},
+	{
+		name: 'particleMaxVelocity',
+		visibility: [
+			animations.FlyingLines.name,
+			animations.DroopingLines.name,
+			animations.FlyingLinesGL.name
+		] as CanvasAnimationsNames[],
+		step: 0.1,
+		min: -20,
+		getMax: () => 20,
+	},
+	{
+		name: 'radius',
+		visibility: [animations.SpiralFlyingLines.name] as CanvasAnimationsNames[],
+		visibilityChecking: (properties: IProperty) =>
+			!!(properties.radius && !properties.isPulsative),
+		step: 0.5,
+		min: 0,
+		getMax: (initialValue: number) => initialValue * 3,
+	},
+]
 
 const router = createHashRouter(
 	createRoutesFromElements(
