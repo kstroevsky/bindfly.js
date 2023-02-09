@@ -23,7 +23,7 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 	const { innerWidth, innerHeight, devicePixelRatio } = window;
 	const offsetWidth: number = isMobile ? 0 : offset;
 
-	let AnimationClass
+	let AnimationClass;
 
 	switch (classId) {
 		case FlyingCubesGL.name:
@@ -45,7 +45,13 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 	return (
 		<>
 			<ParamHandlerContainer
-				{...{ properties, handlers, classId, keyToggle: keyToggle.current }}
+				{...{
+					properties,
+					handlers,
+					classId,
+					keyToggle: keyToggle.current,
+					offsetWidth,
+				}}
 			/>
 			<Canvas
 				key={+keyToggle.current}

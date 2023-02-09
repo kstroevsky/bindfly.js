@@ -1,5 +1,5 @@
-import React, { lazy, memo, useState, useCallback } from 'react';
-import type { FC } from 'react';
+import React, { lazy, memo, forwardRef, useState, useCallback } from 'react';
+import classnames from 'classnames';
 
 import { CanvasHandlersConfig } from '../../router';
 import type { CanvasAnimationsNames } from '../../router';
@@ -11,7 +11,6 @@ import type {
 } from '../../shared/types';
 
 import './styles.css';
-import classnames from 'classnames';
 
 const ParamHandler = lazy(() => import('../ParamHandler'));
 
@@ -20,14 +19,13 @@ export interface IParamHandlerContainerProps {
 	handlers: TParamsHandlers;
 	classId: CanvasAnimationsNames;
 	keyToggle: boolean;
+	offsetWidth: number;
 }
 
-const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
-	properties,
-	handlers,
-	classId,
-	keyToggle,
-}) => {
+const ParamHandlerContainer = forwardRef<
+	HTMLDivElement,
+	IParamHandlerContainerProps
+>(({ properties, handlers, classId, keyToggle, offsetWidth }, ref) => {
 	const [currentRangeIdx, setCurrentRangeIdx] = useState<number>(0);
 
 	const handleClick = useCallback(
@@ -38,7 +36,12 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 	);
 
 	return (
-		<div key={`${+keyToggle}-ranges`} className={'animation-handlers'}>
+		<div
+			ref={ref}
+			key={`${+keyToggle}-ranges`}
+			className={'animation-handlers'}
+			style={{ width: `calc(100vw - ${offsetWidth}px)` }}
+		>
 			{CanvasHandlersConfig.map((item, idx) => {
 				if (
 					!item.visibility.includes(classId) ||
@@ -56,10 +59,18 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 						className={classnames('animation-handlers__item', {
 							active: currentRangeIdx === idx,
 						})}
+						style={{
+							backgroundImage: `radial-gradient(circle,
+								hsl(${(idx * 36) % 360}, 80%, 60%),
+								hsl(${(idx * 36 + 180) % 360}, 80%, 60%)
+							)`,
+							backgroundPosition: `${100 * (idx + 1)}em ${-100 * (idx + 1)}em`,
+						}}
 						onClick={handleClick}
 					>
 						<ParamHandler
 							{...item}
+							key={`${+keyToggle}-${item.name}-canvas-item`}
 							max={item.getMax(initialValue)}
 							initialValue={initialValue}
 							onChange={
@@ -75,6 +86,6 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 			})}
 		</div>
 	);
-};
+});
 
 export default memo(ParamHandlerContainer);

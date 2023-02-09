@@ -1,11 +1,11 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import type { FC } from 'react';
 
 import DataContext, { IDataContext } from '../Context';
 import { Canvas } from '../Canvas';
 import { useCanvas } from '../../hooks';
-
+import ParamHandlerContainer from '../ParamHandlerContainer';
 import {
 	FlyingLines,
 	DroopingLines,
@@ -14,7 +14,6 @@ import {
 } from '../../shared/2d/animations';
 import type { IOutletContext, IProperty } from '../../shared/types';
 import type { CanvasAnimationsNames } from '../../router';
-import ParamHandlerContainer from '../ParamHandlerContainer';
 
 export interface IAnimationProps {
 	classId: CanvasAnimationsNames;
@@ -22,6 +21,7 @@ export interface IAnimationProps {
 }
 
 const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
+	const headerRef = useRef<HTMLDivElement>(null);
 	const { keyToggle } = useContext<IDataContext>(DataContext);
 	const { width: offset, isMobile } = useOutletContext<IOutletContext>();
 
@@ -58,7 +58,14 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 	return (
 		<>
 			<ParamHandlerContainer
-				{...{ properties, handlers, classId, keyToggle: keyToggle.current }}
+				ref={headerRef}
+				{...{
+					properties,
+					handlers,
+					classId,
+					keyToggle: keyToggle.current,
+					offsetWidth,
+				}}
 			/>
 			<Canvas
 				key={+keyToggle.current}
