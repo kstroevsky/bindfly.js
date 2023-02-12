@@ -25,21 +25,26 @@
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  -moz-column-gap: 5px;
-  column-gap: 5px;
+  -moz-column-gap: 8px;
+  column-gap: 8px;
 }
 
 .count-title {
-  font-size: 10px;
+  text-align: left;
+  font-size: 11px;
+  display: block;
+  color: #fff;
 }
 
 .count-pic {
   border-radius: 10px;
   height: 7px;
   box-shadow: inset 0 0 3px rgb(0 0 0 / 50%);
-  width: 50%;
+  width: 75%;
 }
 
+
+/* ===== RANGE ====== */
 .counter input[type='range'],
 .counter input[type='range']::-webkit-slider-runnable-track,
 .counter input[type='range']::-webkit-slider-thumb {

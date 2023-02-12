@@ -1,4 +1,4 @@
-import React, { lazy, useContext } from 'react';
+import React, { lazy, useContext, Fragment } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import type { FC } from 'react';
 
@@ -43,18 +43,16 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 	});
 
 	return (
-		<>
+		<Fragment key={+keyToggle.current}>
 			<ParamHandlerContainer
 				{...{
 					properties,
 					handlers,
 					classId,
-					keyToggle: keyToggle.current,
 					offsetWidth,
 				}}
 			/>
 			<Canvas
-				key={+keyToggle.current}
 				ref={canvasRef}
 				width={innerWidth - offsetWidth}
 				height={innerHeight}
@@ -66,7 +64,7 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 					right: 0,
 				}}
 			/>
-		</>
+		</Fragment>
 	);
 };
 

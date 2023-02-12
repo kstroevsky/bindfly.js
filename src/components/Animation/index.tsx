@@ -1,11 +1,10 @@
-import React, { useContext, useRef } from 'react';
+import React, { lazy, useContext, Fragment } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import type { FC } from 'react';
 
 import DataContext, { IDataContext } from '../Context';
 import { Canvas } from '../Canvas';
 import { useCanvas } from '../../hooks';
-import ParamHandlerContainer from '../ParamHandlerContainer';
 import {
 	FlyingLines,
 	DroopingLines,
@@ -15,13 +14,14 @@ import {
 import type { IOutletContext, IProperty } from '../../shared/types';
 import type { CanvasAnimationsNames } from '../../router';
 
+const ParamHandlerContainer = lazy(() => import('../ParamHandlerContainer'));
+
 export interface IAnimationProps {
 	classId: CanvasAnimationsNames;
 	properties: IProperty;
 }
 
 const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
-	const headerRef = useRef<HTMLDivElement>(null);
 	const { keyToggle } = useContext<IDataContext>(DataContext);
 	const { width: offset, isMobile } = useOutletContext<IOutletContext>();
 
@@ -56,19 +56,16 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 	);
 
 	return (
-		<>
+		<Fragment key={+keyToggle.current}>
 			<ParamHandlerContainer
-				ref={headerRef}
 				{...{
 					properties,
 					handlers,
 					classId,
-					keyToggle: keyToggle.current,
 					offsetWidth,
 				}}
 			/>
 			<Canvas
-				key={+keyToggle.current}
 				ref={canvasRef}
 				width={innerWidth - offsetWidth}
 				height={innerHeight}
@@ -80,7 +77,7 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 					right: 0,
 				}}
 			/>
-		</>
+		</Fragment>
 	);
 };
 

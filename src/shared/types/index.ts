@@ -1,3 +1,5 @@
+import { ECanvasWorkerMessage } from '../constants';
+
 /* =================================== */
 /* CUSTOM UTILITY TYPES */
 /* =================================== */
@@ -43,7 +45,7 @@ export interface IProperty {
 	[key: string]: IProperty[keyof IProperty];
 	name: string;
 	for?: string | string[];
-	bgColor?: string;
+	bgColor: string;
 	particleColors?: string[];
 	generativeColorsCounts: number;
 	particlesCount: number;
@@ -65,10 +67,16 @@ export interface IProperty {
 
 export type TProperties = IProperty[];
 
-export type TParamsHandlersNames = Partial<keyof Pick<
-	IProperty,
-	'particlesCount' | 'lineLength' | 'particleMaxVelocity' | 'radius'
->>;
+export type TParamsHandlersNames = Partial<
+	keyof Pick<
+		IProperty,
+		| 'particlesCount'
+		| 'lineLength'
+		| 'particleMaxVelocity'
+		| 'radius'
+		| 'bgColor'
+	>
+>;
 
 export type TParamHandleChangeName<N extends string> = `change${Capitalize<N>}`;
 
@@ -77,13 +85,14 @@ export type TParamsHandlers = Record<
 	TCallable<void, number>
 >;
 
-export interface IAnimationHandlerConfig<T extends string> {
+export interface IAnimationHandlerConfig<T extends string, I = any> {
 	name: TParamsHandlersNames;
 	visibility: T[];
 	step: number;
 	min: number;
 	getMax: (initialValue: number) => number;
 	visibilityChecking?: (properties: IProperty) => boolean;
+	valueEncoder?: (value: I) => number;
 }
 
 export interface IOutletContext {
@@ -142,21 +151,15 @@ export interface WorkerClickData {
 }
 
 export interface ICanvasWorkerProps {
-	msg:
-		| 'init'
-		| 'click'
-		| 'stop'
-		| 'count'
-		| 'radius'
-		| 'velocity'
-		| 'lineLength';
+	msg: ECanvasWorkerMessage;
 	canvas: OffscreenCanvas;
 	animationName: string;
 	animationParameters: TAnimationProperties;
-	count?: number;
-	radius?: number;
-	velocity?: number;
-	lineLength?: number;
+	[ECanvasWorkerMessage.COUNT]?: number;
+	[ECanvasWorkerMessage.RADIUS]?: number;
+	[ECanvasWorkerMessage.VELOCITY]?: number;
+	[ECanvasWorkerMessage.LENGTH]?: number;
+	[ECanvasWorkerMessage.ALPHA]?: number;
 }
 
 export interface IVectorsForIntersect {

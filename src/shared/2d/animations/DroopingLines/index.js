@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
+import { generateColorsByCount } from '../../../utils/color-helpers'
 import CanvasAnimation from '../../../abstract/canvas'
-import { generateColorsByCount } from '../../../utils'
 import FlyingPoints from '../../templates/FlyingPoints'
 
 export default class DroopingLines extends CanvasAnimation {

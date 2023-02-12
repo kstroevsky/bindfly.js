@@ -2,7 +2,8 @@ import * as THREE from 'three'
 import * as noise from 'noisejs'
 
 import FlyingPointsGL from '../../templates/FlyingPointsGL'
-import { generateColorsByCount, getPositionGL, RGBAToHexA } from '../../../utils'
+import { getPositionGL } from '../../../utils/canvas-helpers'
+import { RGBAToHexA, generateColorsByCount } from '../../../utils/color-helpers'
 
 export default class FlyingCubesGL extends THREE.Object3D {
 	constructor(renderer, camera, scene, parameters) {
