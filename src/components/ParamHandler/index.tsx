@@ -1,11 +1,11 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
-import type { FC } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react'
+import type { FC } from 'react'
 
-import { useThrottle } from '../../hooks';
-import { PARAMS_HANDLER_DEBOUNCE_DELAY } from '../../shared/constants';
-import type { TCallable } from '../../shared/types';
+import { useThrottle } from '../../hooks'
+import { PARAMS_HANDLER_DEBOUNCE_DELAY } from '../../shared/constants'
+import type { TCallable } from '../../shared/types'
 
-import './styles.css';
+import './styles.css'
 
 export interface IParamHandlerProps {
 	name: string;
@@ -24,30 +24,30 @@ const ParamHandler: FC<IParamHandlerProps> = ({
 	initialValue,
 	onChange,
 }) => {
-	const [state, setState] = useState<number>(initialValue);
+	const [state, setState] = useState<number>(initialValue)
 
 	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-		setState(Number(e.target.value));
-	}, []);
+		setState(Number(e.target.value))
+	}, [])
 
 	const setParam = useCallback(
 		useThrottle(PARAMS_HANDLER_DEBOUNCE_DELAY, (value: number) =>
 			onChange(value)
 		),
 		[onChange]
-	);
+	)
 
 	useEffect(() => {
-		setParam(state);
-	}, [state]);
+		setParam(state)
+	}, [state])
 
-	const maxValue = max || initialValue * 2;
-	const percent = (100 * (state - min)) / (maxValue - min);
+	const maxValue = max || initialValue * 2
+	const percent = (100 * (state - min)) / (maxValue - min)
 
 	return (
 		<>
+			<span className={'count-title'}>{name}</span>
 			<div className={'count'}>
-				<span className={'count-title'}>{name}</span>
 				<div className={'count-container'}>
 					<span className={'count-value'}>{state}</span>
 					<span
@@ -68,7 +68,7 @@ const ParamHandler: FC<IParamHandlerProps> = ({
 				onChange={handleChange}
 			/>
 		</>
-	);
-};
+	)
+}
 
-export default memo(ParamHandler);
+export default memo(ParamHandler)

@@ -9,6 +9,7 @@ import {
 import * as animations from '../shared/2d/animations';
 import Loader from '../components/Loader';
 import { DataContextProvider } from '../components/Context';
+import { getAlpha } from '../shared/utils/color-helpers';
 import type {
 	IAnimationHandlerConfig,
 	IProperty,
@@ -80,6 +81,19 @@ export const CanvasHandlersConfig: IAnimationHandlerConfig<CanvasAnimationsNames
 			min: 0,
 			getMax: (initialValue: number) => initialValue * 3,
 		},
+		{
+			name: 'bgColor',
+			visibility: [
+				animations.FlyingLines.name,
+				animations.DroopingLines.name,
+				animations.SpiralFlyingLines.name,
+				animations.Spiral.name,
+			] as CanvasAnimationsNames[],
+			step: 0.01,
+			min: 0,
+			getMax: () => 1,
+			valueEncoder: getAlpha,
+		} as IAnimationHandlerConfig<CanvasAnimationsNames, string>,
 	];
 
 const router = createHashRouter(
