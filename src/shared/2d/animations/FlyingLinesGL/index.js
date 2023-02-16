@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 
 import FlyingPointsGL from '../../templates/FlyingPointsGL'
-import { generateColorsByCount, getPosition, getPositionGL, RGBAToHexA } from '../../../utils'
+import { getPositionGL, getPosition } from '../../../utils/canvas-helpers'
+import { RGBAToHexA, generateColorsByCount } from '../../../utils/color-helpers'
 
 export default class FlyingLinesGL extends THREE.Object3D {
 	constructor(renderer, camera, scene, parameters) {

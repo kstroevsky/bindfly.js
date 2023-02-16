@@ -1,16 +1,15 @@
-import { useCallback, useContext, useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import type { MutableRefObject } from 'react';
 
-import CanvasAnimation from '../shared/abstract/canvas';
 import useForceUpdate from './useForceUpdate';
+import useGetParamsHandlers from './useGetParamsHandlers';
 import DataContext, { IDataContext } from '../components/Context';
-import { animationParamChangerFactory } from '../shared/HOF';
 import {
 	canvasClickHandler,
-	canvasParticlesCountChange,
 	canvasReload,
-	getVelocity,
-} from '../shared/utils';
+} from '../shared/utils/canvas-helpers';
+
+import type CanvasAnimation from '../shared/abstract/canvas';
 import type {
 	TConstructorOf,
 	ICanvasWorkerProps,
@@ -27,70 +26,6 @@ const useCanvas = <A extends object>(
 
 	const { keyToggle, webWorker } = useContext<IDataContext>(DataContext);
 	const reload = useForceUpdate();
-
-	const changeParticlesCount = useCallback(
-		animationParamChangerFactory<A, number>(
-			webWorker,
-			animationRef.current,
-			'count',
-			canvasParticlesCountChange
-		),
-		[animationRef.current, webWorker.current]
-	);
-
-	const changeRadius = useCallback(
-		animationParamChangerFactory<A, number>(
-			webWorker,
-			animationRef.current,
-			'radius',
-			(radius) =>
-				Object.assign({}, animationRef.current, { spiralRadius: radius || 0 })
-		),
-		[animationRef.current, webWorker.current]
-	);
-
-	const changeParticleMaxVelocity = useCallback(
-		animationParamChangerFactory<A, number>(
-			webWorker,
-			animationRef.current,
-			'velocity',
-			(velocity) => {
-				Object.assign({}, animationRef.current?.properties, {
-					...animationRef.current?.properties,
-					particleMaxVelocity: velocity || 0,
-				});
-
-				if (animationRef.current?.particles) {
-					animationRef.current.particles = animationRef.current?.particles?.map(
-						(item) => {
-							const newVelocity = getVelocity(velocity || 0);
-							return {
-								...item,
-								velocityX: newVelocity,
-								velocityY: newVelocity,
-							};
-						}
-					);
-				}
-			}
-		),
-		[animationRef.current, webWorker.current]
-	);
-
-	const changeLineLength = useCallback(
-		animationParamChangerFactory<A, number>(
-			webWorker,
-			animationRef.current,
-			'lineLength',
-			(lineLength) => {
-				Object.assign({}, animationRef.current?.properties, {
-					...animationRef.current?.properties,
-					lineLength: lineLength || 0,
-				});
-			}
-		),
-		[animationRef.current, webWorker.current]
-	);
 
 	canvasReload<A>(keyToggle, webWorker, canvasRef, animationRef);
 
@@ -188,15 +123,9 @@ const useCanvas = <A extends object>(
 		}
 	}, [Animation, animationParameters]);
 
-	return [
-		canvasRef,
-		{
-			changeParticlesCount,
-			changeRadius,
-			changeParticleMaxVelocity,
-			changeLineLength,
-		},
-	];
+	const handlers = useGetParamsHandlers(webWorker, animationRef);
+
+	return [canvasRef, handlers];
 };
 
 export default useCanvas;

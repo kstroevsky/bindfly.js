@@ -1,11 +1,10 @@
-import React, { useContext } from 'react';
+import React, { lazy, useContext, Fragment } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import type { FC } from 'react';
 
 import DataContext, { IDataContext } from '../Context';
 import { Canvas } from '../Canvas';
 import { useCanvas } from '../../hooks';
-
 import {
 	FlyingLines,
 	DroopingLines,
@@ -14,7 +13,8 @@ import {
 } from '../../shared/2d/animations';
 import type { IOutletContext, IProperty } from '../../shared/types';
 import type { CanvasAnimationsNames } from '../../router';
-import ParamHandlerContainer from '../ParamHandlerContainer';
+
+const ParamHandlerContainer = lazy(() => import('../ParamHandlerContainer'));
 
 export interface IAnimationProps {
 	classId: CanvasAnimationsNames;
@@ -56,12 +56,16 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 	);
 
 	return (
-		<>
+		<Fragment key={+keyToggle.current}>
 			<ParamHandlerContainer
-				{...{ properties, handlers, classId, keyToggle: keyToggle.current }}
+				{...{
+					properties,
+					handlers,
+					classId,
+					offsetWidth,
+				}}
 			/>
 			<Canvas
-				key={+keyToggle.current}
 				ref={canvasRef}
 				width={innerWidth - offsetWidth}
 				height={innerHeight}
@@ -73,7 +77,7 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 					right: 0,
 				}}
 			/>
-		</>
+		</Fragment>
 	);
 };
 

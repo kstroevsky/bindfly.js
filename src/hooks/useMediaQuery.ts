@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getMediaMatches } from '../shared/utils'
+import { getMediaMatches } from '../shared/utils/helpers'
 import useListenersEffect from './useListenersEffect'
 
 const useMediaQuery = (query: string) => {

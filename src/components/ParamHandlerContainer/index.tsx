@@ -1,7 +1,9 @@
-import React, { lazy, memo } from 'react';
+import React, { lazy, memo, useState, useCallback } from 'react';
+import classnames from 'classnames';
 import type { FC } from 'react';
 
 import { CanvasHandlersConfig } from '../../router';
+import { trivialOne } from '../../shared/utils/helpers';
 import type { CanvasAnimationsNames } from '../../router';
 import type {
 	IProperty,
@@ -18,41 +20,66 @@ export interface IParamHandlerContainerProps {
 	properties: IProperty;
 	handlers: TParamsHandlers;
 	classId: CanvasAnimationsNames;
-	keyToggle: boolean;
+	offsetWidth: number;
 }
 
 const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 	properties,
 	handlers,
 	classId,
-	keyToggle,
+	offsetWidth,
 }) => {
-	return (
-		<div key={`${+keyToggle}-ranges`} className={'animation-handlers'}>
-			{CanvasHandlersConfig.map((item) => {
-				if (
-					!item.visibility.includes(classId) ||
-					!(!item.visibilityChecking || item.visibilityChecking(properties))
-				) {
-					return <></>;
-				}
+	const [currentRangeIdx, setCurrentRangeIdx] = useState<number>(0);
 
-				const initialValue = properties[item.name] || 0;
+	const handleClick = useCallback(
+		(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+			setCurrentRangeIdx(Number(e.currentTarget.dataset.item));
+		},
+		[]
+	);
+
+	return (
+		<div
+			className={'animation-handlers'}
+			style={{ width: `calc(100vw - ${offsetWidth}px)` }}
+		>
+			{CanvasHandlersConfig.filter(
+				(item) =>
+					item.visibility.includes(classId) &&
+					(!item.visibilityChecking || item.visibilityChecking(properties))
+			).map((item, idx) => {
+				const encode = item.valueEncoder || trivialOne;
+				const initialValue: number = encode(properties[item.name] || 0);
 
 				return (
-					<ParamHandler
-						{...item}
-						key={`${+keyToggle}-${item.name}-canvas`}
-						max={item.getMax(initialValue)}
-						initialValue={initialValue}
-						onChange={
-							handlers[
-								`change${
-									item.name.charAt(0).toUpperCase() + item.name.slice(1)
-								}` as TParamHandleChangeName<TParamsHandlersNames>
-							]
-						}
-					/>
+					<div
+						key={`${properties.name}-${item.name}-canvas`}
+						data-item={idx}
+						className={classnames('animation-handlers__item', {
+							active: currentRangeIdx === idx,
+						})}
+						style={{
+							backgroundImage: `radial-gradient(circle,
+								hsl(${(idx * 36) % 360}, 80%, 60%),
+								hsl(${(idx * 36 + 180) % 360}, 80%, 60%)
+							)`,
+							backgroundPosition: `${100 * (idx + 1)}em ${-100 * (idx + 1)}em`,
+						}}
+						onClick={handleClick}
+					>
+						<ParamHandler
+							{...item}
+							max={item.getMax(initialValue)}
+							initialValue={initialValue}
+							onChange={
+								handlers[
+									`change${
+										item.name.charAt(0).toUpperCase() + item.name.slice(1)
+									}` as TParamHandleChangeName<TParamsHandlersNames>
+								]
+							}
+						/>
+					</div>
 				);
 			})}
 		</div>

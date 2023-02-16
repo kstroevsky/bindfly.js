@@ -1,4 +1,4 @@
-import { getPosition, getVelocity } from '../../../utils'
+import { getPosition, getVelocity } from '../../../utils/canvas-helpers'
 
 export default class FlyingPoints {
 	constructor (w, h, properties) {
