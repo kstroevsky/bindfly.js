@@ -21,7 +21,7 @@ li {
   display: flex;
 }
 
-.sidebar {
+#sidebar {
   left: 0;
   top: 0;
   background-color: #081225;
@@ -31,7 +31,7 @@ li {
   overflow-y: auto;
 }
 
-.sidebar nav {
+#sidebar nav {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -240,7 +240,7 @@ canvas {
 }
 
 @media (min-width: 769px) {
-  .sidebar:not(.modal) {
+  #sidebar:not(.modal) {
     position: relative;
     padding: 0 20px;
     width: auto;
@@ -249,12 +249,12 @@ canvas {
     z-index: 2;
   }
 
-  .sidebar.modal,
-  .sidebar.modal * {
+  #sidebar.modal,
+  #sidebar.modal * {
     z-index: -1;
   }
 
-  .sidebar:not(.modal) nav {
+  #sidebar:not(.modal) nav {
     width: 200px;
   }
 
@@ -276,16 +276,16 @@ canvas {
 
 @media (max-width: 768px),
 (orientation: portrait) {
-  .sidebar.modal {
+  #sidebar.modal {
     z-index: -1;
   }
 
-  .sidebar.modal.active * {
+  #sidebar.modal.active * {
     z-index: 2;
     margin: auto;
   }
 
-  .sidebar.modal {
+  #sidebar.modal {
     width: 100vw;
     height: 100vh;
     position: absolute;
@@ -294,7 +294,7 @@ canvas {
     transform: translateX(-100vw);
   }
 
-  .sidebar.modal.active {
+  #sidebar.modal.active {
     transform: translateX(0px);
     z-index: 3;
   }

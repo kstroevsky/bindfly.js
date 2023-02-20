@@ -29,7 +29,8 @@ const PageSidebar = forwardRef<HTMLElement, IPageSidebarProps>(
 		return (
 			<aside
 				ref={ref}
-				className={classNames('sidebar', {
+				id={'sidebar'}
+				className={classNames({
 					modal: isModal,
 					active: mobileVisibility,
 				})}
