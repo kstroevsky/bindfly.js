@@ -44,3 +44,5 @@ export const isVectorsIntersected = ({
 		return lambda > 0 && lambda < 1 && gamma > 0 && gamma < 1;
 	}
 };
+
+export const getQueryParams = (path: string) => Object.fromEntries(path.slice(1).split('&').map(item => item.split('=')))
