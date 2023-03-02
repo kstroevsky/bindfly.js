@@ -13,6 +13,7 @@ import type {
 } from '../../shared/types';
 
 import './styles.css';
+import { useSearchParams } from 'react-router-dom';
 
 const ParamHandler = lazy(() => import('../ParamHandler'));
 
@@ -30,13 +31,20 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 	offsetWidth,
 }) => {
 	const [currentRangeIdx, setCurrentRangeIdx] = useState<number>(0);
-
+  const [searchParams, setSearchParams] = useSearchParams();
 	const handleClick = useCallback(
 		(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 			setCurrentRangeIdx(Number(e.currentTarget.dataset.item));
 		},
 		[]
 	);
+
+  const updateSearch = useCallback((params: { [key: string]: string }) => {
+    Object.entries(params).forEach(([key, value]) => {
+        searchParams.set(key, value);
+    });
+    setSearchParams(searchParams);
+  }, [searchParams]);
 
 	return (
 		<div
@@ -71,6 +79,8 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 							{...item}
 							max={item.getMax(initialValue)}
 							initialValue={initialValue}
+              updateSearch={updateSearch}
+              searchParams={searchParams}
 							onChange={
 								handlers[
 									`change${

@@ -6,6 +6,8 @@ import NavLinkItem from '../NavLinkItem';
 import { useLongPress } from '../../hooks';
 import { isLayoutActive } from '../../shared/utils/helpers';
 import type { IProperty, TProperties } from '../../shared/types';
+import { useSearchParams } from 'react-router-dom';
+import { CanvasHandlersConfig } from '../../router';
 
 export interface IPageSidebarProps {
 	properties: TProperties;
@@ -21,8 +23,19 @@ const PageSidebar = forwardRef<HTMLElement, IPageSidebarProps>(
 		);
 		const mobileVisibility =
 			isModal && isLayoutActive(touchInterval.start, touchInterval.end);
+    
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const clearParams = () => {
+      CanvasHandlersConfig.forEach(handler => {
+        searchParams.delete(handler.name);
+      });
+
+      setSearchParams(searchParams);
+    }
 
 		const handleClose = useCallback(() => {
+      clearParams();
 			setTouchInterval({ start: 0, end: 0 });
 		}, [setTouchInterval]);
 

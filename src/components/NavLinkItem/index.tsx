@@ -41,7 +41,10 @@ const NavLinkItem: FC<INavLinkItemProps> = ({ id, propertySet, onCleanUp }) => {
 									  }
 									: {
 											onClick: () => onCleanUp?.(),
-											to: `/${x.name}-${propertySet.name.replaceAll(' ', '')}`,
+											to: {
+                        pathname: `/${x.name}-${propertySet.name.replaceAll(' ', '')}`,
+                        search: ''
+                      },
 									  }) as LinkProps)}
 								className={({ isActive }) =>
 									classNames({ 'current-page': isActive })
