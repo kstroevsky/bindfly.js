@@ -34,6 +34,8 @@ const ParamHandler: FC<IParamHandlerProps> = ({
     searchParams && setState(Number(searchParams.get(name)) || initialValue);
   }, []);
 
+  console.log(state);
+
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setState(Number(e.target.value));
   }, []);
@@ -41,10 +43,12 @@ const ParamHandler: FC<IParamHandlerProps> = ({
   const setParam = useCallback(
     useThrottle(PARAMS_HANDLER_DEBOUNCE_DELAY, (value: number) => {
       updateSearch({ [name]: state.toString() });
-      onChange(value);
+      console.log('setParam', value);
+      onChange(state);
     }), [onChange]);
 
   useEffect(() => {
+    console.log('useEffect');
     setParam(state);
   }, [state]);
 
