@@ -80,6 +80,11 @@ self.onmessage = async function (e: MessageEvent<ICanvasWorkerProps>) {
 
 			break;
 
+		case ECanvasWorkerMessage.WEIGHT:
+			animationWorker.properties.weight = e.data.weight || 0;
+
+			break;
+
 		case ECanvasWorkerMessage.ALPHA:
 			animationWorker.properties.bgColor = changeAlpha(
 				animationWorker.properties.bgColor,

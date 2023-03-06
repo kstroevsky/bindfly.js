@@ -3,6 +3,9 @@
     "name": "Simple",
     "for": [
       "Spiral",
+      "Spiral2",
+      "Spiral3",
+      "Pulse",
       "DroopingLines",
       "FlyingLines",
       "FlyingLinesGL",
@@ -15,6 +18,7 @@
     "lineLength": 250,
     "particleLife": 20,
     "margin": 20,
+    "weight": 10,
     "isMonochrome": false,
     "isCountStable": false,
     "isImmortal": false,
@@ -27,6 +31,9 @@
     "for": [
       "SpiralFlyingLines",
       "Spiral",
+      "Spiral2",
+      "Spiral3",
+      "Pulse",
       "DroopingLines",
       "FlyingLines"
     ],
@@ -42,6 +49,7 @@
     "lineLength": 150,
     "particleLife": 20,
     "margin": 20,
+    "weight": 10,
     "isMonochrome": false,
     "isCountStable": false,
     "isImmortal": false,
@@ -53,7 +61,6 @@
     "name": "Monochrome & Clickable",
     "for": [
       "SpiralFlyingLines",
-      "Spiral",
       "DroopingLines",
       "FlyingLines"
     ],
@@ -75,7 +82,6 @@
     "name": "Add By Click",
     "for": [
       "SpiralFlyingLines",
-      "Spiral",
       "DroopingLines",
       "FlyingLines",
       "FlyingLinesGL"
@@ -119,6 +125,9 @@
     "name": "Fixed & Movable",
     "for": [
       "Spiral",
+      "Spiral2",
+      "Spiral3",
+      "Pulse",
       "SpiralFlyingLines"
     ],
     "bgColor": "rgba(0, 0, 0, 0.7)",
@@ -128,6 +137,7 @@
     "lineLength": 150,
     "particleLife": 20,
     "margin": 20,
+    "weight": 10,
     "radius": 12000,
     "reverse": false,
     "isPulsative": false,
@@ -167,6 +177,9 @@
     "for": [
       "SpiralFlyingLines",
       "Spiral",
+      "Spiral2",
+      "Spiral3",
+      "Pulse",
       "DroopingLines",
       "FlyingLines"
     ],
@@ -177,6 +190,7 @@
     "lineLength": 200,
     "particleLife": 20,
     "radius": 400,
+    "weight": 10,
     "margin": 20,
     "isMonochrome": false,
     "isCountStable": false,

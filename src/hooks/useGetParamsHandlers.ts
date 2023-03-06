@@ -100,12 +100,27 @@ const useGetParamsHandlers = <A extends object>(
 		[animationRef.current, webWorker.current]
 	);
 
+	const changeWeight = useCallback(
+		animationParamChangerFactory<A, number>(
+			webWorker,
+			animationRef.current,
+			ECanvasWorkerMessage.WEIGHT,
+			(weight) => {
+				if (animationRef.current) {
+					animationRef.current.properties.weight = weight || 0;
+				}
+			}
+		),
+		[animationRef.current, webWorker.current]
+	);
+
 	return {
 		changeParticlesCount,
 		changeRadius,
 		changeParticleMaxVelocity,
 		changeLineLength,
 		changeBgColor,
+		changeWeight
 	};
 };
 
