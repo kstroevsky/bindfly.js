@@ -30,12 +30,6 @@ const ParamHandler: FC<IParamHandlerProps> = ({
 }) => {
   const [state, setState] = useState<number>(initialValue);
 
-  useEffect(() => {
-    searchParams && setState(Number(searchParams.get(name)) || initialValue);
-  }, []);
-
-  console.log(state);
-
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setState(Number(e.target.value));
   }, []);
@@ -43,15 +37,18 @@ const ParamHandler: FC<IParamHandlerProps> = ({
   const setParam = useCallback(
     useThrottle(PARAMS_HANDLER_DEBOUNCE_DELAY, (value: number) => {
       updateSearch({ [name]: state.toString() });
-      console.log('setParam', value);
-      onChange(state);
+      onChange(value);
     }), [onChange]);
 
   useEffect(() => {
-    console.log('useEffect');
+    const initialState = Number(searchParams.get(name) || initialValue);
+    setState(initialState);
+    setParam(initialState);
+  }, []);
+
+  useEffect(() => {
     setParam(state);
   }, [state]);
-
 
   const maxValue = max || initialValue * 2
   const percent = (100 * (state - min)) / (maxValue - min)
