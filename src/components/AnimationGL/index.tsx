@@ -2,6 +2,7 @@ import React, { lazy, useContext, Fragment } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import type { FC } from 'react';
 
+import * as animations from '../../shared/2d/animations';
 import DataContext, { IDataContext } from '../Context';
 import { Canvas } from '../Canvas';
 import { useWebGL } from '../../hooks';
@@ -23,16 +24,7 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 	const { innerWidth, innerHeight, devicePixelRatio } = window;
 	const offsetWidth: number = isMobile ? 0 : offset;
 
-	let AnimationClass;
-
-	switch (classId) {
-		case FlyingCubesGL.name:
-			AnimationClass = FlyingCubesGL;
-			break;
-		case FlyingLinesGL.name:
-		default:
-			AnimationClass = FlyingLinesGL;
-	}
+	const AnimationClass = animations[classId];
 
 	const [canvasRef, handlers] = useWebGL(AnimationClass, {
 		properties,
@@ -57,7 +49,6 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 				width={innerWidth - offsetWidth}
 				height={innerHeight}
 				style={{
-					// backgroundColor: properties.bgColor,
 					width: innerWidth - offsetWidth,
 					height: innerHeight,
 					position: 'absolute',
