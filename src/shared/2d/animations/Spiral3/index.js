@@ -2,7 +2,7 @@ import { generateColorsByCount } from '../../../utils/color-helpers'
 import CanvasAnimation from '../../../abstract/canvas'
 import FlyingPoints from '../../templates/FlyingPoints'
 
-export default class Spiral extends CanvasAnimation {
+export default class Spiral3 extends CanvasAnimation {
 	constructor(ctx, parameters) {
 		super()
 		this.properties = parameters.properties
@@ -138,8 +138,8 @@ export default class Spiral extends CanvasAnimation {
 			const distance = radius * (this.angle / (2 * Math.PI)) * 2
 
 			// Calculate the x and y position of the particle
-			const x = this.positionX + distance * Math.cos(this.angle * Math.exp(this.a)) * Math.sin(this.a)
-			const y = this.positionY + distance * Math.cos(this.a) * (-1)
+			const x = this.positionX + distance * Math.cos(this.angle * Math.exp(this.a)) * Math.atan(this.a)
+			const y = this.positionY + distance * Math.cos(Math.sin(this.a)) * (-1)
 
 			// Update the particle's position
 			this.particles[i].x = x

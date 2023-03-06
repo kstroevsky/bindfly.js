@@ -13,4 +13,5 @@ export enum ECanvasWorkerMessage {
 	VELOCITY = 'velocity',
 	LENGTH = 'lineLength',
 	ALPHA = 'bgAlpha',
+	WEIGHT = 'weight'
 }

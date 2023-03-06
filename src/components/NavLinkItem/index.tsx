@@ -1,6 +1,6 @@
+import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
-import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import type { LinkProps } from 'react-router-dom';
 import type { FC } from 'react';
 
@@ -18,9 +18,9 @@ export interface INavLinkItemProps {
 const NavLinkItem: FC<INavLinkItemProps> = ({ id, propertySet, onCleanUp }) => {
 	const [checked, setChecked] = useState<boolean>(false);
 
-	const handleChange = () => {
+	const handleChange = useCallback(() => {
 		setChecked(!checked);
-	};
+	}, [checked]);
 
 	return (
 		<li className="ListLinkItem">
@@ -35,17 +35,17 @@ const NavLinkItem: FC<INavLinkItemProps> = ({ id, propertySet, onCleanUp }) => {
 						<p key={`${x.name}-${i}`}>
 							<NavLink
 								{...((window.location.pathname ===
-								`/${x.name}-${propertySet.name.replaceAll(' ', '')}`
+									`/${x.name}-${propertySet.name.replaceAll(' ', '')}`
 									? {
-											onClick: (e) => e.preventDefault(),
-									  }
+										onClick: (e) => e.preventDefault(),
+									}
 									: {
-											onClick: () => onCleanUp?.(),
-											to: {
-                        pathname: `/${x.name}-${propertySet.name.replaceAll(' ', '')}`,
-                        search: ''
-                      },
-									  }) as LinkProps)}
+										onClick: () => onCleanUp?.(),
+										to: {
+											pathname: `/${x.name}-${propertySet.name.replaceAll(' ', '')}`,
+											search: ''
+										},
+									}) as LinkProps)}
 								className={({ isActive }) =>
 									classNames({ 'current-page': isActive })
 								}

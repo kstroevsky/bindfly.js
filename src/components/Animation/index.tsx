@@ -2,15 +2,10 @@ import React, { lazy, useContext, Fragment } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import type { FC } from 'react';
 
+import * as animations from '../../shared/2d/animations';
 import DataContext, { IDataContext } from '../Context';
 import { Canvas } from '../Canvas';
 import { useCanvas } from '../../hooks';
-import {
-	FlyingLines,
-	DroopingLines,
-	SpiralFlyingLines,
-	Spiral,
-} from '../../shared/2d/animations';
 import type { IOutletContext, IProperty } from '../../shared/types';
 import type { CanvasAnimationsNames } from '../../router';
 
@@ -28,21 +23,7 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 	const { innerWidth, innerHeight, devicePixelRatio } = window;
 	const offsetWidth: number = isMobile ? 0 : offset;
 
-	let AnimationClass;
-
-	switch (classId) {
-		case SpiralFlyingLines.name:
-			AnimationClass = SpiralFlyingLines;
-			break;
-		case Spiral.name:
-			AnimationClass = Spiral;
-			break;
-		case DroopingLines.name:
-			AnimationClass = DroopingLines;
-			break;
-		default:
-			AnimationClass = FlyingLines;
-	}
+	const AnimationClass = animations[classId];
 
 	const [canvasRef, handlers] = useCanvas<typeof AnimationClass>(
 		AnimationClass,

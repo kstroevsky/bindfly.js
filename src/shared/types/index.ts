@@ -29,8 +29,8 @@ export type TNamespace<C> = C extends { [key: string]: infer T }
 
 export type TClassesNamespace<N extends TNamespace<object>> = N extends object
 	? {
-			[K in keyof N]: N[K] extends TConstructorOf ? K : never;
-	  }
+		[K in keyof N]: N[K] extends TConstructorOf ? K : never;
+	}
 	: never;
 
 export type TClassesNames<N extends TNamespace<object>> = N extends object
@@ -63,6 +63,7 @@ export interface IProperty {
 	switchByClick: boolean;
 	moveByClick?: boolean;
 	isStatic: boolean;
+	weight?: number;
 }
 
 export type TProperties = IProperty[];
@@ -75,6 +76,7 @@ export type TParamsHandlersNames = Partial<
 		| 'particleMaxVelocity'
 		| 'radius'
 		| 'bgColor'
+		| 'weight'
 	>
 >;
 
@@ -160,6 +162,7 @@ export interface ICanvasWorkerProps {
 	[ECanvasWorkerMessage.VELOCITY]?: number;
 	[ECanvasWorkerMessage.LENGTH]?: number;
 	[ECanvasWorkerMessage.ALPHA]?: number;
+	[ECanvasWorkerMessage.WEIGHT]?: number;
 }
 
 export interface IVectorsForIntersect {

@@ -1,5 +1,6 @@
 import React, { lazy, memo, useState, useCallback } from 'react';
 import classnames from 'classnames';
+import { useSearchParams } from 'react-router-dom';
 import type { FC } from 'react';
 
 import { CanvasHandlersConfig } from '../../router';
@@ -13,7 +14,6 @@ import type {
 } from '../../shared/types';
 
 import './styles.css';
-import { useSearchParams } from 'react-router-dom';
 
 const ParamHandler = lazy(() => import('../ParamHandler'));
 
@@ -31,7 +31,8 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 	offsetWidth,
 }) => {
 	const [currentRangeIdx, setCurrentRangeIdx] = useState<number>(0);
-  const [searchParams, setSearchParams] = useSearchParams();
+	const [searchParams, setSearchParams] = useSearchParams();
+
 	const handleClick = useCallback(
 		(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 			setCurrentRangeIdx(Number(e.currentTarget.dataset.item));
@@ -39,12 +40,12 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 		[]
 	);
 
-  const updateSearch = useCallback((params: { [key: string]: string }) => {
-    Object.entries(params).forEach(([key, value]) => {
-        searchParams.set(key, value);
-    });
-    setSearchParams(searchParams);
-  }, [searchParams]);
+	const updateSearch = useCallback((params: { [key: string]: string }) => {
+		Object.entries(params).forEach(([key, value]) => {
+			searchParams.set(key, value);
+		});
+		setSearchParams(searchParams);
+	}, [searchParams]);
 
 	return (
 		<div
@@ -79,13 +80,12 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 							{...item}
 							max={item.getMax(initialValue)}
 							initialValue={initialValue}
-              updateSearch={updateSearch}
-              searchParams={searchParams}
+							updateSearch={updateSearch}
+							searchParams={searchParams}
 							onChange={
 								handlers[
-									`change${
-										item.name.charAt(0).toUpperCase() + item.name.slice(1)
-									}` as TParamHandleChangeName<TParamsHandlersNames>
+								`change${item.name.charAt(0).toUpperCase() + item.name.slice(1)
+								}` as TParamHandleChangeName<TParamsHandlersNames>
 								]
 							}
 						/>

@@ -39,7 +39,10 @@ export const CanvasHandlersConfig: IAnimationHandlerConfig<CanvasAnimationsNames
 				animations.FlyingLines.name,
 				animations.DroopingLines.name,
 				animations.SpiralFlyingLines.name,
+				animations.Pulse.name,
 				animations.Spiral.name,
+				animations.Spiral2.name,
+				animations.Spiral3.name,
 				animations.FlyingLinesGL.name,
 			] as CanvasAnimationsNames[],
 			step: 1,
@@ -48,11 +51,23 @@ export const CanvasHandlersConfig: IAnimationHandlerConfig<CanvasAnimationsNames
 				initialValue < 20 ? 300 : initialValue * 5,
 		},
 		{
+			name: 'weight',
+			visibility: [
+				animations.Pulse.name,
+			] as CanvasAnimationsNames[],
+			step: 0.1,
+			min: 0,
+			getMax: () => 100,
+		},
+		{
 			name: 'lineLength',
 			visibility: [
 				animations.FlyingLines.name,
 				animations.DroopingLines.name,
+				animations.Pulse.name,
 				animations.Spiral.name,
+				animations.Spiral2.name,
+				animations.Spiral3.name,
 				animations.FlyingLinesGL.name,
 			] as CanvasAnimationsNames[],
 			step: 1,
@@ -87,7 +102,10 @@ export const CanvasHandlersConfig: IAnimationHandlerConfig<CanvasAnimationsNames
 				animations.FlyingLines.name,
 				animations.DroopingLines.name,
 				animations.SpiralFlyingLines.name,
+				animations.Pulse.name,
 				animations.Spiral.name,
+				animations.Spiral2.name,
+				animations.Spiral3.name,
 			] as CanvasAnimationsNames[],
 			step: 0.01,
 			min: 0,
@@ -124,9 +142,9 @@ const router = createHashRouter(
 							path={`/${a.name}-${p.name.replaceAll(' ', '')}`}
 							element={
 								a.name.includes('GL') ? (
-									<AnimationGL properties={p} classId={a.name} />
+									<AnimationGL properties={p} classId={a.name as CanvasAnimationsNames} />
 								) : (
-									<Animation properties={p} classId={a.name} />
+									<Animation properties={p} classId={a.name as CanvasAnimationsNames} />
 								)
 							}
 						/>
