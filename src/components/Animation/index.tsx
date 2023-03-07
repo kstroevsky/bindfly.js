@@ -8,6 +8,7 @@ import { Canvas } from '../Canvas';
 import { useCanvas } from '../../hooks';
 import type { IOutletContext, IProperty } from '../../shared/types';
 import type { CanvasAnimationsNames } from '../../router';
+import useWindowSize from '../../hooks/useWindowSize';
 
 const ParamHandlerContainer = lazy(() => import('../ParamHandlerContainer'));
 
@@ -21,6 +22,7 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 	const { width: offset, isMobile } = useOutletContext<IOutletContext>();
 
 	const { innerWidth, innerHeight, devicePixelRatio } = window;
+  const [width, height] = useWindowSize();
 	const offsetWidth: number = isMobile ? 0 : offset;
 
 	const AnimationClass = animations[classId];
@@ -48,12 +50,12 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 			/>
 			<Canvas
 				ref={canvasRef}
-				width={innerWidth - offsetWidth}
-				height={innerHeight}
+				width={width - offsetWidth}
+				height={height}
 				style={{
 					backgroundColor: properties.bgColor,
-					width: innerWidth - offsetWidth,
-					height: innerHeight,
+					width: width - offsetWidth,
+					height: height,
 					position: 'absolute',
 					right: 0,
 				}}
