@@ -137,8 +137,8 @@ export default class Pulse extends CanvasAnimation {
 			const distance = radius * (this.angle / (2 * Math.PI)) * 2
 
 			// Calculate the x and y position of the particle
-			const y = this.positionX + Math.tan(distance) * this.properties.weight * Math.cos(this.angle * Math.exp(this.a)) * Math.atan(this.a)
-			const x = this.positionY + distance * Math.cos(this.a) * (-1)
+			const y = this.positionY + Math.tan(distance) * this.properties.weight * Math.cos(this.angle * Math.exp(this.a)) * Math.atan(this.a)
+			const x = this.positionX + distance * Math.cos(this.a) * (-1)
 
 			// Update the particle's position
 			this.particles[i].x = x
