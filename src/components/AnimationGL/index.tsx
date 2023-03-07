@@ -9,6 +9,7 @@ import { useWebGL } from '../../hooks';
 import { FlyingCubesGL, FlyingLinesGL } from '../../shared/2d/animations';
 import type { CanvasAnimationsNames } from '../../router';
 import type { IOutletContext, IProperty } from '../../shared/types';
+import useWindowSize from '../../hooks/useWindowSize';
 
 const ParamHandlerContainer = lazy(() => import('../ParamHandlerContainer'));
 
@@ -22,6 +23,7 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 	const { width: offset, isMobile } = useOutletContext<IOutletContext>();
 
 	const { innerWidth, innerHeight, devicePixelRatio } = window;
+  const [width, height] = useWindowSize();
 	const offsetWidth: number = isMobile ? 0 : offset;
 
 	const AnimationClass = animations[classId];
@@ -46,11 +48,11 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 			/>
 			<Canvas
 				ref={canvasRef}
-				width={innerWidth - offsetWidth}
-				height={innerHeight}
+				width={width - offsetWidth}
+				height={height}
 				style={{
-					width: innerWidth - offsetWidth,
-					height: innerHeight,
+					width: width - offsetWidth,
+					height: height,
 					position: 'absolute',
 					right: 0,
 				}}
