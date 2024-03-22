@@ -242,7 +242,7 @@ export default class FlyingCubesGL extends THREE.Object3D {
 		}
 
 		// Create the 3D texture using the pixel data and dimensions
-		const texture = new THREE.DataTexture3D(
+		const texture = new THREE.Data3DTexture(
 			data, // the pixel data for the texture, as a Uint8Array
 			width, // the width of the texture in pixels
 			height, // the height of the texture in pixels
