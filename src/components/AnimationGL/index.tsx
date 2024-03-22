@@ -23,7 +23,7 @@ const AnimationGL: FC<IAnimationGLProps> = ({ properties, classId }) => {
 	const { width: offset, isMobile } = useOutletContext<IOutletContext>();
 
 	const { innerWidth, innerHeight, devicePixelRatio } = window;
-  const [width, height] = useWindowSize();
+	const [width, height] = useWindowSize();
 	const offsetWidth: number = isMobile ? 0 : offset;
 
 	const AnimationClass = animations[classId];

@@ -19,7 +19,7 @@ export const getPosition = (
 ): number =>
 	velocity *
 	((position + velocity > size - margin && velocity > 0) ||
-	(position + velocity < margin && velocity < margin)
+		(position + velocity < margin && velocity < margin)
 		? -1
 		: 1);
 
@@ -106,10 +106,37 @@ export const canvasClickHandler = <
 
 	animation.properties.switchByClick && animation.properties.isMonochrome
 		? (animation.properties.bgColor = RGBAToNegative(
-				animation.properties.bgColor || 'rgba(255, 255, 255, 1)'
-		  ))
+			animation.properties.bgColor || 'rgba(255, 255, 255, 1)'
+		))
 		: animation.particles.push(animation.particles.shift() as ISingleParticle);
 };
+
+export const canvasResizeHandlerFactory = <A>(
+	canvas: HTMLCanvasElement | OffscreenCanvas,
+	animation: (CanvasAnimation & Omit<A, 'prototype'>) | null,
+	ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null,
+	offset: number = 0
+) => (e: UIEvent) => {
+	const win = e.target as Window
+	const newWidth = win.innerWidth - offset;
+
+	canvas.width = newWidth * win.devicePixelRatio
+	canvas.height = win.innerHeight * win.devicePixelRatio
+
+	if (animation) {
+		if (animation.sizes) {
+			animation.sizes.width = newWidth
+			animation.sizes.height = win.innerHeight
+		}
+
+		animation.particles?.forEach((point) => {
+			point.w = newWidth
+			point.h = win.innerHeight
+		})
+	}
+
+	ctx?.scale(win.devicePixelRatio, win.devicePixelRatio)
+}
 
 export const canvasParticlesCountChange = (
 	count: number,

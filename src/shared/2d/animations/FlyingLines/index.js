@@ -148,7 +148,13 @@ export default class FlyingLines extends CanvasAnimation {
 
 	clear() {
 		cancelAnimationFrame(this.boundAnimate)
-		this.particles = null
+		this.ctx.context.setTransform(1, 0, 0, 1, 0, 0)
+		this.ctx.width = 0
+		this.ctx.height = 0
+		this.ctx.clearRect(0, 0, this.sizes.width, this.sizes.height)
+
+		delete this.ctx
+		delete this.particles
 		delete this
 	}
 }

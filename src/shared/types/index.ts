@@ -37,6 +37,12 @@ export type TClassesNames<N extends TNamespace<object>> = N extends object
 	? Array<keyof TClassesNamespace<N>>[number]
 	: never;
 
+export type TAsyncImportedClass<C extends TCallable> = Awaited<ReturnType<C>> extends { default: infer T } ? T : never;
+
+export type ImportType<T extends (...args: any[]) => any> = () => Promise<ReturnType<T>>;
+
+// export type TImportedModule<T> = Promise<() => import(T)>
+
 /* =================================== */
 /* APPLICATION TYPES */
 /* =================================== */
@@ -157,6 +163,7 @@ export interface ICanvasWorkerProps {
 	canvas: OffscreenCanvas;
 	animationName: string;
 	animationParameters: TAnimationProperties;
+	e: UIEvent
 	[ECanvasWorkerMessage.COUNT]?: number;
 	[ECanvasWorkerMessage.RADIUS]?: number;
 	[ECanvasWorkerMessage.VELOCITY]?: number;

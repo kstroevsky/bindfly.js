@@ -10,7 +10,7 @@ const useThrottle = <R = void, A = any>(
 
 	useEffect(() => {
 		callbackRef.current = callback;
-	});
+	}, []);
 
 	return useCallback(
 		getThrottle(time, (...args: A[]) => callbackRef.current(...args)),
