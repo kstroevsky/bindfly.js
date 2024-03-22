@@ -62,7 +62,7 @@ const useCanvas = <A extends TConstructorOf<CanvasAnimation & Omit<A, 'prototype
 
 					window.onresize = getThrottle(500, (e) => {
 						(canvasRef.current as HTMLCanvasElement).style.width = `${e.target.innerWidth}px`;
-						(canvasRef.current as HTMLCanvasElement).style.height = `${e.target.innerHeight}px`;
+						(canvasRef.current as HTMLCanvasElement).style.height = `${e.target.innerHeight}px`
 						webWorker.current?.postMessage({
 							msg: 'resize',
 							e: { target: { innerWidth: e.target.innerWidth - animationParameters.offset || 0, innerHeight: e.target.innerHeight, devicePixelRatio: e.target.devicePixelRatio } },
@@ -108,13 +108,13 @@ const useCanvas = <A extends TConstructorOf<CanvasAnimation & Omit<A, 'prototype
 
 					// loadAnimation()
 
-					animationRef.current = new Animation(ctx, animationParameters);
+					animationRef.current = new Animation(ctx, animationParameters)
 
 					const resizer = canvasResizeHandlerFactory(canvas, animationRef.current, ctx, animationParameters.offset)
 
 					window.onresize = getThrottle(500, (e: UIEvent) => {
-						(canvas as HTMLCanvasElement).style.width = `${win.innerWidth}px`;
-						(canvas as HTMLCanvasElement).style.height = `${win.innerHeight}px`;
+						(canvas).style.width = `${win.innerWidth}px`;
+						(canvas).style.height = `${win.innerHeight}px`
 						resizer(e)
 					})
 

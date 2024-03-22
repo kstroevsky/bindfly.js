@@ -1,13 +1,13 @@
-import classNames from 'classnames';
-import React, { forwardRef, useCallback } from 'react';
+import classNames from 'classnames'
+import React, { forwardRef, useCallback } from 'react'
 
-import root from '../..';
-import NavLinkItem from '../NavLinkItem';
-import { useLongPress } from '../../hooks';
-import { isLayoutActive } from '../../shared/utils/helpers';
-import type { IProperty, TProperties } from '../../shared/types';
-import { useSearchParams } from 'react-router-dom';
-import { CanvasHandlersConfig } from '../../router';
+import root from '../..'
+import NavLinkItem from '../NavLinkItem'
+import { useLongPress } from '../../hooks'
+import { isLayoutActive } from '../../shared/utils/helpers'
+import type { IProperty, TProperties } from '../../shared/types'
+import { useSearchParams } from 'react-router-dom'
+import { CanvasHandlersConfig } from '../../router'
 
 export interface IPageSidebarProps {
 	properties: TProperties;
@@ -20,24 +20,24 @@ const PageSidebar = forwardRef<HTMLElement, IPageSidebarProps>(
 			500,
 			document.getElementById('canvas') || root,
 			isModal
-		);
+		)
 		const mobileVisibility =
-			isModal && isLayoutActive(touchInterval.start, touchInterval.end);
-    
-    const [searchParams, setSearchParams] = useSearchParams();
+			isModal && isLayoutActive(touchInterval.start, touchInterval.end)
 
-    const clearParams = () => {
-      CanvasHandlersConfig.forEach(handler => {
-        searchParams.delete(handler.name);
-      });
+		const [searchParams, setSearchParams] = useSearchParams()
 
-      setSearchParams(searchParams);
-    }
+		const clearParams = () => {
+			CanvasHandlersConfig.forEach(handler => {
+				searchParams.delete(handler.name)
+			})
+
+			setSearchParams(searchParams)
+		}
 
 		const handleClose = useCallback(() => {
-      clearParams();
-			setTouchInterval({ start: 0, end: 0 });
-		}, [setTouchInterval]);
+			clearParams()
+			setTouchInterval({ start: 0, end: 0 })
+		}, [setTouchInterval])
 
 		return (
 			<aside
@@ -60,16 +60,18 @@ const PageSidebar = forwardRef<HTMLElement, IPageSidebarProps>(
 						))}
 					</ul>
 				</nav>
-				{isModal ? (
-					<button className="CloseButton" onClick={handleClose}>
-						Close
-					</button>
-				) : (
-					<></>
-				)}
+				{isModal
+					? (
+							<button className="CloseButton" onClick={handleClose}>
+							Close
+							</button>
+						)
+					: (
+							<></>
+						)}
 			</aside>
-		);
+		)
 	}
-);
+)
 
-export default React.memo(PageSidebar);
+export default React.memo(PageSidebar)

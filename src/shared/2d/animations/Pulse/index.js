@@ -3,7 +3,7 @@ import CanvasAnimation from '../../../abstract/canvas'
 import FlyingPoints from '../../templates/FlyingPoints'
 
 export default class Pulse extends CanvasAnimation {
-	constructor(ctx, parameters) {
+	constructor (ctx, parameters) {
 		super()
 		this.properties = parameters.properties
 		this.a = 2.6
@@ -38,17 +38,17 @@ export default class Pulse extends CanvasAnimation {
 		this.boundAnimate = this.loop.bind(this)
 	}
 
-	monochrome(i, opacity) {
+	monochrome (i, opacity) {
 		return `rgba(${i % 2 === 0 ? '0, 0, 0' : '255, 255, 255'}, ${opacity})`
 	}
 
-	propsColors(i, opacity) {
+	propsColors (i, opacity) {
 		return this.particleColors[
 			(this.colorOffset + i) % this.particleColors.length
 		].replace(/\d+(?=\)$)/, opacity)
 	}
 
-	reDrawBackground() {
+	reDrawBackground () {
 		this.ctx.fillStyle = this.properties.bgColor
 		this.ctx.fillRect(0, 0, this.sizes.width, this.sizes.height)
 	}
@@ -115,7 +115,7 @@ export default class Pulse extends CanvasAnimation {
 	// 	  }
 	// 	}
 
-	drawLinesWithoutAdding() {
+	drawLinesWithoutAdding () {
 		// Set up some constants for the spiral galaxy pattern
 		const radius = Math.min(this.sizes.width, this.sizes.height) / 2
 		const maxParticles = this.properties.maxParticles || 100
@@ -173,7 +173,7 @@ export default class Pulse extends CanvasAnimation {
 		}
 	}
 
-	drawLinesWithAdding() {
+	drawLinesWithAdding () {
 		let x1, y1, x2, y2, length, opacity
 
 		for (const i in this.particles) {
@@ -212,14 +212,14 @@ export default class Pulse extends CanvasAnimation {
 		}
 	}
 
-	loop() {
+	loop () {
 		this.reDrawBackground()
 		this.drawLines()
 
 		requestAnimationFrame(this.boundAnimate)
 	}
 
-	init() {
+	init () {
 		this.particles = new FlyingPoints(
 			this.sizes.width,
 			this.sizes.height,
@@ -237,13 +237,13 @@ export default class Pulse extends CanvasAnimation {
 		this.loop()
 	}
 
-	reInit(x, y) {
+	reInit (x, y) {
 		// cancelAnimationFrame(this.boundAnimate)
 		this.positionX = x
 		this.positionY = y
 	}
 
-	clear() {
+	clear () {
 		cancelAnimationFrame(this.boundAnimate)
 		this.particles = null
 		delete this

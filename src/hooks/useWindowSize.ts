@@ -1,26 +1,26 @@
-import { useLayoutEffect, useState } from "react";
-import useThrottle from "./useThrottle";
+import { useLayoutEffect, useState } from 'react'
+import useThrottle from './useThrottle'
 
 const useWindowSize = () => {
-  const [size, setSize] = useState([0, 0]);
+	const [size, setSize] = useState([0, 0])
 
-  useLayoutEffect(() => {
-    // const updateSize = useThrottle(500, () => {
-    //   setSize([window.innerWidth, window.innerHeight]);
-    // })
+	useLayoutEffect(() => {
+		// const updateSize = useThrottle(500, () => {
+		//   setSize([window.innerWidth, window.innerHeight]);
+		// })
 
-    const updateSize = () => {
-      setSize([window.innerWidth, window.innerHeight]);
-    }
+		const updateSize = () => {
+			setSize([window.innerWidth, window.innerHeight])
+		}
 
-    window.addEventListener('resize', updateSize);
+		window.addEventListener('resize', updateSize)
 
-    updateSize()
+		updateSize()
 
-    return () => window.removeEventListener('resize', updateSize);
-  }, []);
+		return () => window.removeEventListener('resize', updateSize)
+	}, [])
 
-  return size;
+	return size
 }
 
-export default useWindowSize;
+export default useWindowSize

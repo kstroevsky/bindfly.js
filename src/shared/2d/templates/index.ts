@@ -1,4 +1,4 @@
-import FlyingPoints from './FlyingPoints';
-import FlyingPointsGL from './FlyingPointsGL';
+import FlyingPoints from './FlyingPoints'
+import FlyingPointsGL from './FlyingPointsGL'
 
-export { FlyingPoints, FlyingPointsGL };
+export { FlyingPoints, FlyingPointsGL }

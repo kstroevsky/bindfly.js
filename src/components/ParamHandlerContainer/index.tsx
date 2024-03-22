@@ -1,21 +1,21 @@
-import React, { lazy, memo, useState, useCallback } from 'react';
-import classnames from 'classnames';
-import { useSearchParams } from 'react-router-dom';
-import type { FC } from 'react';
+import React, { lazy, memo, useState, useCallback } from 'react'
+import classnames from 'classnames'
+import { useSearchParams } from 'react-router-dom'
+import type { FC } from 'react'
 
-import { CanvasHandlersConfig } from '../../router';
-import { trivialOne } from '../../shared/utils/helpers';
-import type { CanvasAnimationsNames } from '../../router';
+import { CanvasHandlersConfig } from '../../router'
+import { trivialOne } from '../../shared/utils/helpers'
+import type { CanvasAnimationsNames } from '../../router'
 import type {
 	IProperty,
 	TParamHandleChangeName,
 	TParamsHandlers,
 	TParamsHandlersNames,
-} from '../../shared/types';
+} from '../../shared/types'
 
-import './styles.css';
+import './styles.css'
 
-const ParamHandler = lazy(() => import('../ParamHandler'));
+const ParamHandler = lazy(() => import('../ParamHandler'))
 
 export interface IParamHandlerContainerProps {
 	properties: IProperty;
@@ -30,22 +30,22 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 	classId,
 	offsetWidth,
 }) => {
-	const [currentRangeIdx, setCurrentRangeIdx] = useState<number>(0);
-	const [searchParams, setSearchParams] = useSearchParams();
+	const [currentRangeIdx, setCurrentRangeIdx] = useState<number>(0)
+	const [searchParams, setSearchParams] = useSearchParams()
 
 	const handleClick = useCallback(
 		(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-			setCurrentRangeIdx(Number(e.currentTarget.dataset.item));
+			setCurrentRangeIdx(Number(e.currentTarget.dataset.item))
 		},
 		[]
-	);
+	)
 
 	const updateSearch = useCallback((params: { [key: string]: string }) => {
 		Object.entries(params).forEach(([key, value]) => {
-			searchParams.set(key, value);
-		});
-		setSearchParams(searchParams);
-	}, [searchParams]);
+			searchParams.set(key, value)
+		})
+		setSearchParams(searchParams)
+	}, [searchParams])
 
 	return (
 		<div
@@ -57,8 +57,8 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 					item.visibility.includes(classId) &&
 					(!item.visibilityChecking || item.visibilityChecking(properties))
 			).map((item, idx) => {
-				const encode = item.valueEncoder || trivialOne;
-				const initialValue: number = encode(properties[item.name] || 0);
+				const encode = item.valueEncoder || trivialOne
+				const initialValue: number = encode(properties[item.name] || 0)
 
 				return (
 					<div
@@ -90,10 +90,10 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 							}
 						/>
 					</div>
-				);
+				)
 			})}
 		</div>
-	);
-};
+	)
+}
 
-export default memo(ParamHandlerContainer);
+export default memo(ParamHandlerContainer)

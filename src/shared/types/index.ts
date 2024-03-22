@@ -1,4 +1,4 @@
-import { ECanvasWorkerMessage } from '../constants';
+import { ECanvasWorkerMessage } from '../constants'
 
 /* =================================== */
 /* CUSTOM UTILITY TYPES */
