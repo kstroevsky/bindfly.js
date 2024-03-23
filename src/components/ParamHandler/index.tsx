@@ -8,14 +8,13 @@ import type { TCallable } from '../../shared/types'
 import './styles.css'
 
 export interface IParamHandlerProps {
-  name: string;
-  step: number;
-  min: number;
-  max: number;
-  initialValue: number;
-  onChange: TCallable<void, number>;
-  updateSearch: (params: { [key: string]: string }) => void;
-  searchParams: URLSearchParams
+	name: string;
+	step: number;
+	min: number;
+	max: number;
+	initialValue: number;
+	onChange: TCallable<void, number>;
+	updateSearch: (params: { [key: string]: string }) => void;
 }
 
 const ParamHandler: FC<IParamHandlerProps> = ({
@@ -26,7 +25,6 @@ const ParamHandler: FC<IParamHandlerProps> = ({
 	initialValue,
 	onChange,
 	updateSearch,
-	searchParams,
 }) => {
 	const [state, setState] = useState<number>(initialValue)
 
@@ -34,17 +32,13 @@ const ParamHandler: FC<IParamHandlerProps> = ({
 		setState(Number(e.target.value))
 	}, [])
 
-	const setParam = useCallback(
-		useThrottle(PARAMS_HANDLER_DEBOUNCE_DELAY, (value: number) => {
-			updateSearch({ [name]: state.toString() })
+	const setParam = useThrottle(
+		PARAMS_HANDLER_DEBOUNCE_DELAY,
+		(value: number) => {
+			updateSearch({ [name]: value.toString() })
 			onChange(value)
-		}), [onChange])
-
-	useEffect(() => {
-		const initialState = Number(searchParams.get(name) || initialValue)
-		setState(initialState)
-		setParam(initialState)
-	}, [])
+		}
+	)
 
 	useEffect(() => {
 		setParam(state)

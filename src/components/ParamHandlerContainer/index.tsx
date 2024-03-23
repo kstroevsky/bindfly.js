@@ -41,11 +41,13 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 	)
 
 	const updateSearch = useCallback((params: { [key: string]: string }) => {
-		Object.entries(params).forEach(([key, value]) => {
-			searchParams.set(key, value)
+		setSearchParams(prev => {
+			const newSearchParams = new URLSearchParams(prev)
+			Object.entries(params).forEach(([key, value]) => newSearchParams.set(key, value))
+
+			return newSearchParams
 		})
-		setSearchParams(searchParams)
-	}, [searchParams])
+	}, [setSearchParams])
 
 	return (
 		<div
@@ -79,13 +81,13 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 						<ParamHandler
 							{...item}
 							max={item.getMax(initialValue)}
-							initialValue={initialValue}
+							initialValue={+(searchParams.get(item.name) ?? initialValue)}
 							updateSearch={updateSearch}
-							searchParams={searchParams}
 							onChange={
 								handlers[
-								`change${item.name.charAt(0).toUpperCase() + item.name.slice(1)
-								}` as TParamHandleChangeName<TParamsHandlersNames>
+									`change${
+										item.name.charAt(0).toUpperCase() + item.name.slice(1)
+									}` as TParamHandleChangeName<TParamsHandlersNames>
 								]
 							}
 						/>
