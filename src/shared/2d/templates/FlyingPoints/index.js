@@ -6,6 +6,8 @@ export default class FlyingPoints {
 			const velocity = getVelocity(properties.particleMaxVelocity)
 
 			return {
+				w,
+				h,
 				x: Math.random() * w,
 				y: Math.random() * h,
 				velocityX: velocity,
@@ -14,16 +16,16 @@ export default class FlyingPoints {
 				isStart: false,
 				start: 0,
 				position () {
-					this.velocityX = getPosition(this.x, w, this.velocityX, properties.margin)
-					this.velocityY = getPosition(this.y, h, this.velocityY, properties.margin)
+					this.velocityX = getPosition(this.x, this.w, this.velocityX, properties.margin)
+					this.velocityY = getPosition(this.y, this.h, this.velocityY, properties.margin)
 					this.x += this.velocityX
 					this.y += this.velocityY
 				},
 				reCalculateLife () {
 					if (!properties.isImmortal) {
 						if (this.life < 1) {
-							this.x = Math.random() * w
-							this.y = Math.random() * h
+							this.x = Math.random() * this.w
+							this.y = Math.random() * this.h
 							this.life = Math.random() * properties.particleLife * 60
 						}
 						if (this.start >= 1) this.isStart = false

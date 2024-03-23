@@ -22,7 +22,7 @@ const PageLayout: FC<IPageLayoutProps> = ({ properties }) => {
 		'(max-width: 768px),(orientation: portrait)'
 	)
 
-	const isVisible: boolean = isMobile ? true : !!width
+	const isVisible: boolean = isMobile || !!width
 
 	useEffect(() => {
 		if (sidebarRef.current && !isMobile) { setWidth(+sidebarRef.current.getBoundingClientRect().width || 0) }

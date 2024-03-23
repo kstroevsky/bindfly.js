@@ -78,7 +78,6 @@ export default class SpiralFlyingLines extends CanvasAnimation {
 		let x1, y1, x2, y2
 
 		for (const i in this.particles) {
-			// Modify the position of the particle to follow a spiral pattern
 			this.particles[i].x = this.positionX + this.spiralRadius * Math.cos(this.spiralAngle * 0.5)
 			this.particles[i].y = this.positionY + this.spiralRadius * Math.sin(this.spiralAngle * 0.5)
 			this.reCalculateSpiral()

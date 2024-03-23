@@ -1,21 +1,21 @@
-import React, { lazy, memo, useState, useCallback } from 'react';
-import classnames from 'classnames';
-import { useSearchParams } from 'react-router-dom';
-import type { FC } from 'react';
+import React, { lazy, memo, useState, useCallback } from 'react'
+import classnames from 'classnames'
+import { useSearchParams } from 'react-router-dom'
+import type { FC } from 'react'
 
-import { CanvasHandlersConfig } from '../../router';
-import { trivialOne } from '../../shared/utils/helpers';
-import type { CanvasAnimationsNames } from '../../router';
+import { CanvasHandlersConfig } from '../../router'
+import { trivialOne } from '../../shared/utils/helpers'
+import type { CanvasAnimationsNames } from '../../router'
 import type {
 	IProperty,
 	TParamHandleChangeName,
 	TParamsHandlers,
 	TParamsHandlersNames,
-} from '../../shared/types';
+} from '../../shared/types'
 
-import './styles.css';
+import './styles.css'
 
-const ParamHandler = lazy(() => import('../ParamHandler'));
+const ParamHandler = lazy(() => import('../ParamHandler'))
 
 export interface IParamHandlerContainerProps {
 	properties: IProperty;
@@ -30,22 +30,24 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 	classId,
 	offsetWidth,
 }) => {
-	const [currentRangeIdx, setCurrentRangeIdx] = useState<number>(0);
-	const [searchParams, setSearchParams] = useSearchParams();
+	const [currentRangeIdx, setCurrentRangeIdx] = useState<number>(0)
+	const [searchParams, setSearchParams] = useSearchParams()
 
 	const handleClick = useCallback(
 		(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-			setCurrentRangeIdx(Number(e.currentTarget.dataset.item));
+			setCurrentRangeIdx(Number(e.currentTarget.dataset.item))
 		},
 		[]
-	);
+	)
 
 	const updateSearch = useCallback((params: { [key: string]: string }) => {
-		Object.entries(params).forEach(([key, value]) => {
-			searchParams.set(key, value);
-		});
-		setSearchParams(searchParams);
-	}, [searchParams]);
+		setSearchParams(prev => {
+			const newSearchParams = new URLSearchParams(prev)
+			Object.entries(params).forEach(([key, value]) => newSearchParams.set(key, value))
+
+			return newSearchParams
+		})
+	}, [setSearchParams])
 
 	return (
 		<div
@@ -57,8 +59,8 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 					item.visibility.includes(classId) &&
 					(!item.visibilityChecking || item.visibilityChecking(properties))
 			).map((item, idx) => {
-				const encode = item.valueEncoder || trivialOne;
-				const initialValue: number = encode(properties[item.name] || 0);
+				const encode = item.valueEncoder || trivialOne
+				const initialValue: number = encode(properties[item.name] || 0)
 
 				return (
 					<div
@@ -79,21 +81,21 @@ const ParamHandlerContainer: FC<IParamHandlerContainerProps> = ({
 						<ParamHandler
 							{...item}
 							max={item.getMax(initialValue)}
-							initialValue={initialValue}
+							initialValue={+(searchParams.get(item.name) ?? initialValue)}
 							updateSearch={updateSearch}
-							searchParams={searchParams}
 							onChange={
 								handlers[
-								`change${item.name.charAt(0).toUpperCase() + item.name.slice(1)
-								}` as TParamHandleChangeName<TParamsHandlersNames>
+									`change${
+										item.name.charAt(0).toUpperCase() + item.name.slice(1)
+									}` as TParamHandleChangeName<TParamsHandlersNames>
 								]
 							}
 						/>
 					</div>
-				);
+				)
 			})}
 		</div>
-	);
-};
+	)
+}
 
-export default memo(ParamHandlerContainer);
+export default memo(ParamHandlerContainer)
