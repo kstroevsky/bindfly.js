@@ -1,71 +1,39 @@
-# Getting Started with Create React App
+# Bindfly.js
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## About the Project
 
-## Available Scripts
+Bindfly.js is a TypeScript project that focuses on creating an optimization canvas-based animations. This project is designed to handle multiple parameters dynamically to control the animation. It uses various strategies for performance optimization. You can try it [here](https://bindfly.onrender.com/#/FlyingLines-AddByClick).
 
-In the project directory, you can run:
+## Technical Details
 
-### `npm start`
+The project uses modern web technologies including React, WebGL, three.js, and WebWorkers API to manage and display animations efficiently. The use of TypeScript ensures type safety and enhances code maintainability. It employs a combination of both 2D and WebGL animations to provide a visually appealing experience.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Significant technical components include:
+- **WebGL and Canvas Integration**: Leveraging WebGL for rendering complex 2D and 3D graphics.
+- **three.js**: Several test animations based on three.js library. 
+- **Web Workers and OffScreen**: Utilizing web workers to handle offscreen-provided intensive calculations off the main thread, ensuring smooth UI interactions.
+- **React and Router Integration**: Employing React for UI components along with React Router for app navigation.
+- **Custom Hooks**: Implementing custom React hooks to manage canvas context, resizing, and re-rendering based on interactions and animations.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## How to Run
 
-### `npm test`
+First, clone the repository and install the dependencies:
+```bash
+git clone https://github.com/kstroevsky/bindfly.js.git
+cd bindfly.js
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Secondly, install the dependencies and build the project.
+```bash
+npm install
+npm run build
+```
 
-### `npm run build`
+Then you need to run the project. For the production mode you need to use `start` command. Development mode has the its own run-script (`start:dev`).
+```bash
+npm run start
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Example
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-# hivex-animation-lib
+https://github.com/kstroevsky/bindfly.js/assets/38957112/1adb7e5c-52c0-4f34-b495-5e7bdd8cbabc
