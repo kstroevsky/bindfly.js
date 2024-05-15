@@ -1,15 +1,15 @@
-import React, { lazy, useContext, Fragment } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import type { FC } from 'react';
+import React, { lazy, useContext, Fragment } from 'react'
+import { useOutletContext } from 'react-router-dom'
+import type { FC } from 'react'
 
-import * as animations from '../../shared/2d/animations';
-import DataContext, { IDataContext } from '../Context';
-import { Canvas } from '../Canvas';
-import { useCanvas } from '../../hooks';
-import type { IOutletContext, IProperty } from '../../shared/types';
-import type { CanvasAnimationsNames } from '../../router';
+import * as animations from '../../shared/2d/animations'
+import DataContext, { IDataContext } from '../Context'
+import { Canvas } from '../Canvas'
+import { useCanvas } from '../../hooks'
+import type { IOutletContext, IProperty, TAsyncImportedClass, TConstructorOf } from '../../shared/types'
+import type { CanvasAnimationsNames } from '../../router'
 
-const ParamHandlerContainer = lazy(() => import('../ParamHandlerContainer'));
+const ParamHandlerContainer = lazy(() => import('../ParamHandlerContainer'))
 
 export interface IAnimationProps {
 	classId: CanvasAnimationsNames;
@@ -17,15 +17,19 @@ export interface IAnimationProps {
 }
 
 const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
-	const { keyToggle } = useContext<IDataContext>(DataContext);
-	const { width: offset, isMobile } = useOutletContext<IOutletContext>();
+	const { keyToggle } = useContext<IDataContext>(DataContext)
+	const { width: offset, isMobile } = useOutletContext<IOutletContext>()
 
-	const { innerWidth, innerHeight, devicePixelRatio } = window;
-	const offsetWidth: number = isMobile ? 0 : offset;
+	const { innerWidth, innerHeight, devicePixelRatio } = window
+	const offsetWidth: number = isMobile ? 0 : offset
 
-	const AnimationClass = animations[classId];
+	const AnimationClass = animations[classId]
 
-	const [canvasRef, handlers] = useCanvas<typeof AnimationClass>(
+	const getAnimationModule = async () => {
+		return await AnimationClass()
+	}
+
+	const [canvasRef, handlers] = useCanvas<TAsyncImportedClass<typeof AnimationClass>>(
 		AnimationClass,
 		{
 			properties,
@@ -34,7 +38,7 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 			devicePixelRatio,
 			offset: offsetWidth,
 		}
-	);
+	)
 
 	return (
 		<Fragment key={+keyToggle.current}>
@@ -54,12 +58,12 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 					backgroundColor: properties.bgColor,
 					width: innerWidth - offsetWidth,
 					height: innerHeight,
-					position: 'absolute',
+					position: 'relative',
 					right: 0,
 				}}
 			/>
 		</Fragment>
-	);
-};
+	)
+}
 
-export default React.memo(Animation);
+export default React.memo(Animation)
