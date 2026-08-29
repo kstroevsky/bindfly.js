@@ -18,20 +18,27 @@ import type {
 	TAnimationProperties,
 	TParamsHandlers,
 	TAsyncImportedClass,
+	ImportType,
 } from '../shared/types'
+import type { TAnimationClass } from '../components/Animation'
 
-const useCanvas = <A extends TConstructorOf<CanvasAnimation & Omit<A, 'prototype'>>>(
-	Animation: () => Promise<A>,
-	// Animation: () => A,
+const getAnimationModule = async (animationClass: TAnimationClass) => {
+	const animation = await animationClass()
+	return animation.default
+}
+
+// <A extends TConstructorOf<CanvasAnimation & Omit<A, 'prototype'>>>
+const useCanvas = (
+	Animation: TAnimationClass,
 	animationParameters: TAnimationProperties
 ): [MutableRefObject<HTMLCanvasElement | null>, TParamsHandlers] => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null)
-	const animationRef = useRef<InstanceType<A> | null>(null)
+	const animationRef = useRef<CanvasAnimation & Omit<typeof Animation, 'prototype'> | null>(null)
 
 	const { keyToggle, webWorker } = useContext<IDataContext>(DataContext)
 	const reload = useForceUpdate()
 
-	canvasReload<A>(keyToggle, webWorker, canvasRef, animationRef)
+	canvasReload<TAsyncImportedClass<typeof Animation>>(keyToggle, webWorker, canvasRef, animationRef)
 
 	useEffect(() => {
 		if (canvasRef.current) {
@@ -56,16 +63,16 @@ const useCanvas = <A extends TConstructorOf<CanvasAnimation & Omit<A, 'prototype
 							canvas: offscreen,
 							animationName: Animation.name,
 							animationParameters,
-						} as ICanvasWorkerProps,
+						},
 						[offscreen]
 					)
 
-					window.onresize = getThrottle(500, (e) => {
-						(canvasRef.current as HTMLCanvasElement).style.width = `${e.target.innerWidth}px`;
-						(canvasRef.current as HTMLCanvasElement).style.height = `${e.target.innerHeight}px`
+					window.onresize = getThrottle(500, (_) => {
+						(canvasRef.current as HTMLCanvasElement).style.width = `${window.innerWidth}px`;
+						(canvasRef.current as HTMLCanvasElement).style.height = `${window.innerHeight}px`
 						webWorker.current?.postMessage({
 							msg: 'resize',
-							e: { target: { innerWidth: e.target.innerWidth - animationParameters.offset || 0, innerHeight: e.target.innerHeight, devicePixelRatio: e.target.devicePixelRatio } },
+							e: { target: { innerWidth: window.innerWidth - animationParameters.offset || 0, innerHeight: window.innerHeight, devicePixelRatio: window.devicePixelRatio } },
 						})
 					})
 
@@ -99,7 +106,6 @@ const useCanvas = <A extends TConstructorOf<CanvasAnimation & Omit<A, 'prototype
 					const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d', {
 						alpha: false,
 					})
-					ctx?.scale(window.devicePixelRatio, window.devicePixelRatio)
 
 					// async function loadAnimation() {
 					// 	const Module = new Animation();
@@ -108,13 +114,12 @@ const useCanvas = <A extends TConstructorOf<CanvasAnimation & Omit<A, 'prototype
 
 					// loadAnimation()
 
+					const resizer = canvasResizeHandlerFactory(canvas, animationRef.current, ctx, animationParameters.offset)
 					animationRef.current = new Animation(ctx, animationParameters)
 
-					const resizer = canvasResizeHandlerFactory(canvas, animationRef.current, ctx, animationParameters.offset)
-
 					window.onresize = getThrottle(500, (e: UIEvent) => {
-						(canvas).style.width = `${win.innerWidth}px`;
-						(canvas).style.height = `${win.innerHeight}px`
+						(canvas).style.width = `${window.innerWidth}px`;
+						(canvas).style.height = `${window.innerHeight}px`
 						resizer(e)
 					})
 

@@ -39,7 +39,7 @@ export type TClassesNames<N extends TNamespace<object>> = N extends object
 
 export type TAsyncImportedClass<C extends TCallable> = Awaited<ReturnType<C>> extends { default: infer T } ? T : never;
 
-export type ImportType<T extends (...args: any[]) => any> = () => Promise<ReturnType<T>>;
+export type ImportType<T extends (...args: unknown[]) => unknown> = () => Promise<ReturnType<T>>;
 
 // export type TImportedModule<T> = Promise<() => import(T)>
 

@@ -1,5 +1,5 @@
 import classNames from 'classnames'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { memo, useEffect, useRef, useState } from 'react'
 import type { FC } from 'react'
 
 import { LoaderTiles } from '../LoaderTiles'
@@ -26,7 +26,7 @@ const initialState: ILoaderState = {
 }
 
 const Loader: FC<ILoaderProps> = ({ size, style, center }) => {
-	const timer = useRef<NodeJS.Timer>()
+	const timer = useRef<number>()  // Changed from NodeJS.Timer to number
 	const [state, setState] = useState<ILoaderState>(initialState)
 
 	const tileIndexToMove = (state: ILoaderState) =>
@@ -53,14 +53,16 @@ const Loader: FC<ILoaderProps> = ({ size, style, center }) => {
 		})
 
 	const setTimer = (time: number) => {
-		timer.current && clearInterval(timer.current)
-		timer.current = setInterval(setNextState, time)
+		if (timer.current !== undefined) clearInterval(timer.current)
+		timer.current = window.setInterval(setNextState, time)
 	}
 
 	useEffect(() => {
 		setTimer(TIMER)
-		return () => clearInterval(timer.current)
-	})
+		return () => {
+			if (timer.current !== undefined) clearInterval(timer.current)
+		}
+	}, [])
 
 	return (
 		<div
@@ -92,4 +94,4 @@ const Loader: FC<ILoaderProps> = ({ size, style, center }) => {
 	)
 }
 
-export default Loader
+export default memo(Loader)

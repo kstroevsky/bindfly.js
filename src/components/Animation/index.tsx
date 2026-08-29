@@ -1,4 +1,4 @@
-import React, { lazy, useContext, Fragment } from 'react'
+import React, { memo, lazy, useContext, Fragment } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import type { FC } from 'react'
 
@@ -6,7 +6,7 @@ import * as animations from '../../shared/2d/animations'
 import DataContext, { IDataContext } from '../Context'
 import { Canvas } from '../Canvas'
 import { useCanvas } from '../../hooks'
-import type { IOutletContext, IProperty, TAsyncImportedClass, TConstructorOf } from '../../shared/types'
+import type { IOutletContext, IProperty } from '../../shared/types'
 import type { CanvasAnimationsNames } from '../../router'
 
 const ParamHandlerContainer = lazy(() => import('../ParamHandlerContainer'))
@@ -16,21 +16,17 @@ export interface IAnimationProps {
 	properties: IProperty;
 }
 
+export type TAnimationClass = (typeof animations)[CanvasAnimationsNames];
+
 const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 	const { keyToggle } = useContext<IDataContext>(DataContext)
 	const { width: offset, isMobile } = useOutletContext<IOutletContext>()
 
 	const { innerWidth, innerHeight, devicePixelRatio } = window
-	const offsetWidth: number = isMobile ? 0 : offset
+	const offsetWidth: number = +!isMobile || offset
 
-	const AnimationClass = animations[classId]
-
-	const getAnimationModule = async () => {
-		return await AnimationClass()
-	}
-
-	const [canvasRef, handlers] = useCanvas<TAsyncImportedClass<typeof AnimationClass>>(
-		AnimationClass,
+	const [canvasRef, handlers] = useCanvas(
+		animations[classId],
 		{
 			properties,
 			innerWidth,
@@ -66,4 +62,4 @@ const Animation: FC<IAnimationProps> = ({ properties, classId }) => {
 	)
 }
 
-export default React.memo(Animation)
+export default memo(Animation)
