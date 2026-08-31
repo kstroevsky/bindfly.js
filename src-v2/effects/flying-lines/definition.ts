@@ -52,6 +52,11 @@ export const flyingLinesDefinition = defineExperiment<
 >({
 	id: 'flying-lines',
 	stateVersion: 1,
+	timing: {
+		fixedStepSeconds: 1 / 120,
+		deterministicTier: 'same-build-cpu',
+		stateTolerance: 1e-9,
+	},
 	parameters: flyingLinesParameters,
 	stateCodec: codec,
 	capabilities: {

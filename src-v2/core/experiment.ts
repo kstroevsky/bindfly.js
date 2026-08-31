@@ -1,5 +1,6 @@
 import type { AnalyzerDefinition } from './analysis-contract.ts'
 import type { ExperimentCapabilities } from './capabilities.ts'
+import type { ExperimentTiming } from './clock.ts'
 import type { ParameterSchema, ParameterValues } from './parameters.ts'
 import type { RandomSource } from './random.ts'
 import type { Simulation } from './simulation.ts'
@@ -26,6 +27,7 @@ export interface ExperimentDefinition<
 > {
 	readonly id: string
 	readonly stateVersion: number
+	readonly timing: ExperimentTiming
 	readonly parameters: Schema
 	readonly stateCodec: ExperimentStateCodec<DurableState, SerializedState>
 	readonly capabilities: ExperimentCapabilities<State>
@@ -59,6 +61,14 @@ export const defineExperiment = <
 			`Experiment '${definition.id}' codec version ${definition.stateCodec.currentVersion} `
 			+ `does not match stateVersion ${definition.stateVersion}.`,
 		)
+	}
+
+	if (!Number.isFinite(definition.timing.fixedStepSeconds) || definition.timing.fixedStepSeconds <= 0) {
+		throw new Error(`Experiment '${definition.id}' fixedStepSeconds must be a positive finite number.`)
+	}
+
+	if (!Number.isFinite(definition.timing.stateTolerance) || definition.timing.stateTolerance < 0) {
+		throw new Error(`Experiment '${definition.id}' stateTolerance must be a finite non-negative number.`)
 	}
 
 	const analyzerIds = definition.analyzers?.map(({ id }) => id) ?? []

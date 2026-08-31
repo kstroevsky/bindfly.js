@@ -74,3 +74,13 @@ test('reset reproduces the initial deterministic state', () => {
 	simulation.reset()
 	assert.deepEqual(simulation.state, initial)
 })
+
+test('resize preserves particles and clamps them into the new viewport', () => {
+	const simulation = createSimulation()
+	const ids = simulation.state.particles.map(({ id }) => id)
+	simulation.resize(createViewport({ cssWidth: 100, cssHeight: 80, devicePixelRatio: 2 }))
+
+	assert.deepEqual(simulation.state.particles.map(({ id }) => id), ids)
+	assert.ok(simulation.state.particles.every(({ x }) => x >= 20 && x <= 80))
+	assert.ok(simulation.state.particles.every(({ y }) => y >= 20 && y <= 60))
+})

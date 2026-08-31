@@ -52,6 +52,8 @@ class FakeSimulation implements Simulation<FakeState, { readonly type: 'nudge' }
 		if (input.type === 'nudge') this.state.ticks++
 	}
 
+	resize(_viewport: Viewport): void {}
+
 	reset(): void {
 		this.state.ticks = 0
 	}
@@ -102,6 +104,11 @@ const definition = defineExperiment<
 >({
 	id: 'fake-experiment',
 	stateVersion: 1,
+	timing: {
+		fixedStepSeconds: 1 / 60,
+		deterministicTier: 'same-build-cpu',
+		stateTolerance: 0,
+	},
 	parameters: schema,
 	stateCodec: codec,
 	capabilities: {
@@ -246,6 +253,13 @@ test('experiment definitions reject invalid identity and codec versions', () => 
 	assert.throws(
 		() => defineExperiment({ ...definition, analyzers: [analyzer, analyzer] }),
 		/duplicate analyzer IDs/,
+	)
+	assert.throws(
+		() => defineExperiment({
+			...definition,
+			timing: { ...definition.timing, fixedStepSeconds: 0 },
+		}),
+		/fixedStepSeconds must be a positive finite number/,
 	)
 	assert.throws(
 		() => defineExperiment({

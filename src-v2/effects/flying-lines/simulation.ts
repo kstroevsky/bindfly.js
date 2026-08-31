@@ -1,4 +1,4 @@
-import type { RandomSource, SeededRandomSnapshot, Simulation, SimulationEnvironment, SimulationStep } from '../../core/index.ts'
+import type { RandomSource, SeededRandomSnapshot, Simulation, SimulationEnvironment, SimulationStep, Viewport } from '../../core/index.ts'
 import { restoreSeededRandom } from '../../core/index.ts'
 
 import type { FlyingLinesInput, FlyingLinesParameters, FlyingLinesParticle, FlyingLinesState } from './types.ts'
@@ -13,13 +13,13 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 class FlyingLinesSimulation implements Simulation<FlyingLinesState, FlyingLinesInput> {
 	readonly state: FlyingLinesState
 	private readonly initialRandomSnapshot: SeededRandomSnapshot
-	private readonly environment: SimulationEnvironment
+	private viewport: Viewport
 	private readonly parameters: FlyingLinesParameters
 	private random: RandomSource
 	private nextId = 0
 
 	constructor(environment: SimulationEnvironment, parameters: FlyingLinesParameters) {
-		this.environment = environment
+		this.viewport = environment.viewport
 		this.parameters = parameters
 		this.random = environment.random
 		this.initialRandomSnapshot = environment.random.snapshot()
@@ -32,13 +32,13 @@ class FlyingLinesSimulation implements Simulation<FlyingLinesState, FlyingLinesI
 	}
 
 	private bounds() {
-		const horizontalMargin = Math.min(this.parameters.margin, this.environment.viewport.cssWidth / 2)
-		const verticalMargin = Math.min(this.parameters.margin, this.environment.viewport.cssHeight / 2)
+		const horizontalMargin = Math.min(this.parameters.margin, this.viewport.cssWidth / 2)
+		const verticalMargin = Math.min(this.parameters.margin, this.viewport.cssHeight / 2)
 		return {
 			minX: horizontalMargin,
-			maxX: this.environment.viewport.cssWidth - horizontalMargin,
+			maxX: this.viewport.cssWidth - horizontalMargin,
 			minY: verticalMargin,
-			maxY: this.environment.viewport.cssHeight - verticalMargin,
+			maxY: this.viewport.cssHeight - verticalMargin,
 		}
 	}
 
@@ -137,6 +137,15 @@ class FlyingLinesSimulation implements Simulation<FlyingLinesState, FlyingLinesI
 				if (nearestIndex >= 0) this.state.particles.splice(nearestIndex, 1)
 				break
 			}
+		}
+	}
+
+	resize(viewport: Viewport): void {
+		this.viewport = viewport
+		const bounds = this.bounds()
+		for (const particle of this.state.particles) {
+			particle.x = clamp(particle.x, bounds.minX, bounds.maxX)
+			particle.y = clamp(particle.y, bounds.minY, bounds.maxY)
 		}
 	}
 
