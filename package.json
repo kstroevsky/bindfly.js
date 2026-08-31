@@ -27,7 +27,9 @@
     "v2:typecheck": "tsc -p tsconfig.v2.json",
     "v2:lint": "eslint --no-eslintrc --config tooling/eslint-v2.cjs \"src-v2/**/*.{ts,tsx}\" \"apps/studio/src/**/*.{ts,tsx}\"",
     "v2:test": "node tooling/run-v2-tests.mjs",
-    "v2:check": "pnpm run v2:boundaries && pnpm run v2:typecheck && pnpm run v2:lint && pnpm run v2:test"
+    "v2:check": "pnpm run v2:boundaries && pnpm run v2:typecheck && pnpm run v2:lint && pnpm run v2:test",
+    "v2:build": "webpack --config webpack.v2.config.js --mode production",
+    "v2:start": "webpack serve --config webpack.v2.config.js --mode development"
   },
   "dependencies": {
     "classnames": "^2.5.1",
