@@ -80,17 +80,17 @@ canvas { display: block; width: 100%; height: 100vh; touch-action: none; cursor:
 
 @media (max-width: 720px) {
 	body { overflow: auto; }
-	.studio { grid-template-columns: 1fr; grid-template-rows: auto minmax(58vh, 1fr); }
+	.studio { grid-template-columns: 1fr; grid-template-rows: auto minmax(52vh, 1fr); }
 	.panel { gap: 14px; padding: 16px; border-right: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
 	.panel header { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
 	.description { grid-column: 1 / -1; }
 	.controls { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 	.control-row { display: grid; gap: 2px; font-size: 11px; }
 	.actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-	.metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+	.metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 	.metric { padding: 8px; }
 	.metric dd { font-size: 14px; }
 	.hint { display: none; }
-	.viewport { min-height: 58vh; }
-	canvas { height: 58vh; }
+	.viewport { min-height: 52vh; }
+	canvas { width: 100% !important; height: 52vh !important; }
 }
