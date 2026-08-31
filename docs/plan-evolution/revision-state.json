@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "phase": "COMPLETE",
+  "acceptance_status": "ACCEPTED_CANONICAL",
+  "accepted_at": "2026-08-30T17:05:29+02:00",
+  "base_sha256": "0815d8a1a1e895c43e9345f5f8ba291cac81fbda6791a1f230165df815c67a37",
+  "base_ledger_sha256": "1ff9e78ea1b1bd1c22dcafffa66c05a1fb4604eae460ae2a72500de5166bfee3",
+  "target_ledger_sha256": "6280477d1819e48fff0909a563e8233716366e8b27aa55c412abaa9b1334d102",
+  "original_delta_sha256": "5eedae600e36c4760f70a625bac9ddc5f7bbca9554a138fadb3bba280fb1ff30",
+  "repair_delta_sha256": "44fec68be4c4c05fff5e0aabc3402bdcbfe4dc6b52ddd42ad5581f0d7ee9bec7",
+  "delta_sha256": "f8c878d11e4304c4722de21e1f9ab2f832a1752b6216a6427a09e73f013a4d15",
+  "candidate_sha256": "8a2bda7188e5d5fd571b5eee533f6759944cb9cd325320d9077651aa520e79b6",
+  "completed_feedback_ids": [
+    "F-00",
+    "F-01",
+    "F-02",
+    "F-03",
+    "F-04",
+    "F-05",
+    "F-06",
+    "F-07",
+    "F-08",
+    "F-09"
+  ],
+  "validation_results": {
+    "base_anchor_index": "PASS",
+    "target_anchor_index": "PASS",
+    "mechanical": "PASS",
+    "semantic": "PASS",
+    "independent": "PASS"
+  },
+  "repair_attempts_by_finding": {
+    "SEM-01": 1,
+    "SEM-02": 1,
+    "SEM-03": 1,
+    "IV-XIF-001": 1,
+    "IV-F03-001": 1,
+    "IV-LEDGER-001": 1
+  },
+  "open_findings": []
+}

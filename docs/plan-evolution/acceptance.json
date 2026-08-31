@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "status": "ACCEPTED_CANONICAL",
+  "accepted_at": "2026-08-30T17:05:29+02:00",
+  "accepted_by": "user",
+  "canonical_path": "docs/bindfly_2_implementation_plan.md",
+  "canonical_sha256": "8a2bda7188e5d5fd571b5eee533f6759944cb9cd325320d9077651aa520e79b6",
+  "predecessor_path": "docs/initial_plan.md",
+  "predecessor_sha256": "0815d8a1a1e895c43e9345f5f8ba291cac81fbda6791a1f230165df815c67a37",
+  "verification_summary": "docs/plan-evolution/final-verification-summary.md",
+  "note": "User explicitly instructed Codex to mark the verified candidate canonical and begin Phase 0."
+}

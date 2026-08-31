@@ -1,0 +1,214 @@
+{
+  "capturedAt": "2026-08-30T20:22:28.253Z",
+  "probe": {
+    "warmupFrames": 30,
+    "sampleFramesPerWindow": 60,
+    "windowsPerCount": 3
+  },
+  "runs": [
+    {
+      "requestedParticleCount": 100,
+      "state": {
+        "canvasCount": 1,
+        "href": "http://localhost:3000/#/FlyingLines-Simple?particlesCount=100&diagnostics=1&bgColor=0.7",
+        "rangeValue": "100",
+        "viewport": [
+          1280,
+          720
+        ]
+      },
+      "windows": [
+        {
+          "animationName": "FlyingLines",
+          "particleCount": 100,
+          "callbackDuration": {
+            "samples": 60,
+            "meanMs": 2.830000005165736,
+            "medianMs": 2.799999952316284,
+            "p95Ms": 3.3000000715255737,
+            "maxMs": 4.200000047683716
+          },
+          "frameInterval": {
+            "samples": 60,
+            "meanMs": 8.333333333333332,
+            "medianMs": 8.300000000000068,
+            "p95Ms": 9.299999999999955,
+            "maxMs": 9.300000000000011
+          }
+        },
+        {
+          "animationName": "FlyingLines",
+          "particleCount": 100,
+          "callbackDuration": {
+            "samples": 60,
+            "meanMs": 2.6700000007947287,
+            "medianMs": 2.600000023841858,
+            "p95Ms": 3.100000023841858,
+            "maxMs": 4
+          },
+          "frameInterval": {
+            "samples": 60,
+            "meanMs": 8.33,
+            "medianMs": 8.300000000000068,
+            "p95Ms": 9.299999999999955,
+            "maxMs": 9.299999999999955
+          }
+        },
+        {
+          "animationName": "FlyingLines",
+          "particleCount": 100,
+          "callbackDuration": {
+            "samples": 60,
+            "meanMs": 2.8400000055631,
+            "medianMs": 2.799999952316284,
+            "p95Ms": 3.5,
+            "maxMs": 6.5
+          },
+          "frameInterval": {
+            "samples": 60,
+            "meanMs": 8.336666666666668,
+            "medianMs": 8.299999999999955,
+            "p95Ms": 9.200000000000045,
+            "maxMs": 9.400000000000091
+          }
+        }
+      ]
+    },
+    {
+      "requestedParticleCount": 300,
+      "state": {
+        "canvasCount": 1,
+        "href": "http://localhost:3000/#/FlyingLines-Simple?particlesCount=300&diagnostics=1&bgColor=0.7",
+        "rangeValue": "300",
+        "viewport": [
+          1280,
+          720
+        ]
+      },
+      "windows": [
+        {
+          "animationName": "FlyingLines",
+          "particleCount": 300,
+          "callbackDuration": {
+            "samples": 60,
+            "meanMs": 26.12833333412806,
+            "medianMs": 24.90000009536743,
+            "p95Ms": 36,
+            "maxMs": 41.299999952316284
+          },
+          "frameInterval": {
+            "samples": 60,
+            "meanMs": 28.74166666666667,
+            "medianMs": 25.399999999999864,
+            "p95Ms": 41.5,
+            "maxMs": 82.90000000000009
+          }
+        },
+        {
+          "animationName": "FlyingLines",
+          "particleCount": 300,
+          "callbackDuration": {
+            "samples": 60,
+            "meanMs": 24.113333328564963,
+            "medianMs": 23.799999952316284,
+            "p95Ms": 28,
+            "maxMs": 29.5
+          },
+          "frameInterval": {
+            "samples": 60,
+            "meanMs": 26.118333333333332,
+            "medianMs": 25,
+            "p95Ms": 34,
+            "maxMs": 41.90000000000009
+          }
+        },
+        {
+          "animationName": "FlyingLines",
+          "particleCount": 300,
+          "callbackDuration": {
+            "samples": 60,
+            "meanMs": 24.339999999602636,
+            "medianMs": 24,
+            "p95Ms": 27.299999952316284,
+            "maxMs": 32.199999928474426
+          },
+          "frameInterval": {
+            "samples": 60,
+            "meanMs": 26.110000000000007,
+            "medianMs": 25,
+            "p95Ms": 34.30000000000018,
+            "maxMs": 49.900000000000546
+          }
+        }
+      ]
+    },
+    {
+      "requestedParticleCount": 500,
+      "state": {
+        "canvasCount": 1,
+        "href": "http://localhost:3000/#/FlyingLines-Simple?particlesCount=500&diagnostics=1&bgColor=0.7",
+        "rangeValue": "500",
+        "viewport": [
+          1280,
+          720
+        ]
+      },
+      "windows": [
+        {
+          "animationName": "FlyingLines",
+          "particleCount": 500,
+          "callbackDuration": {
+            "samples": 60,
+            "meanMs": 71.83666666348775,
+            "medianMs": 68.10000002384186,
+            "p95Ms": 90.19999992847443,
+            "maxMs": 124.90000009536743
+          },
+          "frameInterval": {
+            "samples": 60,
+            "meanMs": 74.36333333333332,
+            "medianMs": 67,
+            "p95Ms": 100.09999999999991,
+            "maxMs": 134.30000000000018
+          }
+        },
+        {
+          "animationName": "FlyingLines",
+          "particleCount": 500,
+          "callbackDuration": {
+            "samples": 60,
+            "meanMs": 70.97000000476837,
+            "medianMs": 67.5,
+            "p95Ms": 89.30000007152557,
+            "maxMs": 97.89999997615814
+          },
+          "frameInterval": {
+            "samples": 60,
+            "meanMs": 74.10166666666667,
+            "medianMs": 66.80000000000109,
+            "p95Ms": 100.5,
+            "maxMs": 117.19999999999982
+          }
+        },
+        {
+          "animationName": "FlyingLines",
+          "particleCount": 500,
+          "callbackDuration": {
+            "samples": 60,
+            "meanMs": 71.31000000039737,
+            "medianMs": 67.29999995231628,
+            "p95Ms": 93.10000002384186,
+            "maxMs": 104.5
+          },
+          "frameInterval": {
+            "samples": 60,
+            "meanMs": 74.09666666666665,
+            "medianMs": 69,
+            "p95Ms": 102.29999999999927,
+            "maxMs": 117
+          }
+        }
+      ]
+    }
+  ]
+}

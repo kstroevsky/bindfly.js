@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "base_sha256": "0815d8a1a1e895c43e9345f5f8ba291cac81fbda6791a1f230165df815c67a37",
+  "source_verifier": "docs/plan-evolution/independent-verification-1.md",
+  "changes": [
+    {
+      "feedback_id": "R-01",
+      "operation": "AMEND",
+      "requirement_ids": [
+        "RUNTIME-001"
+      ],
+      "allowed_sections": [
+        [
+          "13. Worker architecture"
+        ]
+      ],
+      "required_literals": [
+        "resume(): void"
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Close the runtime/protocol lifecycle mismatch found by IV-XIF-001."
+    },
+    {
+      "feedback_id": "R-02",
+      "operation": "AMEND",
+      "requirement_ids": [
+        "MIG-013"
+      ],
+      "allowed_sections": [
+        [
+          "45. Migration phases for Codex",
+          "Phase 12 — Formula-based experiment system"
+        ]
+      ],
+      "required_literals": [
+        "`Relationship`"
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Give the active non-metric Relationship family an explicit implementation phase and topology restriction."
+    },
+    {
+      "feedback_id": "R-03",
+      "operation": "RESTORE",
+      "requirement_ids": [
+        "BENCH-001"
+      ],
+      "payload_source": "base-ledger:BENCH-001",
+      "allowed_sections": [
+        [
+          "39. Benchmark harness"
+        ]
+      ],
+      "required_literals": [
+        "FlyingLines / Seed 42"
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Restore the exact benchmark fixture/count/radius fields accidentally omitted from the target ledger."
+    }
+  ]
+}

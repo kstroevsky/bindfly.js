@@ -1,0 +1,536 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "base": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/initial_plan.md",
+    "sha256": "0815d8a1a1e895c43e9345f5f8ba291cac81fbda6791a1f230165df815c67a37"
+  },
+  "candidate": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/bindfly_2_implementation_plan.md",
+    "sha256": "9e253f340f548b15b251b782bce95f74ff8caee4c19016a040882183e06f43d9"
+  },
+  "delta": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/plan-evolution/delta.json",
+    "feedback_ids": [
+      "F-00",
+      "F-01",
+      "F-02",
+      "F-03",
+      "F-04",
+      "F-05",
+      "F-06",
+      "F-07",
+      "F-08",
+      "F-09"
+    ]
+  },
+  "changed_sections": [
+    "10. Parameter system",
+    "14. Worker protocol",
+    "18. Analysis architecture",
+    "19. Introduce explicit computational budgets",
+    "22. Topology v1: Vietoris–Rips visualization",
+    "23. Topology v2: persistence",
+    "24. Topology UI",
+    "26. Numerical integration",
+    "37. Versioned URLs",
+    "39. Benchmark harness",
+    "4. Proposed repository structure",
+    "40. Testing architecture / Unit tests / Contract and integration tests",
+    "40. Testing architecture / Unit tests / Mathematical property tests",
+    "41. Analysis validation tests",
+    "43. Tooling migration",
+    "44. TypeScript compiler policy",
+    "45. Migration phases for Codex / Phase 0 — Baseline old Bindfly",
+    "45. Migration phases for Codex / Phase 1 — Scaffold Bindfly 2",
+    "45. Migration phases for Codex / Phase 10 — Legacy migration",
+    "45. Migration phases for Codex / Phase 11 — Formula AST",
+    "45. Migration phases for Codex / Phase 12 — Formula-based experiment system",
+    "45. Migration phases for Codex / Phase 15 — Graph-analysis subsystem",
+    "45. Migration phases for Codex / Phase 16 — Rips-complex visualization",
+    "45. Migration phases for Codex / Phase 17 — Persistent topology backend",
+    "45. Migration phases for Codex / Phase 18 — Persistence visualization",
+    "45. Migration phases for Codex / Phase 2 — Core contracts",
+    "45. Migration phases for Codex / Phase 21 — Benchmark laboratory",
+    "45. Migration phases for Codex / Phase 23 — Multiplayer event system",
+    "45. Migration phases for Codex / Phase 24 — Authoritative synchronization",
+    "45. Migration phases for Codex / Phase 3 — Flying Lines vertical slice",
+    "45. Migration phases for Codex / Phase 4 — Correct timing/lifecycle",
+    "45. Migration phases for Codex / Phase 6 — Spatial indexing",
+    "45. Migration phases for Codex / Phase 7 — Worker runtime",
+    "45. Migration phases for Codex / Phase 8 — Studio architecture",
+    "45. Migration phases for Codex / Phase 9 — URL/state architecture",
+    "48. The target end-state",
+    "49. Verified current-state evidence and consequences",
+    "5. The central domain object: Experiment",
+    "50. Delivery milestones, dependencies and stop rules",
+    "50. Delivery milestones, dependencies and stop rules / Milestone A — Legacy evidence (Phase 0)",
+    "50. Delivery milestones, dependencies and stop rules / Milestone B — Flying Lines foundation (Phases 1–9)",
+    "50. Delivery milestones, dependencies and stop rules / Milestone C — Extensible mathematical core (Phases 10–15)",
+    "50. Delivery milestones, dependencies and stop rules / Milestone D — Validated analysis (Phases 16–19)",
+    "50. Delivery milestones, dependencies and stop rules / Milestone E — Renderer/performance laboratory (Phases 20–22)",
+    "50. Delivery milestones, dependencies and stop rules / Milestone F — Shared experiments (Phases 23–25)",
+    "51. Cross-interface contract matrix",
+    "52. Legacy-to-new migration and cutover map",
+    "53. Required ADRs and risk register",
+    "54. Security, reliability, privacy and accessibility baseline",
+    "55. Per-phase execution and definition-of-done template",
+    "56. Verified external assumptions",
+    "6. The state model",
+    "7. Clock architecture",
+    "8. Formula engine: probably the most important new subsystem",
+    "9. Formula families / `DiscreteMap`",
+    "9. Formula families / `Metric`",
+    "9. Formula families / `Metric` and `Relationship`",
+    "9. Formula families / `Transform`",
+    "9. Formula families / `VectorField`",
+    "A",
+    "Bindfly 2 Implementation Plan — Candidate",
+    "Bindfly 2 Implementation Plan — Candidate / Source request",
+    "Plan",
+    "Q"
+  ],
+  "added_sections": [
+    "40. Testing architecture / Unit tests / Contract and integration tests",
+    "49. Verified current-state evidence and consequences",
+    "50. Delivery milestones, dependencies and stop rules",
+    "50. Delivery milestones, dependencies and stop rules / Milestone A — Legacy evidence (Phase 0)",
+    "50. Delivery milestones, dependencies and stop rules / Milestone B — Flying Lines foundation (Phases 1–9)",
+    "50. Delivery milestones, dependencies and stop rules / Milestone C — Extensible mathematical core (Phases 10–15)",
+    "50. Delivery milestones, dependencies and stop rules / Milestone D — Validated analysis (Phases 16–19)",
+    "50. Delivery milestones, dependencies and stop rules / Milestone E — Renderer/performance laboratory (Phases 20–22)",
+    "50. Delivery milestones, dependencies and stop rules / Milestone F — Shared experiments (Phases 23–25)",
+    "51. Cross-interface contract matrix",
+    "52. Legacy-to-new migration and cutover map",
+    "53. Required ADRs and risk register",
+    "54. Security, reliability, privacy and accessibility baseline",
+    "55. Per-phase execution and definition-of-done template",
+    "56. Verified external assumptions",
+    "9. Formula families / `Metric` and `Relationship`",
+    "Bindfly 2 Implementation Plan — Candidate",
+    "Bindfly 2 Implementation Plan — Candidate / Source request",
+    "Plan"
+  ],
+  "removed_sections": [
+    "9. Formula families / `Metric`",
+    "A",
+    "Q"
+  ],
+  "allowed_sections": [
+    "10. Parameter system",
+    "14. Worker protocol",
+    "18. Analysis architecture",
+    "19. Introduce explicit computational budgets",
+    "22. Topology v1: Vietoris–Rips visualization",
+    "23. Topology v2: persistence",
+    "24. Topology UI",
+    "26. Numerical integration",
+    "37. Versioned URLs",
+    "39. Benchmark harness",
+    "4. Proposed repository structure",
+    "40. Testing architecture",
+    "41. Analysis validation tests",
+    "43. Tooling migration",
+    "44. TypeScript compiler policy",
+    "45. Migration phases for Codex",
+    "48. The target end-state",
+    "49. Verified current-state evidence and consequences",
+    "5. The central domain object: Experiment",
+    "50. Delivery milestones, dependencies and stop rules",
+    "51. Cross-interface contract matrix",
+    "52. Legacy-to-new migration and cutover map",
+    "53. Required ADRs and risk register",
+    "54. Security, reliability, privacy and accessibility baseline",
+    "55. Per-phase execution and definition-of-done template",
+    "56. Verified external assumptions",
+    "6. The state model",
+    "7. Clock architecture",
+    "8. Formula engine: probably the most important new subsystem",
+    "9. Formula families",
+    "A",
+    "Bindfly 2 Implementation Plan — Candidate",
+    "Bindfly 2 Implementation Plan — Candidate / Source request",
+    "Plan",
+    "Q"
+  ],
+  "contract_signal_deltas": {
+    "10. Parameter system": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "14. Worker protocol": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "18. Analysis architecture": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "19. Introduce explicit computational budgets": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "22. Topology v1: Vietoris–Rips visualization": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "23. Topology v2: persistence": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "24. Topology UI": {
+      "numeric_removed": [
+        "0"
+      ],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "26. Numerical integration": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "37. Versioned URLs": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "39. Benchmark harness": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "4. Proposed repository structure": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "40. Testing architecture / Unit tests / Mathematical property tests": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "41. Analysis validation tests": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "43. Tooling migration": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "44. TypeScript compiler policy": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 0 — Baseline old Bindfly": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 1 — Scaffold Bindfly 2": {
+      "numeric_removed": [],
+      "numeric_added": [
+        "4"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 10 — Legacy migration": {
+      "numeric_removed": [],
+      "numeric_added": [
+        "0"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 11 — Formula AST": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 12 — Formula-based experiment system": {
+      "numeric_removed": [],
+      "numeric_added": [
+        "1",
+        "2",
+        "3"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 15 — Graph-analysis subsystem": {
+      "numeric_removed": [],
+      "numeric_added": [
+        "3"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 16 — Rips-complex visualization": {
+      "numeric_removed": [],
+      "numeric_added": [
+        "2"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 17 — Persistent topology backend": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 18 — Persistence visualization": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 2 — Core contracts": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 21 — Benchmark laboratory": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 23 — Multiplayer event system": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 24 — Authoritative synchronization": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 3 — Flying Lines vertical slice": {
+      "numeric_removed": [],
+      "numeric_added": [
+        "0"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 4 — Correct timing/lifecycle": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 6 — Spatial indexing": {
+      "numeric_removed": [],
+      "numeric_added": [
+        "2"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 7 — Worker runtime": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 8 — Studio architecture": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "45. Migration phases for Codex / Phase 9 — URL/state architecture": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "48. The target end-state": {
+      "numeric_removed": [
+        "1",
+        "13.0",
+        "2",
+        "25",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "numeric_added": [
+        "26"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "5. The central domain object: Experiment": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "6. The state model": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "7. Clock architecture": {
+      "numeric_removed": [],
+      "numeric_added": [
+        "4"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "8. Formula engine: probably the most important new subsystem": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "9. Formula families / `DiscreteMap`": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "9. Formula families / `Transform`": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "9. Formula families / `VectorField`": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    }
+  },
+  "ledger_counts": {
+    "active": 81,
+    "deferred": 24,
+    "superseded": 0,
+    "other": 0
+  },
+  "base_ledger": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/plan-evolution/base-ledger.json",
+  "errors": [],
+  "warnings": []
+}
