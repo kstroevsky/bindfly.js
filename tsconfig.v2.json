@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "allowJs": false,
+    "allowImportingTsExtensions": true,
     "checkJs": false,
     "exactOptionalPropertyTypes": true,
     "isolatedModules": true,

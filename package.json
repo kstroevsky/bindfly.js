@@ -26,7 +26,7 @@
     "v2:boundaries": "node tooling/check-v2-boundaries.mjs",
     "v2:typecheck": "tsc -p tsconfig.v2.json",
     "v2:lint": "eslint --no-eslintrc --config tooling/eslint-v2.cjs \"src-v2/**/*.{ts,tsx}\" \"apps/studio/src/**/*.{ts,tsx}\"",
-    "v2:test": "node --test tooling/check-v2-boundaries.test.mjs",
+    "v2:test": "node tooling/run-v2-tests.mjs",
     "v2:check": "pnpm run v2:boundaries && pnpm run v2:typecheck && pnpm run v2:lint && pnpm run v2:test"
   },
   "dependencies": {

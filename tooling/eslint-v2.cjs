@@ -23,6 +23,19 @@ module.exports = {
 		'@typescript-eslint/no-explicit-any': 'error',
 		'@typescript-eslint/no-floating-promises': 'error',
 		'@typescript-eslint/no-misused-promises': 'error',
+		'@typescript-eslint/no-unused-vars': ['error', {
+			argsIgnorePattern: '^_',
+			varsIgnorePattern: '^_',
+		}],
 		'import/no-cycle': 'error',
 	},
+	overrides: [
+		{
+			files: ['**/*.test.ts'],
+			rules: {
+				'@typescript-eslint/no-floating-promises': 'off',
+				'@typescript-eslint/require-await': 'off',
+			},
+		},
+	],
 }
