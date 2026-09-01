@@ -61,6 +61,11 @@ export class MainThreadRuntime<Schema extends ParameterSchema, Input> implements
 		return Promise.resolve()
 	}
 
+	reset(): Promise<void> {
+		this.loop.reset()
+		return Promise.resolve()
+	}
+
 	dispose(): Promise<void> {
 		if (this.runtimeState === 'disposed') return Promise.resolve()
 		this.transition('disposing')

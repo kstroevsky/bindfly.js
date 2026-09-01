@@ -1,12 +1,21 @@
-import { createProximityGraphWorkspace, createUniformGridProximityGraphWorkspace, shouldUseUniformGrid } from '../../../src-v2/analysis/index.ts'
-import { createSeededRandom, normalizeParameters } from '../../../src-v2/core/index.ts'
-import type { ParameterPatch, ParameterValues, Simulation, Viewport } from '../../../src-v2/core/index.ts'
-import { flyingLinesDefinition, flyingLinesParameters } from '../../../src-v2/effects/index.ts'
-import type { FlyingLinesInput, FlyingLinesState } from '../../../src-v2/effects/index.ts'
-import { createFlyingLinesCanvasRenderer } from '../../../src-v2/rendering/index.ts'
-import type { FlyingLinesRenderView } from '../../../src-v2/rendering/index.ts'
-import { FixedStepClock, FixedStepLoop, isRuntimeCommand, runtimeEvent } from '../../../src-v2/runtime/index.ts'
-import type { AnimationFrameScheduler, RuntimeCommand } from '../../../src-v2/runtime/index.ts'
+import { createProximityGraphWorkspace } from '../../../src-v2/analysis/proximity-graph.ts'
+import { createUniformGridProximityGraphWorkspace, shouldUseUniformGrid } from '../../../src-v2/analysis/uniform-grid-proximity-graph.ts'
+import { normalizeParameters } from '../../../src-v2/core/parameters.ts'
+import type { ParameterPatch, ParameterValues } from '../../../src-v2/core/parameters.ts'
+import { createSeededRandom } from '../../../src-v2/core/random.ts'
+import type { Simulation } from '../../../src-v2/core/simulation.ts'
+import type { Viewport } from '../../../src-v2/core/viewport.ts'
+import { flyingLinesDefinition } from '../../../src-v2/effects/flying-lines/definition.ts'
+import { flyingLinesParameters } from '../../../src-v2/effects/flying-lines/parameters.ts'
+import type { FlyingLinesInput, FlyingLinesState } from '../../../src-v2/effects/flying-lines/types.ts'
+import { createFlyingLinesCanvasRenderer } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
+import type { FlyingLinesRenderView } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
+import { FixedStepClock } from '../../../src-v2/runtime/fixed-step-clock.ts'
+import { FixedStepLoop } from '../../../src-v2/runtime/fixed-step-loop.ts'
+import type { AnimationFrameScheduler } from '../../../src-v2/runtime/fixed-step-loop.ts'
+import { isRuntimeCommand } from '../../../src-v2/runtime/protocol.ts'
+import type { RuntimeCommand } from '../../../src-v2/runtime/protocol.ts'
+import { runtimeEvent } from '../../../src-v2/runtime/worker-runtime.ts'
 
 interface InitializePayload {
 	readonly canvas: OffscreenCanvas
@@ -131,6 +140,10 @@ self.onmessage = (event: MessageEvent<unknown>) => {
 				break
 			case 'parameters':
 				loop?.scheduleParameterPatch(command.payload as ParameterPatch<typeof flyingLinesParameters>)
+				acknowledge(command.requestId)
+				break
+			case 'reset':
+				loop?.reset()
 				acknowledge(command.requestId)
 				break
 			case 'pause':

@@ -19,6 +19,7 @@ const collectTests = async (directory) => {
 const tests = [
 	...await collectTests('tooling'),
 	...await collectTests('src-v2'),
+	...await collectTests('apps/studio/src'),
 ]
 
 const result = spawnSync(
