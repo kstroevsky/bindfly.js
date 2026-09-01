@@ -1,4 +1,4 @@
-import { createProximityGraphWorkspace } from '../../../src-v2/analysis/index.ts'
+import { createProximityGraphWorkspace, createUniformGridProximityGraphWorkspace, shouldUseUniformGrid } from '../../../src-v2/analysis/index.ts'
 import { createSeededRandom, createViewport, normalizeParameters } from '../../../src-v2/core/index.ts'
 import type { ParameterPatch, ParameterValues, Simulation, Viewport } from '../../../src-v2/core/index.ts'
 import { experimentRegistry, flyingLinesParameters } from '../../../src-v2/effects/index.ts'
@@ -37,8 +37,8 @@ const bootstrap = async () => {
 		<main class="studio">
 			<aside class="panel" aria-label="Experiment controls">
 				<header>
-					<div><p class="eyebrow">Bindfly 2 · Phase 5</p><h1>Flying Lines</h1></div>
-					<p class="description">A deterministic 120 Hz simulation using reusable typed buffers.</p>
+					<div><p class="eyebrow">Bindfly 2 · Phase 6</p><h1>Flying Lines</h1></div>
+					<p class="description">Adaptive grid search with a brute-force dense fallback.</p>
 				</header>
 				<section class="controls" aria-label="Parameters">
 					<label class="control"><span class="control-row"><span>Particles</span><output id="particleCount-output">${parameters.particleCount}</output></span><input id="particleCount" type="range" min="1" max="500" step="1" value="${parameters.particleCount}" /></label>
@@ -56,7 +56,7 @@ const bootstrap = async () => {
 				</dl>
 				<p class="hint">Click empty space to add a point. Drag a nearby point to move it. Shift-click near a point to remove it.</p>
 			</aside>
-			<section class="viewport" id="viewport"><canvas id="canvas" tabindex="0" aria-label="Interactive Flying Lines simulation"></canvas><div class="badge">seed · ${SEED}</div></section>
+			<section class="viewport" id="viewport"><canvas id="canvas" tabindex="0" aria-label="Interactive Flying Lines simulation"></canvas><div class="badge">seed · ${SEED} · search <span id="search-backend">pending</span></div></section>
 		</main>
 	`
 
@@ -76,7 +76,12 @@ const bootstrap = async () => {
 	}, parameters)
 	let draggingId: number | undefined
 	let droppedStepCount = 0
-	const graphWorkspace = createProximityGraphWorkspace(500)
+	const bruteGraphWorkspace = createProximityGraphWorkspace(500)
+	const gridGraphWorkspace = createUniformGridProximityGraphWorkspace(500)
+	let graphWorkspace = shouldUseUniformGrid(simulation.state.particles, simulation.state.connectionRadius)
+		? gridGraphWorkspace
+		: bruteGraphWorkspace
+	element<HTMLElement>('search-backend').textContent = graphWorkspace === gridGraphWorkspace ? 'grid' : 'brute'
 	let renderView: FlyingLinesRenderView = {
 		background: simulation.state.background,
 		particles: simulation.state.particles,
@@ -98,6 +103,10 @@ const bootstrap = async () => {
 			random: createSeededRandom(SEED),
 			viewport,
 		}, parameters)
+		graphWorkspace = shouldUseUniformGrid(simulation.state.particles, simulation.state.connectionRadius)
+			? gridGraphWorkspace
+			: bruteGraphWorkspace
+		element<HTMLElement>('search-backend').textContent = graphWorkspace === gridGraphWorkspace ? 'grid' : 'brute'
 		renderView = {
 			background: simulation.state.background,
 			particles: simulation.state.particles,
