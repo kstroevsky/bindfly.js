@@ -25,3 +25,4 @@ export type FlyingLinesInput =
 	| { readonly type: 'add-point'; readonly x: number; readonly y: number }
 	| { readonly type: 'remove-nearest'; readonly x: number; readonly y: number; readonly maxDistance: number }
 	| { readonly type: 'move-point'; readonly id: number; readonly x: number; readonly y: number }
+	| { readonly type: 'move-nearest'; readonly fromX: number; readonly fromY: number; readonly x: number; readonly y: number; readonly maxDistance: number }

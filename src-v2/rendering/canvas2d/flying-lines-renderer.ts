@@ -7,14 +7,16 @@ export interface FlyingLinesRenderView {
 }
 
 class FlyingLinesCanvasRenderer implements Renderer<FlyingLinesRenderView> {
-	private readonly canvas: HTMLCanvasElement
-	private readonly context: CanvasRenderingContext2D
+	private readonly canvas: HTMLCanvasElement | OffscreenCanvas
+	private readonly context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
 	private viewport: Viewport | undefined
 	private disposed = false
 	private readonly colors: string[] = []
 
-	constructor(canvas: HTMLCanvasElement) {
-		const context = canvas.getContext('2d', { alpha: false })
+	constructor(canvas: HTMLCanvasElement | OffscreenCanvas) {
+		const context = 'style' in canvas
+			? canvas.getContext('2d', { alpha: false })
+			: canvas.getContext('2d', { alpha: false })
 		if (!context) throw new Error('Flying Lines requires a Canvas2D context.')
 		this.canvas = canvas
 		this.context = context
@@ -25,8 +27,10 @@ class FlyingLinesCanvasRenderer implements Renderer<FlyingLinesRenderView> {
 		this.viewport = viewport
 		this.canvas.width = viewport.backingWidth
 		this.canvas.height = viewport.backingHeight
-		this.canvas.style.width = `${viewport.cssWidth}px`
-		this.canvas.style.height = `${viewport.cssHeight}px`
+		if ('style' in this.canvas) {
+			this.canvas.style.width = `${viewport.cssWidth}px`
+			this.canvas.style.height = `${viewport.cssHeight}px`
+		}
 		this.context.setTransform(
 			viewport.devicePixelRatio,
 			0,
@@ -79,5 +83,5 @@ class FlyingLinesCanvasRenderer implements Renderer<FlyingLinesRenderView> {
 	}
 }
 
-export const createFlyingLinesCanvasRenderer = (canvas: HTMLCanvasElement): Renderer<FlyingLinesRenderView> =>
+export const createFlyingLinesCanvasRenderer = (canvas: HTMLCanvasElement | OffscreenCanvas): Renderer<FlyingLinesRenderView> =>
 	new FlyingLinesCanvasRenderer(canvas)

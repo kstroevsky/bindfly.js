@@ -23,6 +23,7 @@ test('enumerates the complete runtime command surface', () => {
 test('creates a versioned command envelope', () => {
 	const command = createRuntimeCommand({
 		requestId: 'request-1',
+		sequence: 0,
 		type: 'pause',
 		payload: undefined,
 	})
@@ -30,6 +31,7 @@ test('creates a versioned command envelope', () => {
 	assert.deepEqual(command, {
 		protocolVersion: RUNTIME_PROTOCOL_VERSION,
 		requestId: 'request-1',
+		sequence: 0,
 		type: 'pause',
 		payload: undefined,
 	})
@@ -40,16 +42,19 @@ test('rejects wrong versions, unknown commands and missing request identity', ()
 	assert.equal(isRuntimeCommand({
 		protocolVersion: RUNTIME_PROTOCOL_VERSION + 1,
 		requestId: 'request-1',
+		sequence: 0,
 		type: 'pause',
 	}), false)
 	assert.equal(isRuntimeCommand({
 		protocolVersion: RUNTIME_PROTOCOL_VERSION,
 		requestId: 'request-1',
+		sequence: 0,
 		type: 'unknown',
 	}), false)
 	assert.equal(isRuntimeCommand({
 		protocolVersion: RUNTIME_PROTOCOL_VERSION,
 		requestId: '',
+		sequence: 0,
 		type: 'pause',
 	}), false)
 })

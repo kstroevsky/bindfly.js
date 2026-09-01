@@ -9,6 +9,7 @@
 html, body, #app { width: 100%; min-height: 100%; margin: 0; }
 body { overflow: hidden; }
 button, input { font: inherit; }
+select { font: inherit; }
 
 .studio {
 	display: grid;
@@ -40,6 +41,8 @@ h1 { margin: 4px 0 0; font-size: clamp(24px, 4vw, 34px); line-height: 1; }
 input[type="range"] { width: 100%; accent-color: #ff79c6; }
 
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.runtime-control { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; color: #d7d7df; font-size: 13px; }
+.runtime-control select { min-height: 36px; border: 1px solid rgba(255,255,255,0.16); border-radius: 8px; background: #1b1b27; color: #f4f4f6; padding: 0 10px; }
 button {
 	min-height: 42px;
 	border: 1px solid rgba(255, 255, 255, 0.16);
