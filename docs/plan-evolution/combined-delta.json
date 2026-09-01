@@ -1,0 +1,401 @@
+{
+  "schema_version": 1,
+  "base_sha256": "0815d8a1a1e895c43e9345f5f8ba291cac81fbda6791a1f230165df815c67a37",
+  "closed_world": true,
+  "source_feedback": [
+    "User requested a deep CodeGraph-backed review and an improved replacement plan with no useful omissions.",
+    "Supplied docs/initial_audit.md and docs/initial_analysis.md.",
+    "Fresh CodeGraph, build/typecheck/lint/test evidence and official-source verification.",
+    "Independent verification attempt 1: IV-XIF-001, IV-F03-001, IV-LEDGER-001."
+  ],
+  "changes": [
+    {
+      "feedback_id": "F-00",
+      "operation": "MOVE",
+      "requirement_ids": [
+        "DOC-001"
+      ],
+      "allowed_sections": [
+        [
+          "Q"
+        ],
+        [
+          "A"
+        ],
+        [
+          "Bindfly 2 Implementation Plan — Candidate"
+        ],
+        [
+          "Bindfly 2 Implementation Plan — Candidate",
+          "Source request"
+        ],
+        [
+          "Plan"
+        ]
+      ],
+      "required_literals": [
+        "Status: candidate under verification"
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Make the standalone candidate identifiable while preserving the exact source request and plan body."
+    },
+    {
+      "feedback_id": "F-01",
+      "operation": "AMEND",
+      "requirement_ids": [
+        "ARCH-008",
+        "EXP-001",
+        "STATE-001",
+        "PARAM-001"
+      ],
+      "allowed_sections": [
+        [
+          "4. Proposed repository structure"
+        ],
+        [
+          "5. The central domain object: Experiment"
+        ],
+        [
+          "6. The state model"
+        ],
+        [
+          "10. Parameter system"
+        ]
+      ],
+      "required_literals": [
+        "Stable entity IDs, deterministic iteration order"
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Replace premature physical abstraction and name-based identity with explicit registries, codecs, capabilities and state/parameter contracts."
+    },
+    {
+      "feedback_id": "F-02",
+      "operation": "AMEND",
+      "requirement_ids": [
+        "TIME-001",
+        "PROTO-001",
+        "ANAL-001",
+        "ANAL-003"
+      ],
+      "allowed_sections": [
+        [
+          "7. Clock architecture"
+        ],
+        [
+          "14. Worker protocol"
+        ],
+        [
+          "18. Analysis architecture"
+        ],
+        [
+          "19. Introduce explicit computational budgets"
+        ]
+      ],
+      "required_literals": [
+        "The protocol is bidirectional and versioned."
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [
+        "4"
+      ],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Close timing, replay, worker-failure, backpressure, snapshot provenance and analyzer-budget gaps."
+    },
+    {
+      "feedback_id": "F-03",
+      "operation": "AMEND",
+      "requirement_ids": [
+        "FORM-001",
+        "FORM-003",
+        "FORM-004",
+        "FORM-005",
+        "FORM-007",
+        "DYN-002"
+      ],
+      "allowed_sections": [
+        [
+          "8. Formula engine: probably the most important new subsystem"
+        ],
+        [
+          "9. Formula families"
+        ],
+        [
+          "26. Numerical integration"
+        ]
+      ],
+      "required_literals": [
+        "Do not call every custom distance-like formula a metric."
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Make formula execution safe/dimensional and prevent non-metric relationships or unsupported indexes from contaminating topology."
+    },
+    {
+      "feedback_id": "F-04",
+      "operation": "AMEND",
+      "requirement_ids": [
+        "TOPO-002",
+        "TOPO-003",
+        "TOPO-004"
+      ],
+      "allowed_sections": [
+        [
+          "22. Topology v1: Vietoris–Rips visualization"
+        ],
+        [
+          "23. Topology v2: persistence"
+        ],
+        [
+          "24. Topology UI"
+        ]
+      ],
+      "required_literals": [
+        "Keep two quantities distinct:"
+      ],
+      "forbidden_literals": [
+        "https://github.com/fluent/ripser"
+      ],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Separate graph cycles from simplicial beta1, define PH adapter provenance, correct the Ripser source and avoid recomputation on epsilon movement."
+    },
+    {
+      "feedback_id": "F-05",
+      "operation": "AMEND",
+      "requirement_ids": [
+        "CODEC-001",
+        "BENCH-001",
+        "TEST-001",
+        "TEST-002",
+        "TOOL-001",
+        "TYPE-001"
+      ],
+      "allowed_sections": [
+        [
+          "37. Versioned URLs"
+        ],
+        [
+          "39. Benchmark harness"
+        ],
+        [
+          "40. Testing architecture"
+        ],
+        [
+          "41. Analysis validation tests"
+        ],
+        [
+          "43. Tooling migration"
+        ],
+        [
+          "44. TypeScript compiler policy"
+        ]
+      ],
+      "required_literals": [
+        "Contract and integration tests"
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Add migration, parity, browser, lifecycle, scientific, benchmark and true build-quality gates missing from the original plan."
+    },
+    {
+      "feedback_id": "F-06",
+      "operation": "AMEND",
+      "requirement_ids": [
+        "MIG-001",
+        "MIG-002",
+        "MIG-003",
+        "MIG-004",
+        "MIG-005",
+        "MIG-007",
+        "MIG-008",
+        "MIG-009",
+        "MIG-010",
+        "MIG-011",
+        "MIG-012",
+        "MIG-013",
+        "MIG-016",
+        "MIG-017",
+        "MIG-018",
+        "MIG-019",
+        "MIG-022",
+        "MIG-024",
+        "MIG-025"
+      ],
+      "allowed_sections": [
+        [
+          "45. Migration phases for Codex"
+        ]
+      ],
+      "required_literals": [
+        "Implement capability probing, ready handshake"
+      ],
+      "forbidden_literals": [
+        "First backend:"
+      ],
+      "allowed_new_numeric_tokens": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Make affected phases executable with explicit preservation, security, failure, correctness and exit evidence."
+    },
+    {
+      "feedback_id": "F-07",
+      "operation": "ADD",
+      "requirement_ids": [
+        "EVID-001",
+        "MILE-001",
+        "XIF-001",
+        "CUT-001",
+        "ADR-001",
+        "RISK-001"
+      ],
+      "allowed_sections": [
+        [
+          "49. Verified current-state evidence and consequences"
+        ],
+        [
+          "50. Delivery milestones, dependencies and stop rules"
+        ],
+        [
+          "51. Cross-interface contract matrix"
+        ],
+        [
+          "52. Legacy-to-new migration and cutover map"
+        ],
+        [
+          "53. Required ADRs and risk register"
+        ]
+      ],
+      "required_literals": [
+        "Every implementation issue that crosses a row must name both producer and consumer tests."
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Add fresh evidence, milestone stop rules, interface failure contracts, cutover/rollback and decision/risk governance."
+    },
+    {
+      "feedback_id": "F-08",
+      "operation": "ADD",
+      "requirement_ids": [
+        "SEC-001",
+        "REL-001",
+        "PRIV-001",
+        "A11Y-001",
+        "DONE-001",
+        "EXT-001"
+      ],
+      "allowed_sections": [
+        [
+          "54. Security, reliability, privacy and accessibility baseline"
+        ],
+        [
+          "55. Per-phase execution and definition-of-done template"
+        ],
+        [
+          "56. Verified external assumptions"
+        ]
+      ],
+      "required_literals": [
+        "Telemetry is local-only by default."
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Add untrusted-input/resource/privacy/accessibility baselines, per-phase definition of done and dated official-source assumptions."
+    },
+    {
+      "feedback_id": "F-09",
+      "operation": "AMEND",
+      "requirement_ids": [
+        "TARGET-001"
+      ],
+      "allowed_sections": [
+        [
+          "48. The target end-state"
+        ]
+      ],
+      "required_literals": [
+        "The first major milestone should be **Flying Lines completely rebuilt on the new architecture"
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [
+        "26"
+      ],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Move references out of the target end-state section and correct the inherited 25-versus-26 phase-count contradiction."
+    },
+    {
+      "feedback_id": "R-01",
+      "operation": "AMEND",
+      "requirement_ids": [
+        "RUNTIME-001"
+      ],
+      "allowed_sections": [
+        [
+          "13. Worker architecture"
+        ]
+      ],
+      "required_literals": [
+        "resume(): void"
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Close the runtime/protocol lifecycle mismatch found by IV-XIF-001."
+    },
+    {
+      "feedback_id": "R-02",
+      "operation": "AMEND",
+      "requirement_ids": [
+        "MIG-013"
+      ],
+      "allowed_sections": [
+        [
+          "45. Migration phases for Codex",
+          "Phase 12 — Formula-based experiment system"
+        ]
+      ],
+      "required_literals": [
+        "`Relationship`"
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Give the active non-metric Relationship family an explicit implementation phase and topology restriction."
+    },
+    {
+      "feedback_id": "R-03",
+      "operation": "RESTORE",
+      "requirement_ids": [
+        "BENCH-001"
+      ],
+      "payload_source": "base-ledger:BENCH-001",
+      "allowed_sections": [
+        [
+          "39. Benchmark harness"
+        ]
+      ],
+      "required_literals": [
+        "FlyingLines / Seed 42"
+      ],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Restore the exact benchmark fixture/count/radius fields accidentally omitted from the target ledger."
+    }
+  ],
+  "repair_delta_ids": [
+    "repair-delta-1.json"
+  ]
+}

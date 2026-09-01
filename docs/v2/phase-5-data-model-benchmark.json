@@ -1,0 +1,26 @@
+{
+  "benchmark": "Flying Lines simulation plus brute-force graph",
+  "captured_on": "2026-09-01",
+  "environment": { "node": "v22.22.0", "platform": "darwin", "arch": "arm64", "cpu": "Apple M1 Max" },
+  "policy": { "primary": "median_ms_per_frame", "minimum_improvement_at_500_particles_pct": 10, "maximum_regression_at_100_particles_pct": 5 },
+  "workload": { "viewport": "1280x720", "fixed_step_seconds": 0.008333333333333333, "samples": 12, "warmup_frames_per_sample": 30, "measured_frames_per_sample": 30 },
+  "baseline": {
+    "implementation": "object arrays plus allocating graph results",
+    "revision": "eaf80ed",
+    "workloads": [
+      { "particles": 100, "samples_ms_per_frame": [0.6353000000000009, 0.49295973333333337, 0.33745556666666704, 0.16760136666666767, 0.21814306666666614, 0.16949166666666618, 0.2734472333333315, 0.9649499999999989, 0.2130361333333326, 0.15866946666666687, 0.38042083333333493, 0.29967359999999793], "median_ms_per_frame": 0.2865604166666647, "measured_edge_objects": 318083, "guardrail_sha256": "df2800dee406a6bd92c61091bcce72f93fef77d84ba4f808860578db4249c407" },
+      { "particles": 300, "samples_ms_per_frame": [2.1812528000000007, 1.8447610999999975, 2.008924999999999, 1.669151400000002, 1.334120833333327, 1.8080166666666704, 2.116199999999996, 1.510041666666666, 2.124811100000003, 1.2817652666666695, 1.4352888999999929, 1.3211291666666662], "median_ms_per_frame": 1.7385840333333362, "measured_edge_objects": 2891103, "guardrail_sha256": "5d8ffe24f16231263a768338726a4f4c505f79a999f2ff16822e60ed490bedde" },
+      { "particles": 500, "samples_ms_per_frame": [5.955512499999986, 6.800270833333343, 5.878831933333337, 4.991411133333334, 4.241169433333335, 4.17303473333333, 4.160626400000001, 4.461711100000002, 4.239770833333326, 3.7724985999999867, 4.0615875000000115, 4.142143066666661], "median_ms_per_frame": 4.24047013333333, "measured_edge_objects": 8023907, "guardrail_sha256": "609fbbfcf67182d0602fee635cf05f1c3b05e36b8d381d7ac61f82b1bd229ecf" }
+    ]
+  },
+  "candidate": {
+    "implementation": "Float64 structure-of-arrays plus reusable graph buffers",
+    "revision": "phase-5-working-tree",
+    "workloads": [
+      { "particles": 100, "samples_ms_per_frame": [0.14191803333333344, 0.06816389999999993, 0.05787916666666509, 0.320883333333334, 0.12560140000000122, 0.28053750000000266, 0.1976222000000007, 0.15596249999999828, 0.050534733333332346, 0.06603333333333315, 0.0319263666666681, 0.18565556666666605], "median_ms_per_frame": 0.13375971666666733, "improvement_pct": 53.32, "steady_state_result_buffer_replacements": 0, "guardrail_sha256": "df2800dee406a6bd92c61091bcce72f93fef77d84ba4f808860578db4249c407" },
+      { "particles": 300, "samples_ms_per_frame": [1.7703403000000018, 1.902923599999997, 1.3654110999999982, 0.8001944333333351, 0.6451069333333331, 1.1673958333333303, 0.7549916666666604, 0.7364458333333384, 0.4763041666666671, 0.4283736000000014, 0.496541666666667, 0.45629026666666356], "median_ms_per_frame": 0.7457187499999993, "improvement_pct": 57.11, "steady_state_result_buffer_replacements": 0, "guardrail_sha256": "5d8ffe24f16231263a768338726a4f4c505f79a999f2ff16822e60ed490bedde" },
+      { "particles": 500, "samples_ms_per_frame": [1.2729305333333287, 1.764684733333335, 1.5412458333333385, 1.2112972333333345, 3.056738866666668, 1.1882528000000017, 2.181094433333328, 2.003634733333335, 3.456673599999992, 4.279352766666656, 18.073145833333335, 12.046788866666672], "median_ms_per_frame": 2.0923645833333318, "improvement_pct": 50.66, "steady_state_result_buffer_replacements": 0, "guardrail_sha256": "609fbbfcf67182d0602fee635cf05f1c3b05e36b8d381d7ac61f82b1bd229ecf" }
+    ]
+  },
+  "verdict": { "direction": "improvement in the retained representative run", "materiality": "point estimate clears the 10% threshold at 500 particles", "uncertainty": "high 500-particle run-to-run variance; no confidence interval claimed", "adoption": "retain because exact guardrails pass and steady-state result-buffer replacement falls to zero" }
+}

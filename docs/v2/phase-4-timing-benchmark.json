@@ -1,0 +1,79 @@
+{
+  "benchmark": "Flying Lines simulation step only",
+  "captured_on": "2026-09-01",
+  "command": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tooling/benchmark-flying-lines-timing.mjs",
+  "clock_policy": {
+    "fixed_step_seconds": 0.008333333333333333,
+    "step_hz": 120,
+    "state_tolerance": 1e-9,
+    "deterministic_tier": "same-build-cpu"
+  },
+  "environment": {
+    "node": "v22.22.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M1 Max"
+  },
+  "workloads": [
+    {
+      "particle_count": 100,
+      "warmup_steps": 1000,
+      "batch_count": 20,
+      "steps_per_batch": 1000,
+      "batch_milliseconds": [
+        8.015665999999996,
+        0.42925000000001035,
+        0.6136659999999949,
+        1.8554579999999987,
+        1.09754199999999,
+        1.2309589999999986,
+        0.9514579999999881,
+        2.399583000000007,
+        2.780332999999999,
+        0.4760830000000169,
+        0.481207999999981,
+        0.7909999999999968,
+        1.3957920000000001,
+        0.8572499999999934,
+        0.3955840000000137,
+        0.4488330000000076,
+        0.3532920000000104,
+        2.1620829999999955,
+        1.2287080000000117,
+        0.4807079999999928
+      ],
+      "median_batch_milliseconds": 0.9043539999999908,
+      "median_step_milliseconds": 0.0009043539999999908
+    },
+    {
+      "particle_count": 500,
+      "warmup_steps": 1000,
+      "batch_count": 20,
+      "steps_per_batch": 1000,
+      "batch_milliseconds": [
+        3.8760420000000124,
+        3.556083000000001,
+        2.8938750000000084,
+        1.7845000000000084,
+        1.7737079999999992,
+        2.0370829999999955,
+        1.8072500000000105,
+        1.819375000000008,
+        1.773208000000011,
+        1.5664160000000038,
+        1.8003750000000025,
+        1.6704999999999757,
+        1.6822919999999897,
+        1.572624999999988,
+        1.5603749999999934,
+        1.554916999999989,
+        1.6922080000000221,
+        1.615791999999999,
+        1.5485419999999976,
+        1.5869169999999997
+      ],
+      "median_batch_milliseconds": 1.7327080000000166,
+      "median_step_milliseconds": 0.0017327080000000166
+    }
+  ]
+}

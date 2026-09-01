@@ -2,6 +2,7 @@
   "name": "bindfly",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@8.15.4",
   "description": "An optimised canvas beautiful something with multiple parameters. A library and a web-socket based game in future.",
   "homepage": "https://bindfly.onrender.com",
   "license": "SEE LICENSE IN LICENSE",
@@ -21,7 +22,14 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "lint:fix": "eslint --fix .",
+    "v2:boundaries": "node tooling/check-v2-boundaries.mjs",
+    "v2:typecheck": "tsc -p tsconfig.v2.json",
+    "v2:lint": "eslint --no-eslintrc --config tooling/eslint-v2.cjs \"src-v2/**/*.{ts,tsx}\" \"apps/studio/src/**/*.{ts,tsx}\"",
+    "v2:test": "node tooling/run-v2-tests.mjs",
+    "v2:check": "pnpm run v2:boundaries && pnpm run v2:typecheck && pnpm run v2:lint && pnpm run v2:test",
+    "v2:build": "webpack --config webpack.v2.config.js --mode production",
+    "v2:start": "webpack serve --config webpack.v2.config.js --mode development"
   },
   "dependencies": {
     "classnames": "^2.5.1",
@@ -261,10 +269,13 @@
       }
     ],
     "ignorePatterns": [
+      "apps",
       "node_modules",
       "build",
       "dist",
-      "public"
+      "public",
+      "src-v2",
+      "tooling"
     ]
   }
 }

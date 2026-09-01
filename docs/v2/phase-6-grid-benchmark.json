@@ -1,0 +1,16 @@
+{
+  "benchmark": "Reusable brute-force versus uniform-grid proximity graph",
+  "captured_on": "2026-09-01",
+  "runner": "tooling/benchmark-proximity-grid.mjs",
+  "policy": { "minimum_default_500_improvement_pct": 15, "maximum_any_regression_pct": 10 },
+  "workloads": [
+    { "particles": 100, "radius": 50, "brute_median_ms": 0.0161042, "grid_median_ms": 0.00642638, "grid_improvement_pct": 60.09, "selected": "grid" },
+    { "particles": 100, "radius": 250, "brute_median_ms": 0.0385917, "grid_median_ms": 0.0792785, "grid_improvement_pct": -105.43, "selected": "brute" },
+    { "particles": 300, "radius": 50, "brute_median_ms": 0.186061, "grid_median_ms": 0.0575236, "grid_improvement_pct": 69.08, "selected": "grid" },
+    { "particles": 300, "radius": 250, "brute_median_ms": 0.395624, "grid_median_ms": 1.310955, "grid_improvement_pct": -231.36, "selected": "brute" },
+    { "particles": 500, "radius": 50, "brute_median_ms": 0.500819, "grid_median_ms": 0.183946, "grid_improvement_pct": 63.27, "selected": "grid" },
+    { "particles": 500, "radius": 100, "brute_median_ms": 0.601643, "grid_median_ms": 0.571784, "grid_improvement_pct": 4.96, "selected": "brute" },
+    { "particles": 500, "radius": 250, "brute_median_ms": 1.149622, "grid_median_ms": 5.198306, "grid_improvement_pct": -352.18, "selected": "brute" }
+  ],
+  "verdict": "Retain grid for sparse neighborhoods only; preserve brute force as dense fallback. Full raw samples are reproducible with the committed runner."
+}
