@@ -161,6 +161,10 @@ export class WorkerRuntime<Schema extends ParameterSchema, Input, InitializePayl
 		return this.enqueue('parameters', patch)
 	}
 
+	reset(): Promise<void> {
+		return this.enqueue('reset', undefined)
+	}
+
 	async dispose(): Promise<void> {
 		if (this.runtimeState === 'disposed') return
 		this.transition('disposing')

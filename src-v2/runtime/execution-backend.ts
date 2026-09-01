@@ -11,5 +11,6 @@ export interface ExecutionBackend<Schema extends ParameterSchema, Input> {
 	resize(viewport: Viewport): Promise<void>
 	applyInput(input: Input): Promise<void>
 	updateParameters(patch: ParameterPatch<Schema>): Promise<void>
+	reset(): Promise<void>
 	dispose(): Promise<void>
 }

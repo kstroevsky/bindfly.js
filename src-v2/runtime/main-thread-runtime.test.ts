@@ -35,6 +35,7 @@ test('adapts the fixed-step loop to the execution backend lifecycle', async () =
 	await runtime.updateParameters({ speed: 2 })
 	await runtime.pause()
 	await runtime.resume()
+	await runtime.reset()
 	await runtime.dispose()
 	assert.equal(runtime.state, 'disposed')
 	assert.deepEqual(actions, ['resize', 'dispose'])

@@ -14,6 +14,7 @@ test('enumerates the complete runtime command surface', () => {
 		'resize',
 		'input',
 		'parameters',
+		'reset',
 		'pause',
 		'resume',
 		'dispose',

@@ -167,6 +167,10 @@ class FakeExecutionBackend implements ExecutionBackend<typeof schema, { readonly
 		return Promise.resolve()
 	}
 
+	reset(): Promise<void> {
+		return Promise.resolve()
+	}
+
 	dispose(): Promise<void> {
 		this.transition('disposing')
 		this.transition('disposed')
@@ -230,6 +234,7 @@ test('fake backend proves the complete lifecycle surface', async () => {
 	await backend.resize(viewport)
 	await backend.updateParameters({ speed: 2 })
 	await backend.applyInput({ type: 'nudge' })
+	await backend.reset()
 	await backend.dispose()
 
 	assert.equal(backend.state, 'disposed')

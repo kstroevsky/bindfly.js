@@ -4,7 +4,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
 module.exports = (_environment, argv) => ({
 	mode: argv.mode || 'production',
-	entry: path.resolve(__dirname, 'apps/studio/src/main.ts'),
+	entry: path.resolve(__dirname, 'apps/studio/src/main.tsx'),
 	output: {
 		path: path.resolve(__dirname, 'dist-v2'),
 		filename: 'studio.[contenthash].js',

@@ -5,6 +5,7 @@ export type RuntimeCommandType =
 	| 'resize'
 	| 'input'
 	| 'parameters'
+	| 'reset'
 	| 'pause'
 	| 'resume'
 	| 'dispose'
@@ -14,6 +15,7 @@ export const runtimeCommandTypes: readonly RuntimeCommandType[] = [
 	'resize',
 	'input',
 	'parameters',
+	'reset',
 	'pause',
 	'resume',
 	'dispose',
