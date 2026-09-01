@@ -1,19 +1,22 @@
-import type { IdentifiedPoint2D, ParameterValues } from '../../core/index.ts'
+import type { ParameterValues, PointBuffer2D } from '../../core/index.ts'
 
 import type { flyingLinesParameters } from './parameters.ts'
 
 export type FlyingLinesParameters = ParameterValues<typeof flyingLinesParameters>
 
-export interface FlyingLinesParticle extends IdentifiedPoint2D {
-	x: number
-	y: number
-	velocityX: number
-	velocityY: number
-	lifeSeconds: number
+export interface FlyingLinesParticleBuffer extends PointBuffer2D {
+	count: number
+	capacity: number
+	ids: Uint32Array
+	x: Float64Array
+	y: Float64Array
+	velocityX: Float64Array
+	velocityY: Float64Array
+	lifeSeconds: Float64Array
 }
 
 export interface FlyingLinesState {
-	readonly particles: FlyingLinesParticle[]
+	readonly particles: FlyingLinesParticleBuffer
 	readonly connectionRadius: number
 	readonly background: string
 }

@@ -1,9 +1,9 @@
-import type { IdentifiedPoint2D, RenderFrame, Renderer, Viewport, WeightedLineSegment2D } from '../../core/index.ts'
+import type { PointBuffer2D, ProximityEdgeBuffer2D, RenderFrame, Renderer, Viewport } from '../../core/index.ts'
 
 export interface FlyingLinesRenderView {
 	readonly background: string
-	readonly particles: readonly IdentifiedPoint2D[]
-	readonly edges: readonly WeightedLineSegment2D[]
+	readonly particles: PointBuffer2D
+	readonly edges: ProximityEdgeBuffer2D
 }
 
 class FlyingLinesCanvasRenderer implements Renderer<FlyingLinesRenderView> {
@@ -11,6 +11,7 @@ class FlyingLinesCanvasRenderer implements Renderer<FlyingLinesRenderView> {
 	private readonly context: CanvasRenderingContext2D
 	private viewport: Viewport | undefined
 	private disposed = false
+	private readonly colors: string[] = []
 
 	constructor(canvas: HTMLCanvasElement) {
 		const context = canvas.getContext('2d', { alpha: false })
@@ -44,18 +45,28 @@ class FlyingLinesCanvasRenderer implements Renderer<FlyingLinesRenderView> {
 		this.context.fillRect(0, 0, this.viewport.cssWidth, this.viewport.cssHeight)
 		this.context.lineWidth = 0.6
 
-		for (const edge of state.edges) {
-			this.context.strokeStyle = `hsla(${(edge.sourceId * 137.508) % 360}, 82%, 68%, ${edge.opacity})`
+		for (let edgeIndex = 0; edgeIndex < state.edges.edgeCount; edgeIndex++) {
+			const sourceIndex = state.edges.sourceIndices[edgeIndex] ?? 0
+			const targetIndex = state.edges.targetIndices[edgeIndex] ?? 0
+			const sourceId = state.particles.ids[sourceIndex] ?? 0
+			let color = this.colors[sourceId]
+			if (!color) {
+				color = `hsl(${(sourceId * 137.508) % 360}, 82%, 68%)`
+				this.colors[sourceId] = color
+			}
+			this.context.strokeStyle = color
+			this.context.globalAlpha = state.edges.opacities[edgeIndex] ?? 1
 			this.context.beginPath()
-			this.context.moveTo(edge.sourceX, edge.sourceY)
-			this.context.lineTo(edge.targetX, edge.targetY)
+			this.context.moveTo(state.particles.x[sourceIndex] ?? 0, state.particles.y[sourceIndex] ?? 0)
+			this.context.lineTo(state.particles.x[targetIndex] ?? 0, state.particles.y[targetIndex] ?? 0)
 			this.context.stroke()
 		}
 
+		this.context.globalAlpha = 1
 		this.context.fillStyle = 'rgba(255, 255, 255, 0.72)'
-		for (const particle of state.particles) {
+		for (let index = 0; index < state.particles.count; index++) {
 			this.context.beginPath()
-			this.context.arc(particle.x, particle.y, 1.35, 0, Math.PI * 2)
+			this.context.arc(state.particles.x[index] ?? 0, state.particles.y[index] ?? 0, 1.35, 0, Math.PI * 2)
 			this.context.fill()
 		}
 	}

@@ -1,4 +1,4 @@
-import { analyzeProximityGraph } from '../../../src-v2/analysis/index.ts'
+import { createProximityGraphWorkspace } from '../../../src-v2/analysis/index.ts'
 import { createSeededRandom, createViewport, normalizeParameters } from '../../../src-v2/core/index.ts'
 import type { ParameterPatch, ParameterValues, Simulation, Viewport } from '../../../src-v2/core/index.ts'
 import { experimentRegistry, flyingLinesParameters } from '../../../src-v2/effects/index.ts'
@@ -37,8 +37,8 @@ const bootstrap = async () => {
 		<main class="studio">
 			<aside class="panel" aria-label="Experiment controls">
 				<header>
-					<div><p class="eyebrow">Bindfly 2 · Phase 4</p><h1>Flying Lines</h1></div>
-					<p class="description">A deterministic 120 Hz simulation with brute-force unique pairs.</p>
+					<div><p class="eyebrow">Bindfly 2 · Phase 5</p><h1>Flying Lines</h1></div>
+					<p class="description">A deterministic 120 Hz simulation using reusable typed buffers.</p>
 				</header>
 				<section class="controls" aria-label="Parameters">
 					<label class="control"><span class="control-row"><span>Particles</span><output id="particleCount-output">${parameters.particleCount}</output></span><input id="particleCount" type="range" min="1" max="500" step="1" value="${parameters.particleCount}" /></label>
@@ -76,6 +76,12 @@ const bootstrap = async () => {
 	}, parameters)
 	let draggingId: number | undefined
 	let droppedStepCount = 0
+	const graphWorkspace = createProximityGraphWorkspace(500)
+	let renderView: FlyingLinesRenderView = {
+		background: simulation.state.background,
+		particles: simulation.state.particles,
+		edges: graphWorkspace.result,
+	}
 	const interactiveParameterIds = ['particleCount', 'maxSpeed', 'connectionRadius'] as const
 
 	const syncParameterControls = () => {
@@ -92,12 +98,17 @@ const bootstrap = async () => {
 			random: createSeededRandom(SEED),
 			viewport,
 		}, parameters)
+		renderView = {
+			background: simulation.state.background,
+			particles: simulation.state.particles,
+			edges: graphWorkspace.result,
+		}
 	}
 
-	const graphForFrame = () => analyzeProximityGraph({
-		points: simulation.state.particles,
-		connectionRadius: simulation.state.connectionRadius,
-	})
+	const graphForFrame = () => graphWorkspace.analyze(
+		simulation.state.particles,
+		simulation.state.connectionRadius,
+	)
 
 	const loop = new FixedStepLoop<FlyingLinesInput, ParameterPatch<typeof flyingLinesParameters>>({
 		clock: new FixedStepClock({
@@ -142,17 +153,12 @@ const bootstrap = async () => {
 			render: (frame) => {
 				const frameStartedAt = performance.now()
 				const graph = graphForFrame()
-				const view: FlyingLinesRenderView = {
-					background: simulation.state.background,
-					particles: simulation.state.particles,
-					edges: graph.edges,
-				}
-				renderer.render(view, frame)
+				renderer.render(renderView, frame)
 
 				if (frame.frameIndex % 6 === 0) {
-					element<HTMLElement>('points-metric').textContent = String(simulation.state.particles.length)
-					element<HTMLElement>('edges-metric').textContent = String(graph.edges.length)
-					element<HTMLElement>('components-metric').textContent = String(graph.components.length)
+					element<HTMLElement>('points-metric').textContent = String(simulation.state.particles.count)
+					element<HTMLElement>('edges-metric').textContent = String(graph.edgeCount)
+					element<HTMLElement>('components-metric').textContent = String(graph.componentCount)
 					element<HTMLElement>('step-metric').textContent = String(frame.simulationStepIndex)
 					element<HTMLElement>('frame-metric').textContent = `${(performance.now() - frameStartedAt).toFixed(1)} ms`
 				}
@@ -191,11 +197,12 @@ const bootstrap = async () => {
 	const nearestId = ({ x, y }: { readonly x: number; readonly y: number }, maxDistance: number) => {
 		let id: number | undefined
 		let best = maxDistance * maxDistance
-		for (const particle of simulation.state.particles) {
-			const dx = particle.x - x
-			const dy = particle.y - y
+		const particles = simulation.state.particles
+		for (let index = 0; index < particles.count; index++) {
+			const dx = (particles.x[index] ?? 0) - x
+			const dy = (particles.y[index] ?? 0) - y
 			const distance = dx * dx + dy * dy
-			if (distance <= best) { best = distance; id = particle.id }
+			if (distance <= best) { best = distance; id = particles.ids[index] }
 		}
 		return id
 	}

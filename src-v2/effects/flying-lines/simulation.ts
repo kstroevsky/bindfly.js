@@ -1,7 +1,7 @@
 import type { RandomSource, SeededRandomSnapshot, Simulation, SimulationEnvironment, SimulationStep, Viewport } from '../../core/index.ts'
 import { restoreSeededRandom } from '../../core/index.ts'
 
-import type { FlyingLinesInput, FlyingLinesParameters, FlyingLinesParticle, FlyingLinesState } from './types.ts'
+import type { FlyingLinesInput, FlyingLinesParameters, FlyingLinesParticleBuffer, FlyingLinesState } from './types.ts'
 
 export interface CreateFlyingLinesSimulationInput {
 	readonly environment: SimulationEnvironment
@@ -9,6 +9,22 @@ export interface CreateFlyingLinesSimulationInput {
 }
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
+const capacityFor = (minimum: number): number => {
+	let capacity = 16
+	while (capacity < minimum) capacity *= 2
+	return capacity
+}
+
+const createBuffer = (capacity: number): FlyingLinesParticleBuffer => ({
+	count: 0,
+	capacity,
+	ids: new Uint32Array(capacity),
+	x: new Float64Array(capacity),
+	y: new Float64Array(capacity),
+	velocityX: new Float64Array(capacity),
+	velocityY: new Float64Array(capacity),
+	lifeSeconds: new Float64Array(capacity),
+})
 
 class FlyingLinesSimulation implements Simulation<FlyingLinesState, FlyingLinesInput> {
 	readonly state: FlyingLinesState
@@ -24,117 +40,122 @@ class FlyingLinesSimulation implements Simulation<FlyingLinesState, FlyingLinesI
 		this.random = environment.random
 		this.initialRandomSnapshot = environment.random.snapshot()
 		this.state = {
-			particles: [],
+			particles: createBuffer(capacityFor(parameters.particleCount)),
 			connectionRadius: parameters.connectionRadius,
 			background: parameters.background,
 		}
 		this.reset()
 	}
 
-	private bounds() {
-		const horizontalMargin = Math.min(this.parameters.margin, this.viewport.cssWidth / 2)
-		const verticalMargin = Math.min(this.parameters.margin, this.viewport.cssHeight / 2)
-		return {
-			minX: horizontalMargin,
-			maxX: this.viewport.cssWidth - horizontalMargin,
-			minY: verticalMargin,
-			maxY: this.viewport.cssHeight - verticalMargin,
-		}
+	private ensureCapacity(minimum: number): void {
+		const particles = this.state.particles
+		if (minimum <= particles.capacity) return
+		const capacity = capacityFor(minimum)
+		const ids = new Uint32Array(capacity)
+		const x = new Float64Array(capacity)
+		const y = new Float64Array(capacity)
+		const velocityX = new Float64Array(capacity)
+		const velocityY = new Float64Array(capacity)
+		const lifeSeconds = new Float64Array(capacity)
+		ids.set(particles.ids.subarray(0, particles.count))
+		x.set(particles.x.subarray(0, particles.count))
+		y.set(particles.y.subarray(0, particles.count))
+		velocityX.set(particles.velocityX.subarray(0, particles.count))
+		velocityY.set(particles.velocityY.subarray(0, particles.count))
+		lifeSeconds.set(particles.lifeSeconds.subarray(0, particles.count))
+		Object.assign(particles, { capacity, ids, x, y, velocityX, velocityY, lifeSeconds })
 	}
 
-	private velocity() {
-		if (this.parameters.maxSpeed === 0) return { velocityX: 0, velocityY: 0 }
-		const angle = this.random.nextBetween(0, Math.PI * 2)
-		const speed = this.random.nextBetween(0, this.parameters.maxSpeed)
-		return {
-			velocityX: Math.cos(angle) * speed,
-			velocityY: Math.sin(angle) * speed,
-		}
-	}
-
-	private lifeSeconds() {
-		return this.random.nextBetween(
+	private writeParticle(index: number, id: number, position?: { readonly x: number; readonly y: number }): void {
+		const particles = this.state.particles
+		const minX = Math.min(this.parameters.margin, this.viewport.cssWidth / 2)
+		const minY = Math.min(this.parameters.margin, this.viewport.cssHeight / 2)
+		const maxX = this.viewport.cssWidth - minX
+		const maxY = this.viewport.cssHeight - minY
+		const angle = this.parameters.maxSpeed === 0 ? 0 : this.random.nextBetween(0, Math.PI * 2)
+		const speed = this.parameters.maxSpeed === 0 ? 0 : this.random.nextBetween(0, this.parameters.maxSpeed)
+		particles.ids[index] = id
+		particles.x[index] = position ? clamp(position.x, minX, maxX) : this.random.nextBetween(minX, maxX)
+		particles.y[index] = position ? clamp(position.y, minY, maxY) : this.random.nextBetween(minY, maxY)
+		particles.velocityX[index] = Math.cos(angle) * speed
+		particles.velocityY[index] = Math.sin(angle) * speed
+		particles.lifeSeconds[index] = this.random.nextBetween(
 			this.parameters.particleLifetimeSeconds / 2,
 			this.parameters.particleLifetimeSeconds,
 		)
-	}
-
-	private createParticle(position?: { readonly x: number; readonly y: number }): FlyingLinesParticle {
-		const bounds = this.bounds()
-		const velocity = this.velocity()
-		return {
-			id: this.nextId++,
-			x: position ? clamp(position.x, bounds.minX, bounds.maxX) : this.random.nextBetween(bounds.minX, bounds.maxX),
-			y: position ? clamp(position.y, bounds.minY, bounds.maxY) : this.random.nextBetween(bounds.minY, bounds.maxY),
-			...velocity,
-			lifeSeconds: this.lifeSeconds(),
-		}
-	}
-
-	private respawn(particle: FlyingLinesParticle): void {
-		const replacement = this.createParticle()
-		particle.x = replacement.x
-		particle.y = replacement.y
-		particle.velocityX = replacement.velocityX
-		particle.velocityY = replacement.velocityY
-		particle.lifeSeconds = replacement.lifeSeconds
-		this.nextId--
 	}
 
 	step(frame: SimulationStep): void {
 		if (!Number.isFinite(frame.dtSeconds) || frame.dtSeconds < 0) {
 			throw new RangeError('Flying Lines dtSeconds must be finite and non-negative.')
 		}
-
-		const bounds = this.bounds()
-		for (const particle of this.state.particles) {
-			let nextX = particle.x + particle.velocityX * frame.dtSeconds
-			let nextY = particle.y + particle.velocityY * frame.dtSeconds
-
-			if ((nextX > bounds.maxX && particle.velocityX > 0) || (nextX < bounds.minX && particle.velocityX < 0)) {
-				particle.velocityX *= -1
-				nextX = particle.x + particle.velocityX * frame.dtSeconds
+		const particles = this.state.particles
+		const minX = Math.min(this.parameters.margin, this.viewport.cssWidth / 2)
+		const minY = Math.min(this.parameters.margin, this.viewport.cssHeight / 2)
+		const maxX = this.viewport.cssWidth - minX
+		const maxY = this.viewport.cssHeight - minY
+		for (let index = 0; index < particles.count; index++) {
+			let velocityX = particles.velocityX[index] ?? 0
+			let velocityY = particles.velocityY[index] ?? 0
+			let nextX = (particles.x[index] ?? 0) + velocityX * frame.dtSeconds
+			let nextY = (particles.y[index] ?? 0) + velocityY * frame.dtSeconds
+			if ((nextX > maxX && velocityX > 0) || (nextX < minX && velocityX < 0)) {
+				velocityX *= -1
+				particles.velocityX[index] = velocityX
+				nextX = (particles.x[index] ?? 0) + velocityX * frame.dtSeconds
 			}
-			if ((nextY > bounds.maxY && particle.velocityY > 0) || (nextY < bounds.minY && particle.velocityY < 0)) {
-				particle.velocityY *= -1
-				nextY = particle.y + particle.velocityY * frame.dtSeconds
+			if ((nextY > maxY && velocityY > 0) || (nextY < minY && velocityY < 0)) {
+				velocityY *= -1
+				particles.velocityY[index] = velocityY
+				nextY = (particles.y[index] ?? 0) + velocityY * frame.dtSeconds
 			}
-
-			particle.x = clamp(nextX, bounds.minX, bounds.maxX)
-			particle.y = clamp(nextY, bounds.minY, bounds.maxY)
-			particle.lifeSeconds -= frame.dtSeconds
-			if (particle.lifeSeconds <= 0) this.respawn(particle)
+			particles.x[index] = clamp(nextX, minX, maxX)
+			particles.y[index] = clamp(nextY, minY, maxY)
+			particles.lifeSeconds[index] = (particles.lifeSeconds[index] ?? 0) - frame.dtSeconds
+			if ((particles.lifeSeconds[index] ?? 0) <= 0) this.writeParticle(index, particles.ids[index] ?? 0)
 		}
 	}
 
 	applyInput(input: FlyingLinesInput): void {
+		const particles = this.state.particles
 		switch (input.type) {
 			case 'add-point':
-				this.state.particles.push(this.createParticle(input))
+				if (particles.count >= 500) break
+				this.ensureCapacity(particles.count + 1)
+				this.writeParticle(particles.count, this.nextId++, input)
+				particles.count++
 				break
 			case 'move-point': {
-				const particle = this.state.particles.find(({ id }) => id === input.id)
-				if (!particle) return
-				const bounds = this.bounds()
-				particle.x = clamp(input.x, bounds.minX, bounds.maxX)
-				particle.y = clamp(input.y, bounds.minY, bounds.maxY)
+				const minX = Math.min(this.parameters.margin, this.viewport.cssWidth / 2)
+				const minY = Math.min(this.parameters.margin, this.viewport.cssHeight / 2)
+				for (let index = 0; index < particles.count; index++) {
+					if (particles.ids[index] !== input.id) continue
+					particles.x[index] = clamp(input.x, minX, this.viewport.cssWidth - minX)
+					particles.y[index] = clamp(input.y, minY, this.viewport.cssHeight - minY)
+					break
+				}
 				break
 			}
 			case 'remove-nearest': {
 				let nearestIndex = -1
 				let nearestDistanceSquared = input.maxDistance * input.maxDistance
-				for (let index = 0; index < this.state.particles.length; index++) {
-					const particle = this.state.particles[index]
-					if (!particle) continue
-					const dx = particle.x - input.x
-					const dy = particle.y - input.y
+				for (let index = 0; index < particles.count; index++) {
+					const dx = (particles.x[index] ?? 0) - input.x
+					const dy = (particles.y[index] ?? 0) - input.y
 					const distanceSquared = dx * dx + dy * dy
 					if (distanceSquared <= nearestDistanceSquared) {
 						nearestDistanceSquared = distanceSquared
 						nearestIndex = index
 					}
 				}
-				if (nearestIndex >= 0) this.state.particles.splice(nearestIndex, 1)
+				if (nearestIndex < 0) break
+				particles.ids.copyWithin(nearestIndex, nearestIndex + 1, particles.count)
+				particles.x.copyWithin(nearestIndex, nearestIndex + 1, particles.count)
+				particles.y.copyWithin(nearestIndex, nearestIndex + 1, particles.count)
+				particles.velocityX.copyWithin(nearestIndex, nearestIndex + 1, particles.count)
+				particles.velocityY.copyWithin(nearestIndex, nearestIndex + 1, particles.count)
+				particles.lifeSeconds.copyWithin(nearestIndex, nearestIndex + 1, particles.count)
+				particles.count--
 				break
 			}
 		}
@@ -142,24 +163,26 @@ class FlyingLinesSimulation implements Simulation<FlyingLinesState, FlyingLinesI
 
 	resize(viewport: Viewport): void {
 		this.viewport = viewport
-		const bounds = this.bounds()
-		for (const particle of this.state.particles) {
-			particle.x = clamp(particle.x, bounds.minX, bounds.maxX)
-			particle.y = clamp(particle.y, bounds.minY, bounds.maxY)
+		const particles = this.state.particles
+		const minX = Math.min(this.parameters.margin, viewport.cssWidth / 2)
+		const minY = Math.min(this.parameters.margin, viewport.cssHeight / 2)
+		for (let index = 0; index < particles.count; index++) {
+			particles.x[index] = clamp(particles.x[index] ?? 0, minX, viewport.cssWidth - minX)
+			particles.y[index] = clamp(particles.y[index] ?? 0, minY, viewport.cssHeight - minY)
 		}
 	}
 
 	reset(): void {
 		this.random = restoreSeededRandom(this.initialRandomSnapshot)
 		this.nextId = 0
-		this.state.particles.splice(0, this.state.particles.length)
-		for (let index = 0; index < this.parameters.particleCount; index++) {
-			this.state.particles.push(this.createParticle())
-		}
+		const particles = this.state.particles
+		this.ensureCapacity(this.parameters.particleCount)
+		particles.count = this.parameters.particleCount
+		for (let index = 0; index < particles.count; index++) this.writeParticle(index, this.nextId++)
 	}
 
 	dispose(): void {
-		this.state.particles.splice(0, this.state.particles.length)
+		this.state.particles.count = 0
 	}
 }
 

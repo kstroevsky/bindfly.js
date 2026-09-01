@@ -14,3 +14,21 @@ export interface WeightedLineSegment2D {
 	readonly distance: number
 	readonly opacity: number
 }
+
+export type FloatingPointArray = Float32Array | Float64Array
+
+export interface PointBuffer2D {
+	readonly count: number
+	readonly capacity: number
+	readonly ids: Uint32Array
+	readonly x: FloatingPointArray
+	readonly y: FloatingPointArray
+}
+
+export interface ProximityEdgeBuffer2D {
+	readonly edgeCount: number
+	readonly sourceIndices: Uint32Array
+	readonly targetIndices: Uint32Array
+	readonly distances: FloatingPointArray
+	readonly opacities: FloatingPointArray
+}
