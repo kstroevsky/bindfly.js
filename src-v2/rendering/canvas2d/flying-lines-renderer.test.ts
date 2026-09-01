@@ -17,6 +17,7 @@ test('resizes backing store and renders each unique edge once', () => {
 		fill: () => calls.push('fill'),
 		fillStyle: '',
 		strokeStyle: '',
+		globalAlpha: 1,
 		lineWidth: 0,
 	}
 	const canvas = {
@@ -31,22 +32,20 @@ test('resizes backing store and renders each unique edge once', () => {
 	renderer.resize(viewport)
 	renderer.render({
 		background: '#000000',
-		particles: [
-			{ id: 1, x: 10, y: 10 },
-			{ id: 2, x: 20, y: 20 },
-		],
-		edges: [
-			{
-				sourceId: 1,
-				targetId: 2,
-				sourceX: 10,
-				sourceY: 10,
-				targetX: 20,
-				targetY: 20,
-				distance: 14.14,
-				opacity: 0.5,
-			},
-		],
+		particles: {
+			count: 2,
+			capacity: 2,
+			ids: new Uint32Array([1, 2]),
+			x: new Float64Array([10, 20]),
+			y: new Float64Array([10, 20]),
+		},
+		edges: {
+			edgeCount: 1,
+			sourceIndices: new Uint32Array([0]),
+			targetIndices: new Uint32Array([1]),
+			distances: new Float64Array([14.14]),
+			opacities: new Float64Array([0.5]),
+		},
 	}, { frameIndex: 0, simulationStepIndex: 0, interpolationAlpha: 0 })
 
 	assert.equal(canvas.width, 640)
