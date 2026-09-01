@@ -22,12 +22,13 @@ export const runtimeCommandTypes: readonly RuntimeCommandType[] = [
 export interface RuntimeCommand<Type extends RuntimeCommandType = RuntimeCommandType, Payload = unknown> {
 	readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION
 	readonly requestId: string
+	readonly sequence: number
 	readonly type: Type
 	readonly payload: Payload
 }
 
 export type RuntimeEvent =
-	| { readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION; readonly type: 'ready' }
+	| { readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION; readonly type: 'ready'; readonly requestId: string }
 	| { readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION; readonly type: 'ack'; readonly requestId: string }
 	| { readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION; readonly type: 'telemetry'; readonly payload: unknown }
 	| { readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION; readonly type: 'analysis-result'; readonly payload: unknown }
@@ -55,5 +56,13 @@ export const isRuntimeCommand = (value: unknown): value is RuntimeCommand =>
 	&& value.protocolVersion === RUNTIME_PROTOCOL_VERSION
 	&& typeof value.requestId === 'string'
 	&& value.requestId.length > 0
+	&& Number.isInteger(value.sequence)
+	&& (value.sequence as number) >= 0
 	&& typeof value.type === 'string'
 	&& runtimeCommandTypes.includes(value.type as RuntimeCommandType)
+
+export const isRuntimeEvent = (value: unknown): value is RuntimeEvent =>
+	isRecord(value)
+	&& value.protocolVersion === RUNTIME_PROTOCOL_VERSION
+	&& typeof value.type === 'string'
+	&& ['ready', 'ack', 'telemetry', 'analysis-result', 'error', 'disposed'].includes(value.type)

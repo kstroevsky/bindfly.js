@@ -136,6 +136,25 @@ class FlyingLinesSimulation implements Simulation<FlyingLinesState, FlyingLinesI
 				}
 				break
 			}
+			case 'move-nearest': {
+				let nearestIndex = -1
+				let nearestDistanceSquared = input.maxDistance * input.maxDistance
+				for (let index = 0; index < particles.count; index++) {
+					const dx = (particles.x[index] ?? 0) - input.fromX
+					const dy = (particles.y[index] ?? 0) - input.fromY
+					const distanceSquared = dx * dx + dy * dy
+					if (distanceSquared <= nearestDistanceSquared) {
+						nearestIndex = index
+						nearestDistanceSquared = distanceSquared
+					}
+				}
+				if (nearestIndex < 0) break
+				const minX = Math.min(this.parameters.margin, this.viewport.cssWidth / 2)
+				const minY = Math.min(this.parameters.margin, this.viewport.cssHeight / 2)
+				particles.x[nearestIndex] = clamp(input.x, minX, this.viewport.cssWidth - minX)
+				particles.y[nearestIndex] = clamp(input.y, minY, this.viewport.cssHeight - minY)
+				break
+			}
 			case 'remove-nearest': {
 				let nearestIndex = -1
 				let nearestDistanceSquared = input.maxDistance * input.maxDistance
