@@ -1,7 +1,8 @@
-import { EventHandler, TouchEvent, useCallback, useRef, useState } from 'react'
+import type { EventHandler, TouchEvent } from 'react'
+import type{ ILongPressInitialTouch } from '../shared/types'
 
+import { useCallback, useRef, useState } from 'react'
 import { withPrevents } from '../shared/HOF'
-import { ILongPressInitialTouch } from '../shared/types'
 import { isLayoutActive } from '../shared/utils/helpers'
 import useListenersEffect from './useListenersEffect'
 
@@ -37,7 +38,7 @@ const useLongPress = <E extends Element>(
 			setTouchInterval((prev) => ({ ...prev, end: prev.end || Date.now() }))
 	}, [touchInterval.end])
 
-	useListenersEffect<E>(
+	useListenersEffect<E, TouchEvent<E>>(
 		pressElement,
 		{
 			touchstart: withPrevents<E, TouchEvent<E>>(

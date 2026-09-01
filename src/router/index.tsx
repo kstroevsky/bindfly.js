@@ -1,33 +1,33 @@
-import React from 'react';
+import React from 'react'
 import {
 	Navigate,
 	Route,
 	createRoutesFromElements,
 	createHashRouter,
-} from 'react-router-dom';
+} from 'react-router-dom'
 
-import * as animations from '../shared/2d/animations';
-import Loader from '../components/Loader';
-import { DataContextProvider } from '../components/Context';
-import { getAlpha } from '../shared/utils/color-helpers';
+import * as animations from '../shared/2d/animations'
+import Loader from '../components/Loader'
+import { DataContextProvider } from '../components/Context'
+import { getAlpha } from '../shared/utils/color-helpers'
 import type {
 	IAnimationHandlerConfig,
 	IProperty,
 	TClassesNames,
-} from '../shared/types';
+} from '../shared/types'
 
-import properties from '../properties.json';
-import './../App.css';
+import properties from '../properties.json'
+import './../App.css'
 
 const Animation = React.lazy(
 	async () => await import('../components/Animation')
-);
+)
 const AnimationGL = React.lazy(
 	async () => await import('../components/AnimationGL')
-);
+)
 const PageLayout = React.lazy(
 	async () => await import('../components/PageLayout')
-);
+)
 
 export type CanvasAnimationsNames = TClassesNames<typeof animations>;
 
@@ -112,7 +112,7 @@ export const CanvasHandlersConfig: IAnimationHandlerConfig<CanvasAnimationsNames
 			getMax: () => 1,
 			valueEncoder: getAlpha,
 		} as IAnimationHandlerConfig<CanvasAnimationsNames, string>,
-	];
+	]
 
 const router = createHashRouter(
 	createRoutesFromElements(
@@ -141,11 +141,13 @@ const router = createHashRouter(
 							key={`${a.name}-${idx}`}
 							path={`/${a.name}-${p.name.replaceAll(' ', '')}`}
 							element={
-								a.name.includes('GL') ? (
-									<AnimationGL properties={p} classId={a.name as CanvasAnimationsNames} />
-								) : (
-									<Animation properties={p} classId={a.name as CanvasAnimationsNames} />
-								)
+								a.name.includes('GL')
+									? (
+											<AnimationGL properties={p} classId={a.name as CanvasAnimationsNames} />
+										)
+									: (
+											<Animation properties={p} classId={a.name as CanvasAnimationsNames} />
+										)
 							}
 						/>
 					))
@@ -153,6 +155,6 @@ const router = createHashRouter(
 			</>
 		</Route>
 	)
-);
+)
 
-export default router;
+export default router

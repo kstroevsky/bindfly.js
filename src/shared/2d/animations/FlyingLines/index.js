@@ -3,7 +3,7 @@ import CanvasAnimation from '../../../abstract/canvas'
 import FlyingPoints from '../../templates/FlyingPoints'
 
 export default class FlyingLines extends CanvasAnimation {
-	constructor(ctx, parameters) {
+	constructor (ctx, parameters) {
 		super()
 		this.properties = parameters.properties
 
@@ -34,22 +34,22 @@ export default class FlyingLines extends CanvasAnimation {
 		this.boundAnimate = this.loop.bind(this)
 	}
 
-	monochrome(i, opacity) {
+	monochrome (i, opacity) {
 		return `rgba(${i % 2 === 0 ? '0, 0, 0' : '255, 255, 255'}, ${opacity})`
 	}
 
-	propsColors(i, opacity) {
+	propsColors (i, opacity) {
 		return this.particleColors[
 			(this.colorOffset + i) % this.particleColors.length
 		].replace(/\d+(?=\)$)/, opacity)
 	}
 
-	reDrawBackground() {
+	reDrawBackground () {
 		this.ctx.fillStyle = this.properties.bgColor
 		this.ctx.fillRect(0, 0, this.sizes.width, this.sizes.height)
 	}
 
-	drawLinesWithoutAdding() {
+	drawLinesWithoutAdding () {
 		let x1, y1, x2, y2, length
 
 		for (const i in this.particles) {
@@ -82,7 +82,7 @@ export default class FlyingLines extends CanvasAnimation {
 		}
 	}
 
-	drawLinesWithAdding() {
+	drawLinesWithAdding () {
 		let x1, y1, x2, y2, length, opacity
 
 		for (const i in this.particles) {
@@ -121,14 +121,14 @@ export default class FlyingLines extends CanvasAnimation {
 		}
 	}
 
-	loop() {
+	loop () {
 		this.reDrawBackground()
 		this.drawLines()
 
 		requestAnimationFrame(this.boundAnimate)
 	}
 
-	init() {
+	init () {
 		this.particles = new FlyingPoints(
 			this.sizes.width,
 			this.sizes.height,
@@ -146,9 +146,15 @@ export default class FlyingLines extends CanvasAnimation {
 		this.loop()
 	}
 
-	clear() {
+	clear () {
 		cancelAnimationFrame(this.boundAnimate)
-		this.particles = null
+		this.ctx.context.setTransform(1, 0, 0, 1, 0, 0)
+		this.ctx.width = 0
+		this.ctx.height = 0
+		this.ctx.clearRect(0, 0, this.sizes.width, this.sizes.height)
+
+		delete this.ctx
+		delete this.particles
 		delete this
 	}
 }

@@ -1,11 +1,11 @@
-import useCanvas from './useCanvas';
-import useWebGL from './useWebGL';
-import useThrottle from './useThrottle';
-import useForceUpdate from './useForceUpdate';
-import useListenersEffect from './useListenersEffect';
-import useLongPress from './useLongPress';
-import useMediaQuery from './useMediaQuery';
-import useGetParamsHandlers from './useGetParamsHandlers';
+import useCanvas from './useCanvas'
+import useWebGL from './useWebGL'
+import useThrottle from './useThrottle'
+import useForceUpdate from './useForceUpdate'
+import useListenersEffect from './useListenersEffect'
+import useLongPress from './useLongPress'
+import useMediaQuery from './useMediaQuery'
+import useGetParamsHandlers from './useGetParamsHandlers'
 
 export {
 	useCanvas,
@@ -16,4 +16,4 @@ export {
 	useLongPress,
 	useListenersEffect,
 	useForceUpdate,
-};
+}

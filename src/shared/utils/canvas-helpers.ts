@@ -1,15 +1,15 @@
-import { FlyingPoints } from '../2d/templates';
-import { RGBAToNegative } from './color-helpers';
-import type CanvasAnimation from '../abstract/canvas';
-import type { IDataContext } from '../../components/Context';
+import { FlyingPoints } from '../2d/templates'
+import { RGBAToNegative } from './color-helpers'
+import type CanvasAnimation from '../abstract/canvas'
+import type { IDataContext } from '../../components/Context'
 import type {
 	IAnimationWithParticles,
 	IProperty,
 	WorkerClickData,
 	ISingleParticle,
 	TConstructorOf,
-} from '../types';
-import type { MutableRefObject } from 'react';
+} from '../types'
+import type { MutableRefObject } from 'react'
 
 export const getPosition = (
 	position: number,
@@ -19,9 +19,9 @@ export const getPosition = (
 ): number =>
 	velocity *
 	((position + velocity > size - margin && velocity > 0) ||
-	(position + velocity < margin && velocity < margin)
+		(position + velocity < margin && velocity < margin)
 		? -1
-		: 1);
+		: 1)
 
 export const getPositionGL = (
 	position: number,
@@ -29,7 +29,7 @@ export const getPositionGL = (
 	velocity: number,
 	margin: number
 ): number => {
-	const isVelocityPositive = velocity > 0;
+	const isVelocityPositive = velocity > 0
 
 	return (
 		velocity *
@@ -40,8 +40,8 @@ export const getPositionGL = (
 		)
 			? -1
 			: 1)
-	);
-};
+	)
+}
 
 // velocity *
 // 		((position - velocity < -size - margin && velocity > 0) ||
@@ -50,7 +50,7 @@ export const getPositionGL = (
 // 			: 1)
 
 export const getVelocity = (maxVelocity: number) =>
-	Math.random() * (maxVelocity * 2) - maxVelocity;
+	Math.random() * (maxVelocity * 2) - maxVelocity
 
 export const canvasReload = <A extends object>(
 	toggle: IDataContext['keyToggle'],
@@ -60,24 +60,24 @@ export const canvasReload = <A extends object>(
 		(CanvasAnimation & Omit<A, 'prototype'>) | null
 	>
 ): void => {
-	if (animationRef) animationRef.current = null;
+	if (animationRef) animationRef.current = null
 	if (webWorker) {
-		webWorker?.current?.postMessage({ msg: 'stop' });
-		webWorker?.current?.terminate();
-		webWorker.current = null;
+		webWorker?.current?.postMessage({ msg: 'stop' })
+		webWorker?.current?.terminate()
+		webWorker.current = null
 	}
-	if (canvasRef) canvasRef.current = null;
-	if (toggle) toggle.current = !toggle?.current;
-};
+	if (canvasRef) canvasRef.current = null
+	if (toggle) toggle.current = !toggle?.current
+}
 
 export const canvasClickHandler = <
 	A extends IAnimationWithParticles<IProperty>
 >(
-	animation: A,
-	e: { pos: WorkerClickData },
-	offset = 0
-) => {
-	if (animation.properties.moveByClick) animation.reInit?.(e.pos.x, e.pos.y);
+		animation: A,
+		e: { pos: WorkerClickData },
+		offset = 0
+	) => {
+	if (animation.properties.moveByClick) animation.reInit?.(e.pos.x, e.pos.y)
 	if (animation.properties.addByClick) {
 		animation.particles.push(
 			Object.assign(
@@ -91,41 +91,68 @@ export const canvasClickHandler = <
 					start: 0,
 				}
 			)
-		);
+		)
 		if (animation.properties.isStatic) {
 			if (!animation.isStarted) {
-				animation.isStarted = true;
-				animation.loop();
+				animation.isStarted = true
+				animation.loop()
 			}
 		}
 		if (animation.properties.isCountStable) {
-			animation.particles.shift();
-			if (animation.colorOffset) animation.colorOffset += 1;
+			animation.particles.shift()
+			if (animation.colorOffset) animation.colorOffset += 1
 		}
 	}
 
 	animation.properties.switchByClick && animation.properties.isMonochrome
 		? (animation.properties.bgColor = RGBAToNegative(
 				animation.properties.bgColor || 'rgba(255, 255, 255, 1)'
-		  ))
-		: animation.particles.push(animation.particles.shift() as ISingleParticle);
-};
+			))
+		: animation.particles.push(animation.particles.shift() as ISingleParticle)
+}
+
+export const canvasResizeHandlerFactory = <A>(
+	canvas: HTMLCanvasElement | OffscreenCanvas,
+	animation: (CanvasAnimation & Omit<A, 'prototype'>) | null,
+	ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null,
+	offset = 0
+) => (e: UIEvent) => {
+		const win = e.target as Window
+		const newWidth = win.innerWidth - offset
+
+		canvas.width = newWidth * win.devicePixelRatio
+		canvas.height = win.innerHeight * win.devicePixelRatio
+
+		if (animation) {
+			if (animation.sizes) {
+				animation.sizes.width = newWidth
+				animation.sizes.height = win.innerHeight
+			}
+
+			animation.particles?.forEach((point) => {
+				point.w = newWidth
+				point.h = win.innerHeight
+			})
+		}
+
+		ctx?.scale(win.devicePixelRatio, win.devicePixelRatio)
+	}
 
 export const canvasParticlesCountChange = (
 	count: number,
 	animation: CanvasAnimation,
 	Template: TConstructorOf<any> = FlyingPoints
 ) => {
-	const particlesCount = animation?.particles?.length || 0;
+	const particlesCount = animation?.particles?.length || 0
 
 	if (count < particlesCount) {
-		animation?.particles?.splice(0, particlesCount - count);
+		animation?.particles?.splice(0, particlesCount - count)
 	} else {
 		animation?.particles?.push(
 			...new Template(animation?.sizes?.width, animation?.sizes?.height, {
 				...animation?.properties,
 				particlesCount: count - particlesCount,
 			}).particles
-		);
+		)
 	}
-};
+}

@@ -7,9 +7,9 @@ export type TLegacyListener<T extends object> = TypeByKeyExist<
 	'removeEventListener']
 >;
 
-const useListenersEffect = <D extends object>(
+const useListenersEffect = <D extends object, A = unknown>(
 	domNode: D,
-	eventHandlerConfig: Record<string, TCallable>,
+	eventHandlerConfig: Record<string, TCallable<void, A>>,
 	deps?: unknown[],
 	additionalCalls: (() => unknown) | null = null,
 	condition = true,
@@ -72,13 +72,13 @@ const useListenersEffect = <D extends object>(
 					? addListenerMethod(
 						domNode,
 						eventName,
-						eventHandlerConfig[eventName],
+						eventHandlerConfig[eventName] as TCallable,
 						isLegacy
 					)
 					: removeListenerMethod(
 						domNode,
 						eventName,
-						eventHandlerConfig[eventName],
+						eventHandlerConfig[eventName] as TCallable,
 						isLegacy
 					)
 			)
@@ -88,7 +88,7 @@ const useListenersEffect = <D extends object>(
 					removeListenerMethod(
 						domNode,
 						eventName,
-						eventHandlerConfig[eventName],
+						eventHandlerConfig[eventName] as TCallable,
 						isLegacy
 					)
 				})
