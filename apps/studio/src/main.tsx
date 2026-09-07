@@ -9,6 +9,8 @@ if (!app) throw new Error("Studio element '#app' is missing.")
 const route = '#/lab/flying-lines'
 if (!window.location.hash) window.location.hash = route
 
-createRoot(app).render(window.location.hash === route
+const isLegacyFlyingLinesRoute = /^#\/FlyingLines-/.test(window.location.hash)
+
+createRoot(app).render(window.location.hash === route || isLegacyFlyingLinesRoute
 	? <StudioApp />
 	: <main className="error"><h1>Unknown route</h1><p>Use <code>{route}</code>.</p></main>)

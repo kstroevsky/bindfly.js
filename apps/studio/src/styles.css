@@ -54,6 +54,10 @@ h2 { margin: 0 0 8px; color: #9b9ba8; font-size: 11px; letter-spacing: 0.1em; te
 .error-message { margin: 0; color: #ff8f8f; font-size: 12px; }
 
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.state-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.state-actions button, .file-button { display: grid; min-height: 34px; place-items: center; padding: 6px; border: 1px solid rgba(255,255,255,0.14); border-radius: 8px; background: #15151f; color: #d7d7df; font-size: 11px; text-align: center; cursor: pointer; }
+.file-button input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.share-status { min-height: 16px; margin: -6px 0 0; color: #8be9fd; font-size: 11px; }
 .runtime-control { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; color: #d7d7df; font-size: 13px; }
 .runtime-control select { min-height: 36px; border: 1px solid rgba(255,255,255,0.16); border-radius: 8px; background: #1b1b27; color: #f4f4f6; padding: 0 10px; }
 button {
