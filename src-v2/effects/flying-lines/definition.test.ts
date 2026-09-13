@@ -8,7 +8,7 @@ test('loads Flying Lines by stable registry ID and round-trips durable state', a
 	const definition = await experimentRegistry.load('flying-lines')
 	assert.equal(definition.id, 'flying-lines')
 	assert.deepEqual(definition.capabilities.renderers, ['canvas2d'])
-	assert.deepEqual(definition.capabilities.runtimes, ['main-thread'])
+	assert.deepEqual(definition.capabilities.runtimes, ['main-thread', 'worker'])
 	assert.equal(definition.timing.fixedStepSeconds, 1 / 120)
 
 	const preset = definition.presets?.[0]

@@ -1,11 +1,12 @@
 import { createProximityGraphWorkspace } from '../../../src-v2/analysis/proximity-graph.ts'
 import { createUniformGridProximityGraphWorkspace, shouldUseUniformGrid } from '../../../src-v2/analysis/uniform-grid-proximity-graph.ts'
-import { normalizeParameters } from '../../../src-v2/core/parameters.ts'
+import { getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/parameters.ts'
 import type { ParameterPatch, ParameterValues } from '../../../src-v2/core/parameters.ts'
 import { createSeededRandom } from '../../../src-v2/core/random.ts'
 import type { Simulation } from '../../../src-v2/core/simulation.ts'
 import type { Viewport } from '../../../src-v2/core/viewport.ts'
 import { flyingLinesDefinition } from '../../../src-v2/effects/flying-lines/definition.ts'
+import { applyFlyingLinesHotParameters } from '../../../src-v2/effects/flying-lines/parameter-update.ts'
 import { flyingLinesParameters } from '../../../src-v2/effects/flying-lines/parameters.ts'
 import type { FlyingLinesInput, FlyingLinesState } from '../../../src-v2/effects/flying-lines/types.ts'
 import { createFlyingLinesCanvasRenderer } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
@@ -63,12 +64,15 @@ export const createMainStudioController = async (options: CreateStudioController
 	let workspace = shouldUseUniformGrid(simulation.state.particles, simulation.state.connectionRadius) ? grid : brute
 	let view: FlyingLinesRenderView = { background: simulation.state.background, particles: simulation.state.particles, edges: workspace.result }
 	let droppedSteps = 0
+	const refreshDerivedOwners = () => {
+		workspace = shouldUseUniformGrid(simulation.state.particles, simulation.state.connectionRadius) ? grid : brute
+		view = { background: simulation.state.background, particles: simulation.state.particles, edges: workspace.result }
+	}
 
 	const rebuild = () => {
 		simulation.dispose()
 		simulation = flyingLinesDefinition.createSimulation({ random: createSeededRandom(options.seed), viewport }, parameters)
-		workspace = shouldUseUniformGrid(simulation.state.particles, simulation.state.connectionRadius) ? grid : brute
-		view = { background: simulation.state.background, particles: simulation.state.particles, edges: workspace.result }
+		refreshDerivedOwners()
 	}
 	const loop = new FixedStepLoop<FlyingLinesInput, ParameterPatch<typeof flyingLinesParameters>>({
 		clock: new FixedStepClock({ stepSeconds: flyingLinesDefinition.timing.fixedStepSeconds, maxCatchUpSteps: 8 }),
@@ -91,10 +95,15 @@ export const createMainStudioController = async (options: CreateStudioController
 			},
 			applyInput: (input) => simulation.applyInput(input),
 			applyParameterPatch: (patch) => {
+				const invalidation = getParameterPatchInvalidation(flyingLinesParameters, patch)
 				const normalized = normalizeParameters(flyingLinesParameters, { ...parameters, ...patch })
 				if (!normalized.ok) throw new Error(normalized.issues[0]?.message ?? 'Invalid parameter patch.')
 				parameters = normalized.value
-				rebuild()
+				if (invalidation === 'hot-update') {
+					applyFlyingLinesHotParameters(simulation.state, parameters)
+					refreshDerivedOwners()
+				} else if (invalidation === 'reset-simulation') rebuild()
+				else throw new Error('Flying Lines requires a runtime rebuild for this parameter patch.')
 			},
 			reset: () => { droppedSteps = 0; simulation.reset() },
 			resize: (nextViewport) => { viewport = nextViewport; renderer.resize(viewport); simulation.resize(viewport) },

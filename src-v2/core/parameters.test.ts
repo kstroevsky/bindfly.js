@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { defineParameterSchema, normalizeParameters } from './parameters.ts'
+import { defineParameterSchema, getParameterPatchInvalidation, normalizeParameters } from './parameters.ts'
 
 const schema = defineParameterSchema({
 	particles: {
@@ -23,12 +23,18 @@ const schema = defineParameterSchema({
 		values: ['euler', 'rk4'],
 		invalidation: 'reset-simulation',
 	},
+	runtimeMode: {
+		kind: 'enum',
+		default: 'main',
+		values: ['main', 'worker'],
+		invalidation: 'rebuild-runtime',
+	},
 })
 
 test('normalizes a partial parameter input with defaults', () => {
 	assert.deepEqual(normalizeParameters(schema, { particles: 300 }), {
 		ok: true,
-		value: { particles: 300, clickable: true, integrator: 'rk4' },
+		value: { particles: 300, clickable: true, integrator: 'rk4', runtimeMode: 'main' },
 	})
 })
 
@@ -85,4 +91,11 @@ test('rejects invalid schema definitions before runtime input exists', () => {
 			invalidation: 'reset-simulation',
 		},
 	}), /include its default/)
+})
+
+test('classifies a patch by its strongest declared invalidation', () => {
+	assert.equal(getParameterPatchInvalidation(schema, { clickable: false }), 'hot-update')
+	assert.equal(getParameterPatchInvalidation(schema, { particles: 6 }), 'reset-simulation')
+	assert.equal(getParameterPatchInvalidation(schema, { clickable: false, particles: 6 }), 'reset-simulation')
+	assert.equal(getParameterPatchInvalidation(schema, { particles: 6, runtimeMode: 'worker' }), 'rebuild-runtime')
 })

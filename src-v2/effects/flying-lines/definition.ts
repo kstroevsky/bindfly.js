@@ -61,7 +61,7 @@ export const flyingLinesDefinition = defineExperiment<
 	stateCodec: codec,
 	capabilities: {
 		renderers: ['canvas2d'],
-		runtimes: ['main-thread'],
+		runtimes: ['main-thread', 'worker'],
 		snapshotState: (state) => ({
 			...state,
 			particles: {

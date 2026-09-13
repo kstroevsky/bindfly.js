@@ -47,4 +47,4 @@ Met. Experiment state is versioned and reproducible by URL or deterministic JSON
 
 ## Next
 
-Phase 10 should migrate the approved remaining legacy Canvas2D effects in order, preserving formulas and visual identity before extracting shared abstractions.
+This original Phase 10 recommendation is superseded by the accepted Milestone B review. Stage 9.5 stabilizes PR #33 first; Stage 10A then proves generic composition with Drooping Lines in a fresh PR before Stage 10B extracts shared behavior.

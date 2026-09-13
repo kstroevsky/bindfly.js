@@ -8,6 +8,7 @@ import { flyingLinesDefinition } from '../../../src-v2/effects/flying-lines/defi
 import { flyingLinesParameters } from '../../../src-v2/effects/flying-lines/parameters.ts'
 import { experimentRegistry } from '../../../src-v2/effects/registry.ts'
 import { probeWorkerCanvasSupport } from '../../../src-v2/runtime/worker-runtime.ts'
+import type { WorkerCanvasCapability } from '../../../src-v2/runtime/worker-runtime.ts'
 import { ParameterControls } from './parameter-controls.tsx'
 import { createMainStudioController, createWorkerStudioController } from './studio-controller.ts'
 import type { StudioController, StudioMetrics, StudioRuntimeKind } from './studio-controller.ts'
@@ -36,7 +37,7 @@ export const StudioApp = () => {
 	const [parameters, setParameters] = useState<ParameterValues<typeof flyingLinesParameters>>(INITIAL_PARAMETERS)
 	const [seed, setSeed] = useState(INITIAL_SEED)
 	const [runtimeKind, setRuntimeKind] = useState<StudioRuntimeKind>(INITIAL_RUNTIME)
-	const [runtimeReason, setRuntimeReason] = useState('Supported by this browser.')
+	const [workerCapability, setWorkerCapability] = useState<WorkerCanvasCapability>({ supported: false, reason: 'Checking browser capability.' })
 	const [metrics, setMetrics] = useState<StudioMetrics>(EMPTY_METRICS)
 	const [paused, setPaused] = useState(false)
 	const [error, setError] = useState<string | undefined>(INITIAL_ERROR)
@@ -77,7 +78,7 @@ export const StudioApp = () => {
 			devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
 		})
 		const capability = probeWorkerCanvasSupport(canvas)
-		setRuntimeReason(capability.supported ? 'Supported by this browser.' : capability.reason ?? 'Unavailable.')
+		setWorkerCapability(capability)
 		if (runtimeKind === 'worker' && !capability.supported) {
 			selectRuntime('main')
 			return
@@ -200,7 +201,7 @@ export const StudioApp = () => {
 			<ParameterControls schema={flyingLinesParameters} values={parameters} onChange={updateParameter} />
 			<div className="picker-grid">
 				<label className="picker"><span>Renderer</span><select value="canvas2d" aria-label="Renderer" disabled onChange={() => {}}><option value="canvas2d">Canvas 2D</option></select></label>
-				<label className="picker"><span>Runtime</span><select value={runtimeKind} aria-label="Runtime" onChange={(event) => selectRuntime(event.currentTarget.value as StudioRuntimeKind)}><option value="main">Main thread</option><option value="worker" disabled={runtimeReason !== 'Supported by this browser.'}>Worker</option></select></label>
+				<label className="picker"><span>Runtime</span><select value={runtimeKind} aria-label="Runtime" onChange={(event) => selectRuntime(event.currentTarget.value as StudioRuntimeKind)}><option value="main">Main thread</option><option value="worker" disabled={!workerCapability.supported}>Worker</option></select></label>
 			</div>
 			<div className="actions"><button type="button" onClick={togglePause}>{paused ? 'Resume' : 'Pause'}</button><button type="button" onClick={() => { setPaused(false); void controllerRef.current?.reset() }}>Reset</button></div>
 			<div className="state-actions"><button type="button" onClick={() => { void copyLink() }}>Copy link</button><button type="button" onClick={exportJson}>Export JSON</button><label className="file-button" htmlFor="state-import">Import JSON<input id="state-import" type="file" accept="application/json,.json" onChange={(event) => { void importJson(event.currentTarget.files?.[0]) }} /></label></div>
@@ -209,7 +210,7 @@ export const StudioApp = () => {
 			<section aria-labelledby="performance-heading"><h2 id="performance-heading">Performance</h2><dl className="metrics">
 				<div className="metric"><dt>Points</dt><dd>{metrics.points}</dd></div><div className="metric"><dt>Edges</dt><dd>{metrics.edges}</dd></div><div className="metric"><dt>β₀</dt><dd>{metrics.components}</dd></div><div className="metric"><dt>Step</dt><dd>{metrics.step}</dd></div><div className="metric"><dt>Frame</dt><dd>{metrics.frameMs.toFixed(1)} ms</dd></div><div className="metric"><dt>Dropped</dt><dd>{metrics.droppedSteps}</dd></div>
 			</dl></section>
-			<details className="inspector"><summary>Inspector</summary><dl><div><dt>Experiment</dt><dd>{flyingLinesDefinition.id} v{flyingLinesDefinition.stateVersion}</dd></div><div><dt>Timing</dt><dd>120 Hz · {flyingLinesDefinition.timing.deterministicTier}</dd></div><div><dt>Analysis</dt><dd>{metrics.searchBackend} · step {metrics.step} · {metrics.points} samples</dd></div><div><dt>Worker capability</dt><dd>{runtimeReason}</dd></div></dl></details>
+			<details className="inspector"><summary>Inspector</summary><dl><div><dt>Experiment</dt><dd>{flyingLinesDefinition.id} v{flyingLinesDefinition.stateVersion}</dd></div><div><dt>Timing</dt><dd>120 Hz · {flyingLinesDefinition.timing.deterministicTier}</dd></div><div><dt>Analysis</dt><dd>{metrics.searchBackend} · step {metrics.step} · {metrics.points} samples</dd></div><div><dt>Worker capability</dt><dd>{workerCapability.supported ? 'Supported by this browser.' : workerCapability.reason ?? 'Unavailable.'}</dd></div></dl></details>
 		</aside>
 		<section className="viewport" ref={viewportRef}><canvas key={`${runtimeKind}-${stateGeneration}`} ref={canvasRef} tabIndex={0} aria-label="Interactive Flying Lines simulation" onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} /><div className="badge">seed · {seed} · search {metrics.searchBackend} · {runtimeKind}</div></section>
 	</main>

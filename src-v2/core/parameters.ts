@@ -48,6 +48,27 @@ export type ParameterValues<Schema extends ParameterSchema> = {
 
 export type ParameterPatch<Schema extends ParameterSchema> = Partial<ParameterValues<Schema>>
 
+const invalidationPriority: Readonly<Record<ParameterInvalidation, number>> = {
+	'hot-update': 0,
+	'reset-simulation': 1,
+	'rebuild-runtime': 2,
+}
+
+export const getParameterPatchInvalidation = <Schema extends ParameterSchema>(
+	schema: Schema,
+	patch: ParameterPatch<Schema>,
+): ParameterInvalidation => {
+	let selected: ParameterInvalidation = 'hot-update'
+	for (const parameterId of Object.keys(patch)) {
+		const definition = schema[parameterId]
+		if (!definition) throw new Error(`Unknown parameter '${parameterId}'.`)
+		if (invalidationPriority[definition.invalidation] > invalidationPriority[selected]) {
+			selected = definition.invalidation
+		}
+	}
+	return selected
+}
+
 export type ParameterIssueCode =
 	| 'invalid-input'
 	| 'unknown-parameter'

@@ -1,5 +1,6 @@
 export * from './flying-lines/definition.ts'
 export * from './flying-lines/parameters.ts'
+export * from './flying-lines/parameter-update.ts'
 export * from './flying-lines/simulation.ts'
 export * from './flying-lines/types.ts'
 export * from './registry.ts'

@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "base": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/plan-evolution/revision-2/base.md",
+    "sha256": "8a2bda7188e5d5fd571b5eee533f6759944cb9cd325320d9077651aa520e79b6"
+  },
+  "candidate": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/bindfly_2_implementation_plan.md",
+    "sha256": "a1e4d827fdf7fc351c3a651c83ec6fc7619e169c6298bc30d62f9c1f818c5ce0"
+  },
+  "delta": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/plan-evolution/revision-2/delta.json",
+    "feedback_ids": [
+      "MBR-01",
+      "MBR-01A",
+      "MBR-01S",
+      "MBR-02",
+      "MBR-02A",
+      "MBR-03",
+      "MBR-03A",
+      "MBR-04",
+      "MBR-05",
+      "MBR-05A",
+      "MBR-06"
+    ]
+  },
+  "changed_sections": [
+    "45. Migration phases for Codex",
+    "50. Delivery milestones, dependencies and stop rules",
+    "56. Verified external assumptions",
+    "57. Accepted Milestone B review and revised execution roadmap",
+    "57. Accepted Milestone B review and revised execution roadmap / Complete-graph output scaling boundary",
+    "57. Accepted Milestone B review and revised execution roadmap / Durable-state terminology",
+    "57. Accepted Milestone B review and revised execution roadmap / Explicit non-goals for the next PR",
+    "57. Accepted Milestone B review and revised execution roadmap / Preserved backlog mapping",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 10A — Generic composition and Drooping Lines",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 10B — Extract only proven commonality",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 11 — Formula engine",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 12 — Formula-backed Bindfly Originals",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 13 — Analysis runtime and topology",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 14 — Dynamical-systems laboratory",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 15 — Rendering and performance laboratory",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 16 — Shared experiments and multiplayer",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 17 — Educational and product layer",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 9.5 — Stabilize PR #33"
+  ],
+  "added_sections": [
+    "57. Accepted Milestone B review and revised execution roadmap",
+    "57. Accepted Milestone B review and revised execution roadmap / Complete-graph output scaling boundary",
+    "57. Accepted Milestone B review and revised execution roadmap / Durable-state terminology",
+    "57. Accepted Milestone B review and revised execution roadmap / Explicit non-goals for the next PR",
+    "57. Accepted Milestone B review and revised execution roadmap / Preserved backlog mapping",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 10A — Generic composition and Drooping Lines",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 10B — Extract only proven commonality",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 11 — Formula engine",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 12 — Formula-backed Bindfly Originals",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 13 — Analysis runtime and topology",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 14 — Dynamical-systems laboratory",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 15 — Rendering and performance laboratory",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 16 — Shared experiments and multiplayer",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 17 — Educational and product layer",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 9.5 — Stabilize PR #33"
+  ],
+  "removed_sections": [],
+  "allowed_sections": [
+    "45. Migration phases for Codex",
+    "50. Delivery milestones, dependencies and stop rules",
+    "56. Verified external assumptions",
+    "57. Accepted Milestone B review and revised execution roadmap",
+    "57. Accepted Milestone B review and revised execution roadmap / Complete-graph output scaling boundary",
+    "57. Accepted Milestone B review and revised execution roadmap / Durable-state terminology",
+    "57. Accepted Milestone B review and revised execution roadmap / Explicit non-goals for the next PR",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 10A — Generic composition and Drooping Lines",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 9.5 — Stabilize PR #33"
+  ],
+  "contract_signal_deltas": {
+    "45. Migration phases for Codex": {
+      "numeric_removed": [],
+      "numeric_added": [
+        "10",
+        "57",
+        "9",
+        "9.5"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "50. Delivery milestones, dependencies and stop rules": {
+      "numeric_removed": [],
+      "numeric_added": [
+        "57"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "56. Verified external assumptions": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    }
+  },
+  "ledger_counts": {
+    "active": 88,
+    "deferred": 38,
+    "superseded": 1,
+    "other": 0
+  },
+  "base_ledger": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/plan-evolution/revision-2/base-ledger.json",
+  "errors": [],
+  "warnings": []
+}
