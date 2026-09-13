@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "phase": "COMPLETE",
+  "acceptance_status": "ACCEPTED_CANONICAL_AMENDMENT",
+  "base_sha256": "8a2bda7188e5d5fd571b5eee533f6759944cb9cd325320d9077651aa520e79b6",
+  "base_ledger_sha256": "e1a4b4384fd5a8768a88a97ad1c39efcef9e7634c974d5dac3c7ab3f34eb16cb",
+  "delta_sha256": "3bde65f091802908e7aa7a2ad8caf1f73d391eb17fa4adba318ceb2f86df424c",
+  "candidate_sha256": "a1e4d827fdf7fc351c3a651c83ec6fc7619e169c6298bc30d62f9c1f818c5ce0",
+  "target_ledger_sha256": "92c1b5b14e8879c5a9b8e575d3f8f015fa31a173adde6c3d1f0ed7192563bb8e",
+  "completed_feedback_ids": ["MBR-01", "MBR-01S", "MBR-01A", "MBR-02", "MBR-02A", "MBR-03", "MBR-03A", "MBR-04", "MBR-05", "MBR-05A", "MBR-06"],
+  "validation_results": {
+    "mechanical": "PASS",
+    "semantic": "PASS",
+    "independent": "PASS"
+  },
+  "repair_attempts_by_finding": {
+    "MECH-SECTION-56": 1,
+    "MECH-NUMERIC-45": 1,
+    "SEM-PARAM-OWNERSHIP": 1,
+    "REV2-DELTA-OP-001": 1,
+    "REV2-LEDGER-DEP-001": 1,
+    "REV2-LEDGER-LOC-001": 1,
+    "REV2-LEDGER-COVERAGE-001": 1,
+    "REV2-STANDALONE-TELEM-001": 1,
+    "IND-ROAD-001": 1,
+    "IND-FORM-001": 1,
+    "IND-PLUGIN-001": 1,
+    "IND-PERF-001": 1,
+    "IND-LEDGER-LOC-001": 2,
+    "IND-LEDGER-COVERAGE-002": 1
+  },
+  "open_findings": []
+}

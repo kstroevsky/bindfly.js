@@ -1,0 +1,50 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "allowImportingTsExtensions": true,
+    "checkJs": false,
+    "exactOptionalPropertyTypes": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@bindfly-v2/core": ["src-v2/core/index.ts"],
+      "@bindfly-v2/core/*": ["src-v2/core/*"],
+      "@bindfly-v2/formula": ["src-v2/formula/index.ts"],
+      "@bindfly-v2/formula/*": ["src-v2/formula/*"],
+      "@bindfly-v2/effects": ["src-v2/effects/index.ts"],
+      "@bindfly-v2/effects/*": ["src-v2/effects/*"],
+      "@bindfly-v2/rendering": ["src-v2/rendering/index.ts"],
+      "@bindfly-v2/rendering/*": ["src-v2/rendering/*"],
+      "@bindfly-v2/runtime": ["src-v2/runtime/index.ts"],
+      "@bindfly-v2/runtime/*": ["src-v2/runtime/*"],
+      "@bindfly-v2/analysis": ["src-v2/analysis/index.ts"],
+      "@bindfly-v2/analysis/*": ["src-v2/analysis/*"],
+      "@bindfly-v2/benchmarks": ["src-v2/benchmarks/index.ts"],
+      "@bindfly-v2/benchmarks/*": ["src-v2/benchmarks/*"],
+      "@bindfly-v2/studio": ["apps/studio/src/index.ts"],
+      "@bindfly-v2/studio/*": ["apps/studio/src/*"]
+    }
+  },
+  "include": [
+    "src-v2/**/*.ts",
+    "src-v2/**/*.tsx",
+    "apps/studio/src/**/*.ts",
+    "apps/studio/src/**/*.tsx"
+  ],
+  "exclude": [
+    "build",
+    "dist",
+    "node_modules",
+    "src"
+  ]
+}

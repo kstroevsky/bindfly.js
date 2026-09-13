@@ -1,0 +1,2697 @@
+{
+  "schema_version": 1,
+  "canonical_sha256": "0815d8a1a1e895c43e9345f5f8ba291cac81fbda6791a1f230165df815c67a37",
+  "requirements": [
+    {
+      "id": "DOC-001",
+      "status": "active",
+      "section": [
+        "1. The corrected implementation sequence"
+      ],
+      "summary": "Use an evidence-first vertical-slice migration rather than a giant refactor.",
+      "normative_payload": {
+        "order": [
+          "freeze legacy",
+          "define boundaries",
+          "Flying Lines vertical slice",
+          "runtime/performance",
+          "legacy effects",
+          "mathematical laboratory",
+          "dynamics",
+          "topology",
+          "multiplayer",
+          "advanced GPU"
+        ],
+        "failure_action": "do not proceed as a mega-refactor"
+      },
+      "anchors": [
+        "do not do a giant “refactor everything, then build features” rewrite"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "PROD-001",
+      "status": "active",
+      "section": [
+        "2. Product definition"
+      ],
+      "summary": "Bindfly is a mathematical emergence laboratory with separable rule, simulation, analysis, representation and interaction layers.",
+      "normative_payload": {
+        "layers": [
+          "rules",
+          "simulation",
+          "analysis",
+          "representation"
+        ],
+        "cross_cutting": [
+          "interaction"
+        ]
+      },
+      "anchors": [
+        "Bindfly is an interactive laboratory for exploring how simple mathematical rules generate complex geometry, dynamics and topology"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-001",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex"
+      ],
+      "summary": "Rendering, simulation, analysis, UI and multiplayer remain separate responsibilities.",
+      "normative_payload": {
+        "forbidden_collapses": [
+          "rendering=simulation",
+          "simulation=analysis",
+          "analysis=UI",
+          "multiplayer=simulation"
+        ]
+      },
+      "anchors": [
+        "Rendering is not simulation."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-002",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "A. Prefer domain abstractions over TypeScript tricks"
+      ],
+      "summary": "Types describe runtime concepts and invalid states; avoid inference-only machinery.",
+      "normative_payload": {
+        "failure_action": "delete generic machinery without runtime/domain value"
+      },
+      "anchors": [
+        "Types should describe real runtime concepts and make invalid states impossible."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-003",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "B. Engine code must not depend on React"
+      ],
+      "summary": "React owns studio UI but never simulation/runtime/analysis/renderer state.",
+      "normative_payload": {
+        "react_owns": [
+          "panels",
+          "forms",
+          "lesson UI",
+          "routing",
+          "inspectors",
+          "accessibility",
+          "overlays"
+        ],
+        "react_forbidden": [
+          "simulation clocks",
+          "particle arrays",
+          "rendering loops",
+          "persistent homology",
+          "WebGL scenes",
+          "worker state"
+        ]
+      },
+      "anchors": [
+        "Engine code must not depend on React"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-004",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "C. No renderer owns the simulation"
+      ],
+      "summary": "Clock drives simulation; renderers and analyzers consume state.",
+      "normative_payload": {
+        "order": [
+          "clock",
+          "simulation.step",
+          "state",
+          "renderer/analyzer"
+        ]
+      },
+      "anchors": [
+        "No renderer owns the simulation"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-005",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "D. All randomness must be deterministic when desired"
+      ],
+      "summary": "Experiments accept a seed and engine code avoids uncontrolled Math.random.",
+      "normative_payload": {
+        "seed_types": [
+          "string",
+          "number"
+        ],
+        "uses": [
+          "reproducibility",
+          "benchmarks",
+          "tests",
+          "URLs",
+          "multiplayer",
+          "comparisons"
+        ]
+      },
+      "anchors": [
+        "Never scatter uncontrolled `Math.random()` through the engine"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-006",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "E. Rendering backends are adapters"
+      ],
+      "summary": "Canvas2D, WebGL2 and WebGPU are adapter implementations, not domain concepts.",
+      "normative_payload": {
+        "backends": [
+          "Canvas2D",
+          "WebGL2",
+          "WebGPU"
+        ]
+      },
+      "anchors": [
+        "Rendering backends are adapters"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-007",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "F. Mathematical analyzers are plugins"
+      ],
+      "summary": "Topology and dynamics analyzers do not infect the core particle engine.",
+      "normative_payload": {
+        "examples": [
+          "persistent homology",
+          "Lyapunov",
+          "graph statistics",
+          "bifurcation"
+        ]
+      },
+      "anchors": [
+        "Mathematical analyzers are plugins"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-008",
+      "status": "active",
+      "section": [
+        "4. Proposed repository structure"
+      ],
+      "summary": "Use a pnpm migration envelope, logical boundaries first, and extract physical packages only for two consumers or a real build/deploy/test boundary.",
+      "normative_payload": {
+        "workspace": "pnpm",
+        "logical_areas": [
+          "studio",
+          "core",
+          "formula",
+          "effects",
+          "rendering",
+          "runtime",
+          "analysis",
+          "collaboration",
+          "benchmarks"
+        ],
+        "package_extraction_gate": [
+          "at least two concrete consumers",
+          "worker/build boundary",
+          "separately testable/deployable artifact"
+        ],
+        "forbidden_packages": [
+          "utils",
+          "helpers",
+          "shared",
+          "types"
+        ],
+        "legacy_boundary": "new modules must not import legacy runtime/types"
+      },
+      "anchors": [
+        "Use a pnpm workspace as the migration envelope"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "EXP-001",
+      "status": "active",
+      "section": [
+        "5. The central domain object: Experiment"
+      ],
+      "summary": "ExperimentDefinition owns stable ID/state version, schema/codec, simulation factory, explicit capabilities, analyzers and presets; registry separates loader from identity.",
+      "normative_payload": {
+        "fields": [
+          "id",
+          "stateVersion",
+          "parameters",
+          "stateCodec",
+          "createSimulation",
+          "capabilities",
+          "analyzers",
+          "presets"
+        ],
+        "identity": "stable data ID, never function/class name",
+        "registry": [
+          "lazy loader",
+          "route",
+          "codec",
+          "capabilities",
+          "display metadata"
+        ],
+        "serialized_state": "full durable experiment state, not only parameters"
+      },
+      "anchors": [
+        "`stateVersion` versions serialized experiment state"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "EXP-002",
+      "status": "active",
+      "section": [
+        "5. The central domain object: Experiment"
+      ],
+      "summary": "Simulation exposes state, step, input, reset and dispose.",
+      "normative_payload": {
+        "methods": [
+          "step",
+          "applyInput",
+          "reset",
+          "dispose"
+        ]
+      },
+      "anchors": [
+        "interface Simulation<State, Input>"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "STATE-001",
+      "status": "active",
+      "section": [
+        "6. The state model"
+      ],
+      "summary": "Particle-heavy state uses typed structure-of-arrays with capacity, stable IDs, explicit precision/tolerance and deterministic snapshot semantics.",
+      "normative_payload": {
+        "fields": [
+          "count",
+          "capacity",
+          "id",
+          "x",
+          "y",
+          "vx",
+          "vy",
+          "life",
+          "flags"
+        ],
+        "precision": "experiment-declared",
+        "invariants": [
+          "stable IDs",
+          "deterministic iteration",
+          "defined growth/removal",
+          "canonical snapshot encoding"
+        ]
+      },
+      "anchors": [
+        "Stable entity IDs, deterministic iteration order"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "STATE-002",
+      "status": "active",
+      "section": [
+        "6. The state model"
+      ],
+      "summary": "Non-particle and object-based simulations remain permitted.",
+      "normative_payload": {
+        "scope": "do not require every simulation to use particles"
+      },
+      "anchors": [
+        "Do **not** require every simulation to use particles."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TIME-001",
+      "status": "active",
+      "section": [
+        "7. Clock architecture"
+      ],
+      "summary": "Use experiment-versioned fixed-step timing with explicit overload policy and tiered determinism plus snapshots/checksums.",
+      "normative_payload": {
+        "fixed_step": "selected and frozen per experiment after Phase 4 evidence",
+        "features": [
+          "accumulator",
+          "catch-up cap",
+          "pause/resume",
+          "speed",
+          "step index",
+          "step-boundary inputs"
+        ],
+        "overload": [
+          "reported",
+          "explicit slow-down or drop-render policy"
+        ],
+        "determinism_tiers": [
+          "same engine/build CPU reproducible",
+          "main/worker CPU within declared tolerance",
+          "no bitwise cross-browser/GPU assumption"
+        ],
+        "recovery": [
+          "versioned snapshots",
+          "canonical checksums"
+        ]
+      },
+      "anchors": [
+        "Determinism has tiers:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-001",
+      "status": "active",
+      "section": [
+        "8. Formula engine: probably the most important new subsystem"
+      ],
+      "summary": "Use a restricted, versioned formula AST/IR selected by ADR; never evaluate arbitrary code and enforce worker/resource/domain safety.",
+      "normative_payload": {
+        "pipeline": [
+          "parser spike",
+          "allowlisted AST/IR",
+          "semantic validation",
+          "interpreter",
+          "future compiler"
+        ],
+        "forbidden": [
+          "eval",
+          "new Function",
+          "property access",
+          "dynamic names",
+          "loops",
+          "assignment",
+          "imports",
+          "ambient globals"
+        ],
+        "budgets": [
+          "source",
+          "token",
+          "AST nodes",
+          "depth",
+          "operations"
+        ],
+        "failures": [
+          "non-finite",
+          "domain error",
+          "budget exceeded"
+        ],
+        "validation": [
+          "fuzz",
+          "CSP",
+          "backend conformance"
+        ]
+      },
+      "anchors": [
+        "Whichever parser is selected, Bindfly owns a small allowlisted AST/IR"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-002",
+      "status": "active",
+      "section": [
+        "8. Formula engine: probably the most important new subsystem"
+      ],
+      "summary": "Canonical AST/IR can target JS first and later WASM, WGSL and TSL.",
+      "normative_payload": {
+        "initial": [
+          "JavaScript"
+        ],
+        "future": [
+          "WASM",
+          "WGSL",
+          "Three.js TSL"
+        ]
+      },
+      "anchors": [
+        "the AST—not JavaScript source—is the canonical representation"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-003",
+      "status": "active",
+      "section": [
+        "9. Formula families",
+        "VectorField"
+      ],
+      "summary": "VectorField maps dimension-declared continuous state, time and params to a derivative of the same dimension.",
+      "normative_payload": {
+        "inputs": [
+          "state[dimension]",
+          "t",
+          "params"
+        ],
+        "outputs": [
+          "derivative[dimension]"
+        ],
+        "semantics": "continuous"
+      },
+      "anchors": [
+        "state[dimension]"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-004",
+      "status": "active",
+      "section": [
+        "9. Formula families",
+        "DiscreteMap"
+      ],
+      "summary": "DiscreteMap maps dimension-declared state and params to the next state.",
+      "normative_payload": {
+        "inputs": [
+          "state_n[dimension]",
+          "params"
+        ],
+        "outputs": [
+          "state_n+1[dimension]"
+        ],
+        "semantics": "discrete"
+      },
+      "anchors": [
+        "stateₙ[dimension]"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-005",
+      "status": "active",
+      "section": [
+        "9. Formula families",
+        "Transform"
+      ],
+      "summary": "Transform maps a declared input-dimensional point and params to a declared output-dimensional point.",
+      "normative_payload": {
+        "inputs": [
+          "point[inputDimension]",
+          "params"
+        ],
+        "outputs": [
+          "point[outputDimension]"
+        ]
+      },
+      "anchors": [
+        "point[inputDimension]"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-006",
+      "status": "active",
+      "section": [
+        "9. Formula families",
+        "ScalarField"
+      ],
+      "summary": "ScalarField maps x,y to z for contours, levels, potentials and height maps.",
+      "normative_payload": {
+        "inputs": [
+          "x",
+          "y"
+        ],
+        "outputs": [
+          "z"
+        ]
+      },
+      "anchors": [
+        "`ScalarField`"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-007",
+      "status": "active",
+      "section": [
+        "9. Formula families",
+        "Metric and Relationship"
+      ],
+      "summary": "Separate validated finite Metric from arbitrary Relationship; topology and spatial indexes require declared capabilities.",
+      "normative_payload": {
+        "metric_requirements": [
+          "finite",
+          "consumer-required properties declared/validated"
+        ],
+        "relationship": "may be asymmetric or non-metric and is forbidden for Rips topology",
+        "neighbor_search": "only a proven adapter for the metric; otherwise brute-force oracle",
+        "initial_index_scope": "Euclidean 2D"
+      },
+      "anchors": [
+        "Do not call every custom distance-like formula a metric."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-008",
+      "status": "deferred",
+      "section": [
+        "9. Formula families",
+        "InteractionLaw"
+      ],
+      "summary": "InteractionLaw may later map particle pairs and environment to force/influence.",
+      "normative_payload": {
+        "stage": "eventually"
+      },
+      "anchors": [
+        "Eventually: `InteractionLaw`"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "PARAM-001",
+      "status": "active",
+      "section": [
+        "10. Parameter system"
+      ],
+      "summary": "One stable parameter schema derives all boundaries and declares units, serialization, mutability, invalidation and morphing.",
+      "normative_payload": {
+        "derived": [
+          "types",
+          "UI",
+          "defaults",
+          "validation",
+          "URL",
+          "serialization",
+          "presets",
+          "generic parameter patches",
+          "multiplayer",
+          "documentation"
+        ],
+        "fields": [
+          "stable ID",
+          "units",
+          "serialization",
+          "runtime mutability",
+          "invalidation mode"
+        ],
+        "invalidation": [
+          "hot-update",
+          "reset-simulation",
+          "rebuild-runtime"
+        ],
+        "validation_boundaries": [
+          "URL/import",
+          "preset",
+          "UI",
+          "worker",
+          "collaboration"
+        ],
+        "morphing": "explicit interpolation semantics"
+      },
+      "anchors": [
+        "Each parameter also declares a stable ID"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "REND-001",
+      "status": "active",
+      "section": [
+        "11. Rendering architecture"
+      ],
+      "summary": "Renderer contract resizes, renders read-only state and disposes.",
+      "normative_payload": {
+        "methods": [
+          "resize",
+          "render",
+          "dispose"
+        ]
+      },
+      "anchors": [
+        "interface Renderer<State>"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "REND-002",
+      "status": "active",
+      "section": [
+        "11. Rendering architecture",
+        "Renderer 1 — Canvas2D"
+      ],
+      "summary": "Canvas2D is correctness baseline with explicit DPR/transforms and safe browser events.",
+      "normative_payload": {
+        "requirements": [
+          "explicit DPR",
+          "world-to-screen transform",
+          "no window.onresize",
+          "ResizeObserver",
+          "PointerEvent",
+          "HTML/SVG overlays"
+        ]
+      },
+      "anchors": [
+        "This is your correctness baseline."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "PERF-001",
+      "status": "active",
+      "section": [
+        "12. Canvas performance refactor"
+      ],
+      "summary": "Flying Lines replaces the quadratic hot path with a uniform spatial hash and bounded hot-loop work.",
+      "normative_payload": {
+        "algorithm": "uniform spatial hash",
+        "optimizations": [
+          "pairs once",
+          "squared distance rejection",
+          "no toFixed",
+          "no per-frame allocations",
+          "precompute",
+          "batch",
+          "cull"
+        ]
+      },
+      "anchors": [
+        "Implement a uniform spatial hash."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "RUNTIME-001",
+      "status": "active",
+      "section": [
+        "13. Worker architecture"
+      ],
+      "summary": "MainThreadBackend and WorkerBackend implement the same explicit execution lifecycle.",
+      "normative_payload": {
+        "backends": [
+          "MainThreadBackend",
+          "WorkerBackend"
+        ],
+        "methods": [
+          "initialize",
+          "start",
+          "pause",
+          "applyInput",
+          "updateParameters",
+          "dispose"
+        ],
+        "forbidden": "silent catch-all fallback"
+      },
+      "anchors": [
+        "Workers should become first-class execution runtimes."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "PROTO-001",
+      "status": "active",
+      "section": [
+        "14. Worker protocol"
+      ],
+      "summary": "Use a bidirectional versioned runtime protocol with handshake, request identity, ordering/backpressure, structured events/errors and safe remount fallback after transfer.",
+      "normative_payload": {
+        "commands": [
+          "initialize",
+          "resize",
+          "input",
+          "parameters",
+          "pause",
+          "resume",
+          "dispose"
+        ],
+        "envelope": [
+          "protocol version",
+          "request ID"
+        ],
+        "events": [
+          "ready",
+          "acknowledgement",
+          "telemetry",
+          "analysis result",
+          "structured error",
+          "disposal complete"
+        ],
+        "flow_control": [
+          "coalescing",
+          "backpressure",
+          "stale snapshot ID"
+        ],
+        "fallback": "probe before transfer; remount a new canvas after post-transfer failure",
+        "forbidden": [
+          "fake UIEvent",
+          "silent fallback"
+        ]
+      },
+      "anchors": [
+        "The protocol is bidirectional and versioned."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "PROTO-002",
+      "status": "active",
+      "section": [
+        "15. Avoid excessive state transfer"
+      ],
+      "summary": "Worker usually owns simulation, spatial index and OffscreenCanvas renderer; main receives bounded results.",
+      "normative_payload": {
+        "worker_owns": [
+          "simulation",
+          "spatial index",
+          "OffscreenCanvas renderer"
+        ],
+        "main_receives": [
+          "analysis results",
+          "performance telemetry",
+          "selection information",
+          "errors"
+        ],
+        "forbidden": "stream particle coordinates each frame"
+      },
+      "anchors": [
+        "Not 100,000 particle coordinates every frame."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "REND-003",
+      "status": "active",
+      "section": [
+        "16. Renderer 2 — WebGL2"
+      ],
+      "summary": "WebGL2 uses buffers, instancing, compact attributes, batching and minimal allocation.",
+      "normative_payload": {
+        "requirements": [
+          "GPU buffers",
+          "instancing",
+          "compact attributes",
+          "batched connections",
+          "minimal allocation"
+        ],
+        "constraint": "do not make every line an Object3D"
+      },
+      "anchors": [
+        "Then implement a GPU renderer."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "REND-004",
+      "status": "deferred",
+      "section": [
+        "17. Renderer 3 — WebGPU"
+      ],
+      "summary": "WebGPU is capability-gated experimental and may later support GPU simulation.",
+      "normative_payload": {
+        "capability": "capabilities.webgpu === true",
+        "status": "experimental",
+        "failure_action": "normal operation must not require WebGPU"
+      },
+      "anchors": [
+        "Make this explicitly experimental."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ANAL-001",
+      "status": "active",
+      "section": [
+        "18. Analysis architecture"
+      ],
+      "summary": "Analyzers consume immutable provenance-tagged snapshots, accept cancellation and never observe mutable live state.",
+      "normative_payload": {
+        "input": [
+          "AnalysisSnapshot",
+          "AnalysisContext",
+          "AbortSignal"
+        ],
+        "provenance": [
+          "experiment/state version",
+          "snapshot ID",
+          "step/time",
+          "metric/formula version",
+          "input/sample counts",
+          "sampling seed/method",
+          "backend/version",
+          "approximation",
+          "duration",
+          "warnings"
+        ],
+        "scheduler": [
+          "cancel obsolete work",
+          "discard stale results"
+        ]
+      },
+      "anchors": [
+        "Analyzers never read mutable live simulation state."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ANAL-002",
+      "status": "active",
+      "section": [
+        "18. Analysis architecture"
+      ],
+      "summary": "Analysis cadence is independent of render/simulation cadence.",
+      "normative_payload": {
+        "example_hz": {
+          "render": 60,
+          "simulate": 120,
+          "graph": 10,
+          "topology": 1
+        },
+        "manual_topology": true
+      },
+      "anchors": [
+        "Analysis should be schedulable independently of animation."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ANAL-003",
+      "status": "active",
+      "section": [
+        "19. Introduce explicit computational budgets"
+      ],
+      "summary": "Analyzer budgets are measured per analyzer, visible and fail as partial/unavailable rather than silently altering the question.",
+      "normative_payload": {
+        "schema_examples_not_defaults": [
+          "maxPoints",
+          "maxDurationMs",
+          "updateRateHz",
+          "sampling"
+        ],
+        "freeze_after": "benchmark/validation spike",
+        "failure_action": "visible sampled/approximate/timed-out/refused result; never block renderer"
+      },
+      "anchors": [
+        "The numbers above are illustrative schema examples"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "SLICE-001",
+      "status": "active",
+      "section": [
+        "20. First mathematical vertical slice: Flying Lines"
+      ],
+      "summary": "Flying Lines is first end-to-end slice through simulation, spatial, rendering, worker, schema and graph analysis.",
+      "normative_payload": {
+        "components": [
+          "FlyingLinesExperiment",
+          "ParticleSimulation",
+          "SpatialHash",
+          "Canvas2DRenderer",
+          "WorkerRuntime",
+          "ParameterSchema",
+          "GraphAnalyzer"
+        ],
+        "inputs": [
+          "add point",
+          "remove nearest",
+          "move point"
+        ],
+        "analysis": [
+          "nodes",
+          "edges",
+          "degree distribution",
+          "connected components"
+        ]
+      },
+      "anchors": [
+        "This should be the **first target** for Codex."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TOPO-001",
+      "status": "active",
+      "section": [
+        "21. Topology v0"
+      ],
+      "summary": "Topology starts with connected components/beta0 via Union-Find.",
+      "normative_payload": {
+        "metric": "beta0",
+        "algorithm": "Union-Find"
+      },
+      "anchors": [
+        "can be calculated efficiently from the proximity graph using Union-Find"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TOPO-002",
+      "status": "active",
+      "section": [
+        "22. Topology v1"
+      ],
+      "summary": "Rips visualization uses the same snapshot/units/valid metric; graph cycle rank is distinct from simplicial beta1.",
+      "normative_payload": {
+        "rips_inputs": [
+          "frozen point snapshot",
+          "coordinate units",
+          "validated metric",
+          "epsilon"
+        ],
+        "graph_cycle_rank": "edges - vertices + components",
+        "beta1": "publish only from validated complex/homology computation",
+        "simplices": [
+          "edges",
+          "filled triangles"
+        ]
+      },
+      "anchors": [
+        "Keep two quantities distinct:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TOPO-003",
+      "status": "active",
+      "section": [
+        "23. Topology v2"
+      ],
+      "summary": "Persistent homology uses an explicit adapter and a reproducible backend spike; official Ripser is a candidate, not an assumed maintained package.",
+      "normative_payload": {
+        "adapter_input": [
+          "point cloud or distance matrix",
+          "declared metric",
+          "max dimension",
+          "max filtration",
+          "coefficient field",
+          "sampling/approximation",
+          "cancellation"
+        ],
+        "adapter_output": [
+          "intervals including infinite deaths",
+          "provenance",
+          "resource failures"
+        ],
+        "spike": [
+          "official source commit/license",
+          "Emscripten flags",
+          "typed wrapper",
+          "GUDHI H0/H1 goldens",
+          "performance/memory envelope",
+          "go/no-go"
+        ],
+        "initial_scope": [
+          "H0",
+          "H1"
+        ],
+        "deferred": [
+          "H2"
+        ],
+        "forbidden": "write persistence reduction from scratch"
+      },
+      "anchors": [
+        "The adapter input/output contract includes point cloud or distance matrix"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TOPO-004",
+      "status": "active",
+      "section": [
+        "24. Topology UI"
+      ],
+      "summary": "Persistence UI reuses cached intervals for one provenance-tagged snapshot; epsilon cursor/filter changes do not recompute PH.",
+      "normative_payload": {
+        "cache_key": [
+          "snapshot",
+          "metric",
+          "filtration bound",
+          "coefficient field",
+          "approximation",
+          "analyzer version"
+        ],
+        "cursor": "filter already-computed intervals/filtration",
+        "recompute_on": [
+          "point cloud",
+          "metric",
+          "bound",
+          "coefficient field",
+          "approximation",
+          "analyzer version"
+        ],
+        "display_dimensions": [
+          "beta0",
+          "beta1"
+        ],
+        "deferred_display": "beta2 is unavailable until an H2-capable backend is explicitly enabled"
+      },
+      "anchors": [
+        "Dragging ε moves a cursor through persistence intervals"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "DYN-001",
+      "status": "active",
+      "section": [
+        "25. Dynamical systems module"
+      ],
+      "summary": "VectorFieldExperiment renders field, particles, trajectories and streamlines with initial-condition input.",
+      "normative_payload": {
+        "views": [
+          "vector field arrows",
+          "particles",
+          "trajectories",
+          "streamlines"
+        ],
+        "inputs": [
+          "new trajectory",
+          "initial condition"
+        ]
+      },
+      "anchors": [
+        "VectorFieldExperiment"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "DYN-002",
+      "status": "active",
+      "section": [
+        "26. Numerical integration"
+      ],
+      "summary": "Apply Euler/RK4 only to continuous vector fields, step discrete maps once, and define solver/non-finite/escape policies with convergence tests.",
+      "normative_payload": {
+        "continuous_initial": [
+          "Euler",
+          "RK4"
+        ],
+        "discrete": "one map application per step",
+        "deferred": [
+          "adaptive RK",
+          "symplectic",
+          "stiff solvers"
+        ],
+        "failures": [
+          "NaN",
+          "infinity",
+          "division by zero",
+          "domain error",
+          "escaped state"
+        ],
+        "validation": "known trajectories/invariants within declared tolerance"
+      },
+      "anchors": [
+        "Integration applies only to continuous vector fields"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "DYN-003",
+      "status": "active",
+      "section": [
+        "27. Formula morphing"
+      ],
+      "summary": "Formula parameters generate sliders and deterministic A/B comparison.",
+      "normative_payload": {
+        "features": [
+          "sliders",
+          "side-by-side comparison",
+          "deterministic pane synchronization"
+        ]
+      },
+      "anchors": [
+        "Add side-by-side comparison."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "DYN-004",
+      "status": "deferred",
+      "section": [
+        "28. Parameter sweeps"
+      ],
+      "summary": "Later automate parameter previews and derived-value plots.",
+      "normative_payload": {
+        "derived": [
+          "Lyapunov exponent",
+          "Betti number",
+          "attractor count",
+          "mean density"
+        ]
+      },
+      "anchors": [
+        "Later automate that."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "DYN-005",
+      "status": "deferred",
+      "section": [
+        "29. Dynamical-analysis plugins"
+      ],
+      "summary": "Add equilibrium, stability, Lyapunov, Poincare, basin and bifurcation analyzers gradually.",
+      "normative_payload": {
+        "analyzers": [
+          "equilibrium",
+          "stability",
+          "Lyapunov exponent",
+          "Poincaré section",
+          "basin visualization",
+          "bifurcation explorer"
+        ]
+      },
+      "anchors": [
+        "Dynamical-analysis plugins"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "SCALAR-001",
+      "status": "deferred",
+      "section": [
+        "30. Scalar-field experiments"
+      ],
+      "summary": "Scalar fields support heatmaps, contours, level sets and later surfaces/cubical persistence.",
+      "normative_payload": {
+        "initial": [
+          "heatmap",
+          "contours",
+          "level sets"
+        ],
+        "deferred": [
+          "3D surface",
+          "cubical-complex persistence"
+        ],
+        "algorithm": "marching squares"
+      },
+      "anchors": [
+        "Use marching squares"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "LEGACY-001",
+      "status": "active",
+      "section": [
+        "31. Preserve the weird old formulas"
+      ],
+      "summary": "Preserve Pulse/Spiral/Flying Lines as Bindfly Originals rather than correcting them.",
+      "normative_payload": {
+        "catalog": [
+          "Pulse 2023",
+          "Spiral I",
+          "Spiral II",
+          "Spiral III",
+          "Flying Lines"
+        ]
+      },
+      "anchors": [
+        "Don't “correct” Pulse/Spiral into textbook systems."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "COLLAB-001",
+      "status": "deferred",
+      "section": [
+        "32. Multiplayer architecture"
+      ],
+      "summary": "After determinism, collaboration streams domain events instead of frames.",
+      "normative_payload": {
+        "events": [
+          "AddPointEvent",
+          "RemovePointEvent",
+          "MovePointEvent",
+          "ParameterChangeEvent",
+          "FormulaChangeEvent"
+        ],
+        "forbidden": "stream frames"
+      },
+      "anchors": [
+        "Users don't stream frames."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "COLLAB-002",
+      "status": "deferred",
+      "section": [
+        "33. Don't rely on perfect lockstep forever"
+      ],
+      "summary": "Collaboration combines event sequence with periodic authoritative state/hash and resynchronization.",
+      "normative_payload": {
+        "requirements": [
+          "event sequence",
+          "periodic authoritative state/hash",
+          "resynchronization"
+        ]
+      },
+      "anchors": [
+        "Don't rely on perfect lockstep forever"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "COLLAB-003",
+      "status": "deferred",
+      "section": [
+        "34. Multiplayer can become mathematical gameplay"
+      ],
+      "summary": "Later collaborative goals operate on topology and parameters.",
+      "normative_payload": {
+        "modes": [
+          "Create exactly beta1=3",
+          "Connect using <=5 points",
+          "Destroy persistent loop",
+          "one parameter per player"
+        ]
+      },
+      "anchors": [
+        "Multiplayer can become mathematical gameplay"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "STUDIO-001",
+      "status": "active",
+      "section": [
+        "35. Studio architecture"
+      ],
+      "summary": "Studio has modular parameters, visualization, analysis and timeline/performance panels.",
+      "normative_payload": {
+        "panels": [
+          "parameters",
+          "visualization",
+          "analysis",
+          "timeline/metrics/performance"
+        ],
+        "constraint": "feature registers inspector without app-wide changes"
+      },
+      "anchors": [
+        "Panels are modular."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "STATE-003",
+      "status": "active",
+      "section": [
+        "36. Separate durable and ephemeral state"
+      ],
+      "summary": "Serialize experiment state, never hover/drag/readiness/FPS/frame.",
+      "normative_payload": {
+        "durable": [
+          "experiment id",
+          "experiment version",
+          "formula",
+          "parameters",
+          "seed",
+          "initial conditions",
+          "active analyzers",
+          "renderer choice",
+          "camera/view"
+        ],
+        "ephemeral": [
+          "hover",
+          "pointer coordinates",
+          "drag state",
+          "worker ready state",
+          "current FPS",
+          "temporary modal",
+          "current frame"
+        ]
+      },
+      "anchors": [
+        "Never serialize ephemeral state."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "CODEC-001",
+      "status": "active",
+      "section": [
+        "37. Versioned URLs"
+      ],
+      "summary": "Versioned codec safely migrates URL/JSON state, rejects malformed/unknown state, separates route identity, and uses JSON for oversized payloads.",
+      "normative_payload": {
+        "methods": [
+          "parse",
+          "normalize",
+          "migrate",
+          "serialize"
+        ],
+        "tests": "every supported historical version",
+        "unknown_fields": "preserve only by explicit rule",
+        "oversize": "deterministic JSON export/import",
+        "forbidden": [
+          "executable code",
+          "secrets"
+        ]
+      },
+      "anchors": [
+        "If encoded state exceeds the agreed URL budget"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TELEM-001",
+      "status": "active",
+      "section": [
+        "38. Performance telemetry"
+      ],
+      "summary": "Expose timing, counts, memory estimate, backend and DPR.",
+      "normative_payload": {
+        "metrics": [
+          "FPS",
+          "frame time",
+          "simulation time",
+          "render time",
+          "analysis time",
+          "particle count",
+          "edge count",
+          "memory estimates",
+          "backend",
+          "DPR"
+        ]
+      },
+      "anchors": [
+        "Collect:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "BENCH-001",
+      "status": "active",
+      "section": [
+        "39. Benchmark harness"
+      ],
+      "summary": "Benchmark equal workloads with a frozen environment manifest, warmup/raw distributions and evidence-derived regression gates.",
+      "normative_payload": {
+        "manifest": [
+          "commit",
+          "browser/version",
+          "OS",
+          "hardware",
+          "power mode",
+          "viewport",
+          "DPR",
+          "seed",
+          "state version",
+          "timestep",
+          "warm-up",
+          "sample count",
+          "workload"
+        ],
+        "metrics": [
+          "simulation",
+          "render",
+          "analysis",
+          "transport",
+          "distributions",
+          "uncertainty"
+        ],
+        "failure_action": "invalidate unequal workloads; never use FPS/visual impression alone"
+      },
+      "anchors": [
+        "Benchmark runs pin build commit"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TEST-001",
+      "status": "active",
+      "section": [
+        "40. Testing architecture"
+      ],
+      "summary": "Testing includes unit/property plus registry, lifecycle/protocol, runtime parity, fallback, schema, analyzer, context-loss, URL and accessibility contracts.",
+      "normative_payload": {
+        "properties": [
+          "same seed",
+          "zero velocity",
+          "grid oracle",
+          "fixed-cloud beta0 monotonicity",
+          "valid symmetric metrics"
+        ],
+        "contracts": [
+          "registry/capabilities",
+          "worker lifecycle/envelopes",
+          "main-worker parity",
+          "Offscreen failure/remount/disposal",
+          "parameter normalization",
+          "analyzer cancellation/provenance",
+          "context loss",
+          "legacy state migration",
+          "keyboard/pointer accessibility"
+        ],
+        "browsers": [
+          "Chromium",
+          "Firefox",
+          "WebKit"
+        ]
+      },
+      "anchors": [
+        "Contract and integration tests"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TEST-002",
+      "status": "active",
+      "section": [
+        "41. Analysis validation tests"
+      ],
+      "summary": "Topology fixtures freeze all conventions/tolerances and distinguish graph cycles from simplicial Betti values; approximations expose metadata.",
+      "normative_payload": {
+        "fixtures": [
+          "single point",
+          "two separated points",
+          "triangle",
+          "circle",
+          "two circles",
+          "figure eight"
+        ],
+        "freeze": [
+          "metric",
+          "coefficient field",
+          "filtration convention",
+          "max dimension",
+          "tolerance"
+        ],
+        "reference": "GUDHI",
+        "approximation_tests": [
+          "deterministic sampling",
+          "declared error metadata"
+        ]
+      },
+      "anchors": [
+        "Fixtures freeze metric, coefficient field"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TEST-003",
+      "status": "active",
+      "section": [
+        "42. Visual tests"
+      ],
+      "summary": "Visual baselines pin seed, DPR, viewport, frame/step and parameters.",
+      "normative_payload": {
+        "captures": [
+          "first frame",
+          "known simulation step",
+          "paused analysis state"
+        ],
+        "forbidden": "DOM snapshots as primary graphics test"
+      },
+      "anchors": [
+        "Use deterministic:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TOOL-001",
+      "status": "active",
+      "section": [
+        "43. Tooling migration"
+      ],
+      "summary": "Migrate tooling and make typecheck, lint and tests mandatory correctness gates; isolate recorded legacy failures.",
+      "normative_payload": {
+        "use": [
+          "pnpm workspace",
+          "Vite",
+          "TypeScript",
+          "Vitest",
+          "Playwright",
+          "ESLint",
+          "ESM workers"
+        ],
+        "gates": [
+          "production build",
+          "typecheck",
+          "lint",
+          "tests"
+        ],
+        "current_evidence": [
+          "Webpack pass",
+          "TypeScript fail",
+          "lint fail",
+          "no tests"
+        ],
+        "legacy_policy": "record/quarantine, do not hide"
+      },
+      "anchors": [
+        "The current Babel/Webpack build succeeds while the repository has TypeScript errors"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TYPE-001",
+      "status": "active",
+      "section": [
+        "44. TypeScript compiler policy"
+      ],
+      "summary": "Enable strict flags incrementally for new checked TypeScript modules; keep allowJs only in explicit legacy/archive until migration.",
+      "normative_payload": {
+        "flags": [
+          "strict",
+          "noUncheckedIndexedAccess",
+          "exactOptionalPropertyTypes",
+          "noImplicitOverride"
+        ],
+        "scope_first": [
+          "engine",
+          "runtime",
+          "analysis",
+          "formula"
+        ],
+        "legacy": "do not globally flip before isolation",
+        "failure_action": "prevent regression per project/module"
+      },
+      "anchors": [
+        "New engine/runtime/analysis/formula code is TypeScript with checking enabled"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ROAD-001",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex"
+      ],
+      "summary": "Execute ordered Phases 0 through 25 but give Codex 0 through 9 first.",
+      "normative_payload": {
+        "phase_order": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25
+        ],
+        "current_scope": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "anchors": [
+        "But I would give Codex **Phases 0–9 first**"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-001",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 0"
+      ],
+      "summary": "Phase 0 freezes source/formulas/presets/assets, records current gates/routes/URLs and classifies parity, intentional fixes, archive or drop.",
+      "normative_payload": {
+        "deliverables": [
+          "legacy manifest",
+          "behavior/route matrix",
+          "screenshots/recordings",
+          "formula/constants catalog",
+          "quality evidence",
+          "URL fixtures"
+        ],
+        "classifications": [
+          "parity",
+          "intentional-fix",
+          "archive-only",
+          "drop-with-rationale"
+        ],
+        "exit": "reviewable preservation evidence"
+      },
+      "anchors": [
+        "classify every route/effect as"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-002",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 1"
+      ],
+      "summary": "Phase 1 uses a strangler layout with logical boundaries, independent green gates and legacy still runnable.",
+      "normative_payload": {
+        "requirements": [
+          "legacy and new coexist",
+          "logical modules before packages",
+          "forbidden import-boundary tests",
+          "new typecheck/lint/test green"
+        ],
+        "exit": "new architecture independent and legacy baseline retained"
+      },
+      "anchors": [
+        "Use a strangler layout"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-003",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 2"
+      ],
+      "summary": "Phase 2 adds registry/capabilities, codec/migrations, lifecycle/protocol and immutable analysis contracts with fake implementations.",
+      "normative_payload": {
+        "contracts": [
+          "experiment registry",
+          "capability negotiation",
+          "state codec/version",
+          "lifecycle/error",
+          "worker envelope",
+          "analysis snapshot/provenance"
+        ],
+        "exit": "unit/compile-time tests and fake lifecycle/serialization/cancellation"
+      },
+      "anchors": [
+        "explicit experiment registry and capability negotiation"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-004",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 3"
+      ],
+      "summary": "Phase 3 preserves approved Flying Lines identity but records/fixes known lifecycle, timing, velocity, distance and boundary defects.",
+      "normative_payload": {
+        "parity": "Phase 0 classification",
+        "intentional_fixes": [
+          "cancellation",
+          "duplicate pair drawing",
+          "frame timing",
+          "axis velocity coupling",
+          "string distance",
+          "boundary condition"
+        ],
+        "minimal_graph": [
+          "nodes",
+          "unique edges",
+          "connected components"
+        ],
+        "exit": "new slice with reviewed divergence and no legacy imports"
+      },
+      "anchors": [
+        "do not reproduce incorrect cancellation"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-005",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 4"
+      ],
+      "summary": "Phase 4 proves pause/catchup/step-boundary input and replay semantics before freezing timestep/tolerance.",
+      "normative_payload": {
+        "tests": [
+          "refresh-rate independence",
+          "pause without jump",
+          "overload observable",
+          "step-boundary inputs",
+          "same-build replay"
+        ],
+        "freeze_after": "evidence"
+      },
+      "anchors": [
+        "Freeze the selected timestep"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-006",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 5"
+      ],
+      "summary": "Use typed arrays, seeded RNG and reusable buffers, then benchmark.",
+      "normative_payload": {
+        "exit": "same behavior with measured improvement/no regression"
+      },
+      "anchors": [
+        "Phase 5 — Performance data model"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-007",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 6"
+      ],
+      "summary": "Phase 6 limits first grid to Euclidean 2D and tests edge cases; unsupported metrics retain brute force.",
+      "normative_payload": {
+        "scope": "Euclidean 2D",
+        "tests": [
+          "cell boundaries",
+          "duplicate points",
+          "zero/negative radius",
+          "resize",
+          "pair order"
+        ],
+        "fallback": "brute-force oracle"
+      },
+      "anchors": [
+        "Limit the first grid implementation"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-008",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 7"
+      ],
+      "summary": "Phase 7 implements probed/handshaken versioned worker lifecycle, parity and leak/crash/remount stress tests.",
+      "normative_payload": {
+        "requirements": [
+          "capability probe",
+          "ready handshake",
+          "typed commands/events",
+          "ordering/coalescing",
+          "structured failures",
+          "remount fallback",
+          "cancellation",
+          "disposal"
+        ],
+        "exit": [
+          "runtime switch",
+          "CPU parity tolerance",
+          "no orphan resources"
+        ]
+      },
+      "anchors": [
+        "Implement capability probing, ready handshake"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-009",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 8"
+      ],
+      "summary": "Phase 8 exposes validation/units/invalidation/capability/provenance accessibly and keeps ephemeral state unserialized.",
+      "normative_payload": {
+        "ui": [
+          "generated controls",
+          "units",
+          "errors",
+          "invalidation",
+          "capability reasons",
+          "provenance"
+        ],
+        "accessibility": [
+          "keyboard",
+          "labels",
+          "errors",
+          "reduced motion"
+        ],
+        "exit": "no per-experiment UI for supported kinds"
+      },
+      "anchors": [
+        "generated controls pass keyboard"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-010",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 9"
+      ],
+      "summary": "Phase 9 adds malformed/version rejection, legacy migrations and JSON fallback for oversized state.",
+      "normative_payload": {
+        "requirements": [
+          "URL codec",
+          "malformed/unknown rejection",
+          "legacy fixtures",
+          "JSON export/import"
+        ],
+        "exit": "URL or JSON reproduction with explicit migration failure"
+      },
+      "anchors": [
+        "oversized states reproduce from exported JSON"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-011",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 10"
+      ],
+      "summary": "Phase 10 migrates only classified effects, freezes exact formula provenance and archives FlyingCubesGL as an R&D notebook by default.",
+      "normative_payload": {
+        "order": [
+          "Drooping Lines",
+          "Spiral Flying Lines",
+          "Pulse",
+          "Spiral I",
+          "Spiral II",
+          "Spiral III"
+        ],
+        "archive_default": [
+          "FlyingCubesGL"
+        ],
+        "constraint": "shared CPU simulation/renderer before legacy GL migration"
+      },
+      "anchors": [
+        "`FlyingCubesGL` as an archive/R&D notebook"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-012",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 11"
+      ],
+      "summary": "Phase 11 follows parser/IR ADR and adds allowlist/budgets/fuzz/isolation/CSP/conformance before formula execution.",
+      "normative_payload": {
+        "requirements": [
+          "ADR",
+          "allowlist",
+          "resource limits",
+          "finite/domain checks",
+          "fuzz/property tests",
+          "worker isolation",
+          "CSP",
+          "AST migrations",
+          "backend conformance"
+        ],
+        "forbidden": [
+          "eval",
+          "arbitrary JavaScript"
+        ]
+      },
+      "anchors": [
+        "Complete the parser/IR ADR first."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-013",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 12"
+      ],
+      "summary": "Phase 12 makes formula families dimensional and explicit about stepping, precision, failure and capabilities.",
+      "normative_payload": {
+        "requirements": [
+          "input/output dimension",
+          "continuous/discrete semantics",
+          "precision/tolerance",
+          "invalid-state policy",
+          "analyzer/renderer capabilities"
+        ],
+        "examples": [
+          "Lorenz 3D vector field",
+          "logistic 1D discrete map"
+        ]
+      },
+      "anchors": [
+        "`Lorenz` therefore uses a 3D vector-field contract"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-014",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 13"
+      ],
+      "summary": "Add mathematical classics as correctness/education benchmarks.",
+      "normative_payload": {
+        "exit": "reference systems available"
+      },
+      "anchors": [
+        "Phase 13 — Mathematical classics"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-015",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 14"
+      ],
+      "summary": "Implement parameter morphing and synchronized comparison.",
+      "normative_payload": {
+        "exit": "tiny parameter changes explored"
+      },
+      "anchors": [
+        "Phase 14 — Formula morphing"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-016",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 15"
+      ],
+      "summary": "Phase 15 formalizes and extends the minimal Phase 3 graph analyzer using capability-matched indexes, frozen snapshots and correct graph-cycle/beta terminology.",
+      "normative_payload": {
+        "requirements": [
+          "metric/index match",
+          "edges counted once",
+          "beta0 fixed snapshot",
+          "graph cycle rank distinct from Rips beta1"
+        ],
+        "monotonicity_scope": "same points and metric"
+      },
+      "anchors": [
+        "Only reuse an index whose declared metric/search capabilities"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-017",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 16"
+      ],
+      "summary": "Phase 16 interprets epsilon only for one snapshot/units/metric and represents triangles as filled simplices.",
+      "normative_payload": {
+        "requirements": [
+          "frozen snapshot",
+          "coordinate units",
+          "validated metric",
+          "filled 2-simplices"
+        ],
+        "forbidden": "infer homology from line appearance"
+      },
+      "anchors": [
+        "same frozen snapshot, coordinate units and validated metric"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-018",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 17"
+      ],
+      "summary": "Phase 17 is an official-Ripser backend ADR/spike, then adapter if it passes; H2 remains separately deferred.",
+      "normative_payload": {
+        "spike": [
+          "pinned source/license",
+          "reproducible Emscripten",
+          "typed wrapper",
+          "H0/H1 GUDHI goldens",
+          "performance/memory",
+          "go/no-go"
+        ],
+        "selected_if_pass": "RipserWasmAdapter",
+        "fallback": "another adapter without contract changes",
+        "deferred": [
+          "H2"
+        ],
+        "forbidden": "in-house persistence reduction"
+      },
+      "anchors": [
+        "Run a backend ADR/spike using the official Ripser source"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-019",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 18"
+      ],
+      "summary": "Phase 18 caches provenance-tagged persistence results and moves epsilon without recomputing per pointer event.",
+      "normative_payload": {
+        "cache": [
+          "snapshot",
+          "metric",
+          "options",
+          "analyzer version"
+        ],
+        "exit": "coherent geometry/topology for same snapshot; stale/approximate visible"
+      },
+      "anchors": [
+        "Cache results by snapshot"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-020",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 19"
+      ],
+      "summary": "Add dynamics analyzers without render dependency.",
+      "normative_payload": {
+        "exit": "analyzers optional for rendering"
+      },
+      "anchors": [
+        "Phase 19 — Dynamical systems analysis"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-021",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 20"
+      ],
+      "summary": "Implement WebGL2 renderer using shared simulation.",
+      "normative_payload": {
+        "exit": "same experiment Canvas2D or WebGL"
+      },
+      "anchors": [
+        "Phase 20 — WebGL renderer"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-022",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 21"
+      ],
+      "summary": "Phase 21 compares backends only with frozen state/timing/environment/workload and raw distributions.",
+      "normative_payload": {
+        "pin": [
+          "state version",
+          "timestep",
+          "browser/hardware/DPR",
+          "warmup",
+          "sample method"
+        ],
+        "failure_action": "reject unequal workload"
+      },
+      "anchors": [
+        "pin state version, timestep, browser/hardware/DPR"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-023",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 22"
+      ],
+      "summary": "Implement capability-gated WebGPU experiment.",
+      "normative_payload": {
+        "exit": "WebGPU optional"
+      },
+      "anchors": [
+        "Phase 22 — WebGPU experiment"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-024",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 23"
+      ],
+      "summary": "Phase 23 defines authoritative room/protocol/event/security/limit semantics before WebSocket and tests divergence recovery.",
+      "normative_payload": {
+        "requirements": [
+          "room authority",
+          "protocol/state versions",
+          "stable IDs",
+          "auth boundary",
+          "idempotency",
+          "server sequence",
+          "step scheduling",
+          "validation",
+          "rate/size limits",
+          "reconnect"
+        ],
+        "formula_event": "validated canonical state, never JavaScript",
+        "out_of_scope": [
+          "presence/chat",
+          "public discovery",
+          "offline multi-writer"
+        ],
+        "exit": "duplicate/late/out-of-order and forced divergence recovery"
+      },
+      "anchors": [
+        "Define room authority, protocol/state versions"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-025",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 24"
+      ],
+      "summary": "Phase 24 hashes canonical versioned snapshot bytes and atomically reconciles divergence; never incidental object JSON.",
+      "normative_payload": {
+        "requirements": [
+          "canonical bytes",
+          "checksum algorithm per state version",
+          "periodic authoritative compare/snapshot",
+          "atomic replacement"
+        ],
+        "failure_action": "snapshot resync"
+      },
+      "anchors": [
+        "Define canonical snapshot bytes and checksum algorithm"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-026",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 25"
+      ],
+      "summary": "Add collaborative topology/dynamics modes after synchronization.",
+      "normative_payload": {
+        "exit": "mathematical collaboration modes"
+      },
+      "anchors": [
+        "Phase 25 — Collaborative mathematical modes"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ACC-001",
+      "status": "active",
+      "section": [
+        "46. Architecture acceptance tests"
+      ],
+      "summary": "New experiment does not modify router, worker switches, generic UI, renderers or analysis infrastructure.",
+      "normative_payload": {
+        "forbidden_changes": [
+          "router",
+          "worker switch",
+          "generic parameter UI",
+          "renderer internals",
+          "analysis infrastructure"
+        ]
+      },
+      "anchors": [
+        "A new mathematical experiment should **not require modifying**:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ACC-002",
+      "status": "active",
+      "section": [
+        "46. Architecture acceptance tests"
+      ],
+      "summary": "New renderer does not modify simulation, formulas or analyzers.",
+      "normative_payload": {
+        "forbidden_changes": [
+          "simulation logic",
+          "experiment formulas",
+          "analyzers"
+        ]
+      },
+      "anchors": [
+        "A new renderer should **not require modifying**:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ACC-003",
+      "status": "active",
+      "section": [
+        "46. Architecture acceptance tests"
+      ],
+      "summary": "New analyzer does not modify renderer, simulation or React controls.",
+      "normative_payload": {
+        "forbidden_changes": [
+          "renderer",
+          "simulation",
+          "React control components"
+        ]
+      },
+      "anchors": [
+        "A new analyzer should **not require modifying**:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ACC-004",
+      "status": "active",
+      "section": [
+        "46. Architecture acceptance tests"
+      ],
+      "summary": "New parameter ideally changes only schema and simulation/formula.",
+      "normative_payload": {
+        "allowed_changes": [
+          "experiment parameter schema",
+          "simulation/formula using it"
+        ]
+      },
+      "anchors": [
+        "A new parameter should ideally require changing only:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-009",
+      "status": "active",
+      "section": [
+        "47. One more important rule for Codex"
+      ],
+      "summary": "Prefer duplication for first two implementations and extract only after two consumers.",
+      "normative_payload": {
+        "minimum_consumers": 2,
+        "failure_action": "do not generalize from one implementation"
+      },
+      "anchors": [
+        "Prefer duplication across the first two implementations"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TARGET-001",
+      "status": "active",
+      "section": [
+        "48. The target end-state"
+      ],
+      "summary": "End-state supports mathematical definition, multiple simulations/runtimes/renderers/analyses/interactions/collaboration, with the first 10 phases (0–9) authorized before the complete 26-phase roadmap.",
+      "normative_payload": {
+        "domains": [
+          "mathematical definition",
+          "simulation",
+          "runtime",
+          "renderer",
+          "analysis",
+          "interaction",
+          "collaboration"
+        ],
+        "current_major_milestone": "Flying Lines through Phases 0–9",
+        "total_phases": 26
+      },
+      "anchors": [
+        "The first major milestone should be **Flying Lines completely rebuilt on the new architecture"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "EVID-001",
+      "status": "active",
+      "section": [
+        "49. Verified current-state evidence and consequences"
+      ],
+      "summary": "Record fresh CodeGraph and quality evidence as migration constraints.",
+      "normative_payload": {
+        "codegraph": {
+          "files": 51,
+          "nodes": 528,
+          "edges": 920,
+          "CanvasAnimation_impact": 104,
+          "IProperty_impact": 134,
+          "ECanvasWorkerMessage_impact": 19
+        },
+        "quality": {
+          "webpack": "PASS",
+          "typescript": "FAIL",
+          "lint": "FAIL",
+          "tests": "FAIL — no tests"
+        },
+        "consequence": "strangler slice, not in-place shared-symbol refactor"
+      },
+      "anchors": [
+        "The passing build is therefore only evidence that Babel/Webpack can emit bundles."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MILE-001",
+      "status": "active",
+      "section": [
+        "50. Delivery milestones, dependencies and stop rules"
+      ],
+      "summary": "Execute six gated milestone bands with hard stops and authorize only Phase 0 through 9 initially.",
+      "normative_payload": {
+        "bands": [
+          "A legacy evidence",
+          "B Flying Lines foundation",
+          "C mathematical core",
+          "D validated analysis",
+          "E renderer/performance",
+          "F shared experiments"
+        ],
+        "current_authority": [
+          "Phase 0",
+          "Phases 1–9"
+        ],
+        "hard_stop": "architectural acceptance before Phase 10"
+      },
+      "anchors": [
+        "Hard stop: obtain architectural acceptance before Phase 10."
+      ],
+      "depends_on": [
+        "ROAD-001"
+      ]
+    },
+    {
+      "id": "XIF-001",
+      "status": "active",
+      "section": [
+        "51. Cross-interface contract matrix"
+      ],
+      "summary": "Every producer-artifact-consumer interface has invariants, tests and a failure action.",
+      "normative_payload": {
+        "interfaces": [
+          "registry",
+          "parameter schema",
+          "state codec",
+          "clock/runtime",
+          "simulation state",
+          "runtime protocol",
+          "renderer",
+          "spatial search",
+          "analysis scheduler",
+          "topology adapter",
+          "benchmark",
+          "collaboration"
+        ],
+        "test_rule": "name both producer and consumer tests"
+      },
+      "anchors": [
+        "Every implementation issue that crosses a row must name both producer and consumer tests."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "CUT-001",
+      "status": "active",
+      "section": [
+        "52. Legacy-to-new migration and cutover map"
+      ],
+      "summary": "Use explicit legacy-to-new seam mapping, coexisting routes, fixture-based cutover and route/build rollback.",
+      "normative_payload": {
+        "steps": [
+          "legacy and new coexist",
+          "per-route parity/divergence and migration evidence",
+          "default navigation only after Milestone B",
+          "remove route only with replacement/archive/redirect",
+          "remove deps/allowJs only after no supported dependency",
+          "retain source hash/manifest"
+        ],
+        "rollback": "route/build selection, not source reset"
+      },
+      "anchors": [
+        "Rollback is route/build selection, not a source-tree reset"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ADR-001",
+      "status": "active",
+      "section": [
+        "53. Required ADRs and risk register"
+      ],
+      "summary": "Freeze package, parser, precision/timestep, transport, WebGL, PH, WebGPU, hosting and collaboration choices only after named evidence.",
+      "normative_payload": {
+        "decisions": [
+          "package extraction",
+          "formula parser",
+          "precision/timestep",
+          "state transport",
+          "WebGL abstraction",
+          "persistent topology backend",
+          "WebGPU/TSL",
+          "hosting/routes",
+          "collaboration"
+        ],
+        "default": "conservative until evidence"
+      },
+      "anchors": [
+        "Create a short ADR before freezing each decision below."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "RISK-001",
+      "status": "active",
+      "section": [
+        "53. Required ADRs and risk register"
+      ],
+      "summary": "Track architecture, parity, formula, metric, snapshot, Rips, benchmark, resource, replay, URL and multiplayer risks with stop conditions.",
+      "normative_payload": {
+        "risks": [
+          "architecture expansion",
+          "buggy parity",
+          "formula exhaustion",
+          "metric/index mismatch",
+          "stale analysis",
+          "Rips growth",
+          "unfair benchmarks",
+          "resource leaks",
+          "replay divergence",
+          "URL breakage",
+          "multiplayer scope"
+        ],
+        "failure_action": "honor listed hard stop/mitigation"
+      },
+      "anchors": [
+        "Primary risks:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "SEC-001",
+      "status": "active",
+      "section": [
+        "54. Security, reliability, privacy and accessibility baseline"
+      ],
+      "summary": "Treat formula/import/collaboration input as untrusted and isolate/cap/validate it.",
+      "normative_payload": {
+        "formula": [
+          "allowlisted AST",
+          "resource limits",
+          "no JS execution"
+        ],
+        "worker_wasm": [
+          "cancellation",
+          "termination",
+          "memory/input caps",
+          "structured errors"
+        ],
+        "collaboration": [
+          "auth",
+          "permissions",
+          "validation",
+          "rate/size limits",
+          "abuse controls",
+          "secure transport",
+          "retention"
+        ]
+      },
+      "anchors": [
+        "User formulas and imported state are untrusted input."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "REL-001",
+      "status": "active",
+      "section": [
+        "54. Security, reliability, privacy and accessibility baseline"
+      ],
+      "summary": "Handle GPU context loss, resource disposal, DPR/workload policy and coordinate separation as normal reliability concerns.",
+      "normative_payload": {
+        "requirements": [
+          "WebGL/WebGPU context loss",
+          "deterministic disposal",
+          "visible DPR/workload cap",
+          "CSS/backing/world separation"
+        ]
+      },
+      "anchors": [
+        "Treat WebGL/WebGPU context loss and device capability changes as normal runtime states"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "PRIV-001",
+      "status": "active",
+      "section": [
+        "54. Security, reliability, privacy and accessibility baseline"
+      ],
+      "summary": "Telemetry is local-only by default and excludes state/identity/secrets without a separate privacy decision.",
+      "normative_payload": {
+        "default": "local-only",
+        "network_requires": [
+          "fields",
+          "retention",
+          "consent"
+        ],
+        "excluded": [
+          "formula/state contents",
+          "URLs",
+          "actor IDs",
+          "credentials"
+        ]
+      },
+      "anchors": [
+        "Telemetry is local-only by default."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "A11Y-001",
+      "status": "active",
+      "section": [
+        "54. Security, reliability, privacy and accessibility baseline"
+      ],
+      "summary": "Studio controls and visualization have keyboard/screen-reader/reduced-motion/color-independent affordances.",
+      "normative_payload": {
+        "requirements": [
+          "labels",
+          "units",
+          "errors",
+          "focus order",
+          "equivalent controls/list output",
+          "color not sole carrier",
+          "pause/reduced motion"
+        ]
+      },
+      "anchors": [
+        "The studio remains operable by keyboard and screen reader"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "DONE-001",
+      "status": "active",
+      "section": [
+        "55. Per-phase execution and definition-of-done template"
+      ],
+      "summary": "Every implementation issue names scope/contracts/tests/evidence/failure/docs and stops at a verified phase boundary.",
+      "normative_payload": {
+        "issue_fields": [
+          "phase/requirement IDs",
+          "outcome",
+          "scope",
+          "non-goals",
+          "producer-artifact-consumer",
+          "parity/divergence fixture",
+          "tests",
+          "benchmark/scientific validation",
+          "failure/rollback",
+          "docs/ADR"
+        ],
+        "done": [
+          "exit/dependencies",
+          "green gates",
+          "boundaries",
+          "failure/resource tests",
+          "evidence",
+          "version/migration",
+          "legacy/docs",
+          "CodeGraph impact",
+          "scoped diff",
+          "stop"
+        ]
+      },
+      "anchors": [
+        "Every Codex implementation issue/turn should contain:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "EXT-001",
+      "status": "active",
+      "section": [
+        "56. Verified external assumptions"
+      ],
+      "summary": "Record dated official-source assumptions for Offscreen Canvas, WebGPU/Three, CRA, Ripser and GUDHI.",
+      "normative_payload": {
+        "as_of": "2026-08-29",
+        "facts": [
+          "Offscreen Canvas/worker rAF broadly available",
+          "WebGPU limited and secure-context only",
+          "Three WebGPURenderer experimental with WebGL2 fallback",
+          "CRA deprecated",
+          "Ripser browser WASM feasible but backend spike required",
+          "Rips complexes need budgets/approximations"
+        ]
+      },
+      "anchors": [
+        "As checked on 2026-08-29:"
+      ],
+      "depends_on": []
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "status": "BASELINE_COMPLETE",
+  "source": {
+    "commit": "9f2a83d3996207bf6886d80949561c96e1bc175d",
+    "branch": "bug/pulse-position",
+    "source_restored_after_probe": true
+  },
+  "environment": {
+    "os": "macOS 15.7.9 (24G830)",
+    "architecture": "arm64",
+    "cpu": "Apple M1 Max",
+    "memory_bytes": 34359738368,
+    "node": "v22.22.0",
+    "browser": "Codex In-app Browser (exact engine version unavailable)",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "dpr": "not exposed by the safe Browser evaluation scope"
+  },
+  "contract": {
+    "outcome": "Characterize legacy FlyingLines worker scalability without changing animation semantics.",
+    "workload": "FlyingLines Simple, OffscreenCanvas worker, particlesCount 100/300/500.",
+    "primary_metric": "Median worker animation callback duration across three windows.",
+    "secondary_metric": "Median worker rAF interval and approximate cadence.",
+    "guardrails": [
+      "one canvas rendered",
+      "worker-reported particle count matched requested count",
+      "source hashes restored after probe"
+    ],
+    "materiality": "Not applicable: descriptive baseline, no candidate/adoption decision."
+  },
+  "probe": {
+    "query_flag": "diagnostics=1",
+    "warmup_frames": 30,
+    "sample_frames_per_window": 60,
+    "windows_per_count": 3,
+    "clock": "worker performance.now() and worker rAF timestamp",
+    "callback_scope": "legacy effect loop callback: simulation/update plus Canvas2D render",
+    "observer_effect": "One performance.now pair per frame, bounded arrays, and one worker-to-main log message per 60 sampled frames; opt-in only.",
+    "pilot": {
+      "warmup_frames": 60,
+      "sample_frames_per_window": 240,
+      "status": "INCONCLUSIVE",
+      "reason": "300/500-particle windows did not complete within the initial bounded wait; final workload was rerun from scratch with 30/60."
+    }
+  },
+  "raw_samples": "docs/legacy/performance-raw.json",
+  "summary": [
+    {
+      "particleCount": 100,
+      "windows": 3,
+      "samplesPerWindow": 60,
+      "callbackMedianMs": 2.799999952316284,
+      "callbackP95Ms": 3.3000000715255737,
+      "frameIntervalMedianMs": 8.300000000000068,
+      "frameIntervalP95Ms": 9.299999999999955,
+      "approxFpsFromMedianInterval": 120.48192771084238,
+      "pairCount": 4950,
+      "callbackMedianVs100x": 1,
+      "pairCountVs100x": 1
+    },
+    {
+      "particleCount": 300,
+      "windows": 3,
+      "samplesPerWindow": 60,
+      "callbackMedianMs": 24,
+      "callbackP95Ms": 28,
+      "frameIntervalMedianMs": 25,
+      "frameIntervalP95Ms": 34.30000000000018,
+      "approxFpsFromMedianInterval": 40,
+      "pairCount": 44850,
+      "callbackMedianVs100x": 8.571428717399133,
+      "pairCountVs100x": 9.06060606060606
+    },
+    {
+      "particleCount": 500,
+      "windows": 3,
+      "samplesPerWindow": 60,
+      "callbackMedianMs": 67.5,
+      "callbackP95Ms": 90.19999992847443,
+      "frameIntervalMedianMs": 67,
+      "frameIntervalP95Ms": 100.5,
+      "approxFpsFromMedianInterval": 14.925373134328359,
+      "pairCount": 124750,
+      "callbackMedianVs100x": 24.10714326768506,
+      "pairCountVs100x": 25.2020202020202
+    }
+  ],
+  "observations": [
+    "100 particles stayed near the 120 Hz presentation interval.",
+    "300 particles had a roughly 24 ms median callback and roughly 25 ms median frame interval.",
+    "500 particles had a roughly 67.5 ms median callback and roughly 67 ms median frame interval.",
+    "Callback growth closely tracks unique pair-count growth across the three sizes."
+  ],
+  "inference": {
+    "hypothesis": "Quadratic pair work is the dominant scalability constraint in this workload.",
+    "support": "100→300 pair count grows 9.06x while callback median grows 8.57x; 100→500 pair count grows 25.20x while callback median grows 24.11x.",
+    "limitations": [
+      "Render work and number of accepted connections are included in callback duration.",
+      "One machine/browser/build/preset only.",
+      "Probe overhead was not independently subtracted.",
+      "This is a baseline, not an optimization A/B."
+    ]
+  },
+  "adoption_decision": "None. Phase 6 will compare brute-force and spatial-index candidates against a deterministic oracle and this lineage."
+}
