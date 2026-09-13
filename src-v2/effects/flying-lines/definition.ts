@@ -43,6 +43,20 @@ const defaultParametersResult = normalizeParameters(flyingLinesParameters, {})
 if (!defaultParametersResult.ok) throw new Error('Flying Lines defaults are invalid.')
 const defaultParameters = defaultParametersResult.value
 
+export const snapshotFlyingLinesState = (state: Readonly<FlyingLinesState>): FlyingLinesState => ({
+	...state,
+	particles: {
+		count: state.particles.count,
+		capacity: state.particles.count,
+		ids: state.particles.ids.slice(0, state.particles.count),
+		x: state.particles.x.slice(0, state.particles.count),
+		y: state.particles.y.slice(0, state.particles.count),
+		velocityX: state.particles.velocityX.slice(0, state.particles.count),
+		velocityY: state.particles.velocityY.slice(0, state.particles.count),
+		lifeSeconds: state.particles.lifeSeconds.slice(0, state.particles.count),
+	},
+})
+
 export const flyingLinesDefinition = defineExperiment<
 	typeof flyingLinesParameters,
 	FlyingLinesState,
@@ -62,19 +76,7 @@ export const flyingLinesDefinition = defineExperiment<
 	capabilities: {
 		renderers: ['canvas2d'],
 		runtimes: ['main-thread', 'worker'],
-		snapshotState: (state) => ({
-			...state,
-			particles: {
-				count: state.particles.count,
-				capacity: state.particles.count,
-				ids: state.particles.ids.slice(0, state.particles.count),
-				x: state.particles.x.slice(0, state.particles.count),
-				y: state.particles.y.slice(0, state.particles.count),
-				velocityX: state.particles.velocityX.slice(0, state.particles.count),
-				velocityY: state.particles.velocityY.slice(0, state.particles.count),
-				lifeSeconds: state.particles.lifeSeconds.slice(0, state.particles.count),
-			},
-		}),
+		snapshotState: snapshotFlyingLinesState,
 	},
 	presets: [
 		{
