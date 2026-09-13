@@ -1,8 +1,7 @@
-import type { ParameterValues } from '../../../src-v2/core/parameters.ts'
 import type { Result } from '../../../src-v2/core/result.ts'
 import { createVersionedStateEnvelope, parseVersionedStateEnvelope } from '../../../src-v2/core/state-codec.ts'
-import { flyingLinesDefinition } from '../../../src-v2/effects/flying-lines/definition.ts'
-import type { flyingLinesParameters } from '../../../src-v2/effects/flying-lines/parameters.ts'
+import { getStudioExperimentPlugin, listStudioExperimentPlugins } from './studio-experiment-registry.ts'
+import type { StudioExperimentPlugin, StudioParameterValues } from './studio-experiment-plugin.ts'
 import type { StudioRuntimeKind } from './studio-controller.ts'
 
 export const STUDIO_STATE_FORMAT = 'bindfly-studio'
@@ -23,7 +22,8 @@ export interface StudioDurableState {
 }
 
 export interface ResolvedStudioState {
-	readonly parameters: ParameterValues<typeof flyingLinesParameters>
+	readonly experimentId: string
+	readonly parameters: StudioParameterValues
 	readonly seed: string
 	readonly runtime: StudioRuntimeKind
 	readonly migratedFrom?: string
@@ -91,30 +91,37 @@ const decodeBase64Url = (value: string): Result<string, string> => {
 }
 
 export const createStudioDurableState = (
-	parameters: ParameterValues<typeof flyingLinesParameters>,
+	plugin: StudioExperimentPlugin,
+	parameters: unknown,
 	seed: string,
 	runtime: StudioRuntimeKind,
 ): StudioDurableState => ({
 	format: STUDIO_STATE_FORMAT,
 	formatVersion: STUDIO_STATE_FORMAT_VERSION,
 	experiment: createVersionedStateEnvelope({
-		experimentId: flyingLinesDefinition.id,
-		stateVersion: flyingLinesDefinition.stateVersion,
-		payload: flyingLinesDefinition.stateCodec.serialize({ parameters, seed }),
+		experimentId: plugin.id,
+		stateVersion: plugin.stateVersion,
+		payload: plugin.serializeConfiguration(parameters, seed),
 	}),
 	renderer: 'canvas2d',
 	runtime,
 })
 
+const runtimeFrom = (value: unknown): StudioRuntimeKind | undefined =>
+	value === 'worker' ? 'worker' : value === 'main' ? 'main' : undefined
+
 const migrateFormatZero = (value: Record<string, unknown>): Result<StudioDurableState, string> => {
-	if (value.experimentId !== 'flying-lines' || !isRecord(value.parameters) || typeof value.seed !== 'string') {
+	if (typeof value.experimentId !== 'string' || typeof value.seed !== 'string' || !isRecord(value.parameters)) {
 		return { ok: false, error: 'Studio state version 0 is malformed.' }
 	}
-	const parsed = flyingLinesDefinition.stateCodec.parse(JSON.stringify({ parameters: value.parameters, seed: value.seed }))
-	if (!parsed.ok) return parsed
-	return {
-		ok: true,
-		value: createStudioDurableState(parsed.value.parameters, parsed.value.seed, value.runtime === 'worker' ? 'worker' : 'main'),
+	const runtime = runtimeFrom(value.runtime)
+	if (!runtime) return { ok: false, error: 'Studio state version 0 runtime is malformed.' }
+	const plugin = getStudioExperimentPlugin(value.experimentId)
+	if (!plugin) return { ok: false, error: `Experiment '${value.experimentId}' is unsupported.` }
+	try {
+		return { ok: true, value: createStudioDurableState(plugin, value.parameters, value.seed, runtime) }
+	} catch (error) {
+		return { ok: false, error: error instanceof Error ? error.message : 'Studio state version 0 is invalid.' }
 	}
 }
 
@@ -127,53 +134,47 @@ export const parseStudioDurableState = (serialized: unknown): Result<StudioDurab
 	if (value.format !== STUDIO_STATE_FORMAT) return { ok: false, error: 'Studio state format is unknown.' }
 	if (value.formatVersion === 0) return migrateFormatZero(value)
 	if (value.formatVersion !== STUDIO_STATE_FORMAT_VERSION) return { ok: false, error: `Studio state version '${String(value.formatVersion)}' is unsupported.` }
-	if (value.renderer !== 'canvas2d' || (value.runtime !== 'main' && value.runtime !== 'worker')) {
-		return { ok: false, error: 'Studio renderer or runtime is unsupported.' }
-	}
+	const runtime = runtimeFrom(value.runtime)
+	if (value.renderer !== 'canvas2d' || !runtime) return { ok: false, error: 'Studio renderer or runtime is unsupported.' }
 	const envelope = parseVersionedStateEnvelope(value.experiment)
 	if (!envelope.ok) return envelope
-	if (envelope.value.experimentId !== flyingLinesDefinition.id) return { ok: false, error: `Experiment '${envelope.value.experimentId}' is unsupported.` }
-	if (envelope.value.stateVersion > flyingLinesDefinition.stateVersion) return { ok: false, error: `Experiment state version ${envelope.value.stateVersion} is newer than supported version ${flyingLinesDefinition.stateVersion}.` }
-	let payload = envelope.value.payload
-	if (envelope.value.stateVersion < flyingLinesDefinition.stateVersion) {
-		const migrated = flyingLinesDefinition.stateCodec.migrate(payload, {
-			experimentId: flyingLinesDefinition.id,
-			fromVersion: envelope.value.stateVersion,
-			toVersion: flyingLinesDefinition.stateVersion,
-		})
-		if (!migrated.ok) return migrated
-		payload = migrated.value
+	if (typeof envelope.value.payload !== 'string') return { ok: false, error: 'Experiment state payload must be a string.' }
+	const plugin = getStudioExperimentPlugin(envelope.value.experimentId)
+	if (!plugin) return { ok: false, error: `Experiment '${envelope.value.experimentId}' is unsupported.` }
+	const configuration = plugin.parseConfiguration(envelope.value.payload, envelope.value.stateVersion)
+	if (!configuration.ok) return configuration
+	return {
+		ok: true,
+		value: createStudioDurableState(plugin, configuration.value.parameters, configuration.value.seed, runtime),
 	}
-	const experiment = flyingLinesDefinition.stateCodec.parse(payload)
-	if (!experiment.ok) return experiment
-	return { ok: true, value: createStudioDurableState(experiment.value.parameters, experiment.value.seed, value.runtime) }
 }
 
 export const resolveStudioDurableState = (state: StudioDurableState): Result<ResolvedStudioState, string> => {
-	const parsed = flyingLinesDefinition.stateCodec.parse(state.experiment.payload)
+	const plugin = getStudioExperimentPlugin(state.experiment.experimentId)
+	if (!plugin) return { ok: false, error: `Experiment '${state.experiment.experimentId}' is unsupported.` }
+	const parsed = plugin.parseConfiguration(state.experiment.payload, state.experiment.stateVersion)
 	return parsed.ok
-		? { ok: true, value: { parameters: parsed.value.parameters, seed: parsed.value.seed, runtime: state.runtime } }
+		? { ok: true, value: { experimentId: plugin.id, parameters: parsed.value.parameters, seed: parsed.value.seed, runtime: state.runtime } }
 		: parsed
 }
 
-const legacyPresets: Readonly<Record<string, ParameterValues<typeof flyingLinesParameters>>> = {
-	Simple: { particleCount: 100, maxSpeed: 60, connectionRadius: 250, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(0, 0, 0, 0.7)' },
-	SwitchColor: { particleCount: 100, maxSpeed: 120, connectionRadius: 150, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(255, 255, 0, 0.7)' },
-	'Monochrome&Clickable': { particleCount: 100, maxSpeed: 120, connectionRadius: 150, particleLifetimeSeconds: 20, margin: 20, background: 'rgb(255, 255, 255)' },
-	AddByClick: { particleCount: 100, maxSpeed: 120, connectionRadius: 200, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(0, 0, 0, 0.7)' },
-	Blank: { particleCount: 1, maxSpeed: 120, connectionRadius: 200, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(0, 0, 0, 0.7)' },
-}
-
 export const migrateLegacyUrl = (url: URL): Result<ResolvedStudioState | undefined, string> => {
-	const match = /^#\/FlyingLines-([^?]+)(?:\?.*)?$/.exec(url.hash)
-	if (!match) return { ok: true, value: undefined }
-	const presetId = match[1]
-	const parameters = presetId ? legacyPresets[presetId] : undefined
-	if (!parameters) return { ok: false, error: `Legacy Flying Lines preset '${presetId ?? ''}' is unsupported.` }
-	return {
-		ok: true,
-		value: { parameters, seed: `legacy-flying-lines-${presetId}`, runtime: 'main', migratedFrom: url.hash },
+	for (const plugin of listStudioExperimentPlugins()) {
+		const migrated = plugin.migrateLegacyUrl?.(url)
+		if (!migrated) continue
+		if (!migrated.ok) return migrated
+		return {
+			ok: true,
+			value: {
+				experimentId: plugin.id,
+				parameters: migrated.value.parameters,
+				seed: migrated.value.seed,
+				runtime: 'main',
+				migratedFrom: url.hash,
+			},
+		}
 	}
+	return { ok: true, value: undefined }
 }
 
 export const encodeStudioState = (state: StudioDurableState): string =>
@@ -202,7 +203,7 @@ export const createShareArtifact = (
 	urlBudget = DEFAULT_URL_BUDGET,
 ): ShareArtifact => {
 	const url = new URL(baseUrl)
-	url.hash = '/lab/flying-lines'
+	url.hash = `/lab/${state.experiment.experimentId}`
 	url.searchParams.delete('runtime')
 	url.searchParams.set(STUDIO_STATE_QUERY_KEY, encodeStudioState(state))
 	const serialized = url.toString()

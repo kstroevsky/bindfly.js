@@ -2,16 +2,17 @@ import { memo } from 'react'
 
 import type { ParameterSchema, ParameterValues } from '../../../src-v2/core/parameters.ts'
 import { createParameterControlModels } from './parameter-control-model.ts'
+import type { StudioParameterValues } from './studio-experiment-plugin.ts'
 
-interface ParameterControlsProps<Schema extends ParameterSchema> {
-	readonly schema: Schema
-	readonly values: ParameterValues<Schema>
-	readonly onChange: (parameterId: keyof Schema & string, value: unknown) => void
+interface ParameterControlsProps {
+	readonly schema: ParameterSchema
+	readonly values: StudioParameterValues
+	readonly onChange: (parameterId: string, value: unknown) => void
 }
 
-const ParameterControlsInner = <Schema extends ParameterSchema>({ schema, values, onChange }: ParameterControlsProps<Schema>) => (
+const ParameterControlsInner = ({ schema, values, onChange }: ParameterControlsProps) => (
 	<section className="controls" aria-label="Parameters">
-		{createParameterControlModels(schema, values).map((model) => {
+		{createParameterControlModels(schema, values as ParameterValues<ParameterSchema>).map((model) => {
 			const inputId = `parameter-${model.id}`
 			const descriptionId = `${inputId}-description`
 			const definition = model.definition
@@ -27,17 +28,17 @@ const ParameterControlsInner = <Schema extends ParameterSchema>({ schema, values
 						max={definition.max}
 						step={definition.step}
 						aria-describedby={descriptionId}
-						onChange={(event) => onChange(model.id as keyof Schema & string, event.currentTarget.valueAsNumber)}
+						onChange={(event) => onChange(model.id, event.currentTarget.valueAsNumber)}
 					/>
 					break
 				case 'boolean':
-					control = <input id={inputId} type="checkbox" checked={model.value as boolean} aria-describedby={descriptionId} onChange={(event) => onChange(model.id as keyof Schema & string, event.currentTarget.checked)} />
+					control = <input id={inputId} type="checkbox" checked={model.value as boolean} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.checked)} />
 					break
 				case 'string':
-					control = <input id={inputId} type="text" value={model.value as string} maxLength={definition.maxLength} aria-describedby={descriptionId} onChange={(event) => onChange(model.id as keyof Schema & string, event.currentTarget.value)} />
+					control = <input id={inputId} type="text" value={model.value as string} maxLength={definition.maxLength} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.value)} />
 					break
 				case 'enum':
-					control = <select id={inputId} value={model.value as string} aria-describedby={descriptionId} onChange={(event) => onChange(model.id as keyof Schema & string, event.currentTarget.value)}>{definition.values.map((value) => <option key={value} value={value}>{value}</option>)}</select>
+					control = <select id={inputId} value={model.value as string} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.value)}>{definition.values.map((value) => <option key={value} value={value}>{value}</option>)}</select>
 					break
 			}
 
@@ -50,4 +51,4 @@ const ParameterControlsInner = <Schema extends ParameterSchema>({ schema, values
 	</section>
 )
 
-export const ParameterControls = memo(ParameterControlsInner) as typeof ParameterControlsInner
+export const ParameterControls = memo(ParameterControlsInner)

@@ -17,8 +17,6 @@ export interface FlyingLinesParticleBuffer extends PointBuffer2D {
 
 export interface FlyingLinesState {
 	readonly particles: FlyingLinesParticleBuffer
-	connectionRadius: number
-	background: string
 }
 
 export type FlyingLinesInput =

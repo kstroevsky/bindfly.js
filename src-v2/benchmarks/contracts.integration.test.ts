@@ -36,6 +36,10 @@ interface FakeState {
 	ticks: number
 }
 
+interface FakeSnapshotState {
+	readonly tickTotal: number
+}
+
 interface DurableState {
 	parameters: { readonly speed: number }
 	seed: string
@@ -73,12 +77,12 @@ const codec: ExperimentStateCodec<DurableState, string> = {
 		: { ok: false, error: 'fake codec has no migration' },
 }
 
-const analyzer: AnalyzerDefinition<FakeState, number> = {
+const analyzer: AnalyzerDefinition<FakeSnapshotState, number> = {
 	id: 'tick-count',
 	analyze: (snapshot, _context, signal) => {
 		if (signal.aborted) return Promise.reject(signal.reason)
 		return {
-			value: snapshot.state.ticks,
+			value: snapshot.state.tickTotal,
 			provenance: {
 				snapshotId: snapshot.snapshotId,
 				experimentId: snapshot.experimentId,
@@ -100,7 +104,8 @@ const definition = defineExperiment<
 	FakeState,
 	{ readonly type: 'nudge' },
 	DurableState,
-	string
+	string,
+	FakeSnapshotState
 >({
 	id: 'fake-experiment',
 	stateVersion: 1,
@@ -112,9 +117,11 @@ const definition = defineExperiment<
 	parameters: schema,
 	stateCodec: codec,
 	capabilities: {
-		renderers: ['canvas2d'],
-		runtimes: ['main-thread', 'worker'],
-		snapshotState: (state) => ({ ...state }),
+		executionProfiles: [
+			{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
+			{ rendererId: 'canvas2d', runtimeId: 'worker' },
+		],
+		snapshotState: (state) => ({ tickTotal: state.ticks }),
 	},
 	analyzers: [analyzer],
 	createSimulation: () => new FakeSimulation(),
@@ -207,13 +214,13 @@ test('fake experiment proves registry, serialization and analyzer cancellation c
 	simulation.step({ index: 0, dtSeconds: 1 / 60, elapsedSeconds: 1 / 60 })
 	assert.equal(simulation.state.ticks, 1)
 
-	const snapshot: AnalysisSnapshot<FakeState> = {
+	const snapshot: AnalysisSnapshot<FakeSnapshotState> = {
 		snapshotId: 'snapshot-1',
 		experimentId: loaded.id,
 		stateVersion: loaded.stateVersion,
 		simulationStepIndex: 1,
 		simulationTimeSeconds: 1 / 60,
-		state: { ...simulation.state },
+		state: loaded.capabilities.snapshotState(simulation.state),
 	}
 	const controller = new AbortController()
 	controller.abort(new Error('cancelled'))
@@ -258,6 +265,19 @@ test('experiment definitions reject invalid identity and codec versions', () => 
 	assert.throws(
 		() => defineExperiment({ ...definition, analyzers: [analyzer, analyzer] }),
 		/duplicate analyzer IDs/,
+	)
+	assert.throws(
+		() => defineExperiment({
+			...definition,
+			capabilities: {
+				...definition.capabilities,
+				executionProfiles: [
+					{ rendererId: 'canvas2d', runtimeId: 'worker' },
+					{ rendererId: 'canvas2d', runtimeId: 'worker' },
+				],
+			},
+		}),
+		/duplicate execution profiles/,
 	)
 	assert.throws(
 		() => defineExperiment({

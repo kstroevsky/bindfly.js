@@ -1,6 +1,7 @@
 export * from './analysis-contract.ts'
 export * from './capabilities.ts'
 export * from './clock.ts'
+export * from './derivation.ts'
 export * from './experiment.ts'
 export * from './geometry.ts'
 export * from './input.ts'

@@ -74,8 +74,10 @@ export const flyingLinesDefinition = defineExperiment<
 	parameters: flyingLinesParameters,
 	stateCodec: codec,
 	capabilities: {
-		renderers: ['canvas2d'],
-		runtimes: ['main-thread', 'worker'],
+		executionProfiles: [
+			{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
+			{ rendererId: 'canvas2d', runtimeId: 'worker' },
+		],
 		snapshotState: snapshotFlyingLinesState,
 	},
 	presets: [

@@ -24,14 +24,15 @@ export interface ExperimentDefinition<
 	Input,
 	DurableState,
 	SerializedState,
+	SnapshotState = State,
 > {
 	readonly id: string
 	readonly stateVersion: number
 	readonly timing: ExperimentTiming
 	readonly parameters: Schema
 	readonly stateCodec: ExperimentStateCodec<DurableState, SerializedState>
-	readonly capabilities: ExperimentCapabilities<State>
-	readonly analyzers?: readonly AnalyzerDefinition<State, unknown>[]
+	readonly capabilities: ExperimentCapabilities<State, SnapshotState>
+	readonly analyzers?: readonly AnalyzerDefinition<SnapshotState, unknown>[]
 	readonly presets?: readonly ExperimentPreset<ParameterValues<Schema>>[]
 	createSimulation(
 		environment: SimulationEnvironment,
@@ -45,9 +46,10 @@ export const defineExperiment = <
 	Input,
 	DurableState,
 	SerializedState,
+	SnapshotState = State,
 >(
-	definition: ExperimentDefinition<Schema, State, Input, DurableState, SerializedState>,
-): ExperimentDefinition<Schema, State, Input, DurableState, SerializedState> => {
+	definition: ExperimentDefinition<Schema, State, Input, DurableState, SerializedState, SnapshotState>,
+): ExperimentDefinition<Schema, State, Input, DurableState, SerializedState, SnapshotState> => {
 	if (definition.id.trim().length === 0) {
 		throw new Error('Experiment definition must include a non-empty stable ID.')
 	}
@@ -74,6 +76,14 @@ export const defineExperiment = <
 	const analyzerIds = definition.analyzers?.map(({ id }) => id) ?? []
 	if (new Set(analyzerIds).size !== analyzerIds.length) {
 		throw new Error(`Experiment '${definition.id}' contains duplicate analyzer IDs.`)
+	}
+
+	const profileIds = definition.capabilities.executionProfiles.map(({ rendererId, runtimeId }) => `${rendererId}:${runtimeId}`)
+	if (profileIds.length === 0) {
+		throw new Error(`Experiment '${definition.id}' must declare at least one execution profile.`)
+	}
+	if (new Set(profileIds).size !== profileIds.length) {
+		throw new Error(`Experiment '${definition.id}' contains duplicate execution profiles.`)
 	}
 
 	const presetIds = definition.presets?.map(({ id }) => id) ?? []

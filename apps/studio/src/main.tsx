@@ -1,16 +1,14 @@
 import { createRoot } from 'react-dom/client'
 
 import { StudioApp } from './studio-app.tsx'
+import { defaultStudioRoute, isStudioRoute } from './studio-route.ts'
 import './styles.css'
 
 const app = document.getElementById('app')
 if (!app) throw new Error("Studio element '#app' is missing.")
 
-const route = '#/lab/flying-lines'
-if (!window.location.hash) window.location.hash = route
+if (!window.location.hash) window.location.hash = defaultStudioRoute
 
-const isLegacyFlyingLinesRoute = /^#\/FlyingLines-/.test(window.location.hash)
-
-createRoot(app).render(window.location.hash === route || isLegacyFlyingLinesRoute
+createRoot(app).render(isStudioRoute(new URL(window.location.href))
 	? <StudioApp />
-	: <main className="error"><h1>Unknown route</h1><p>Use <code>{route}</code>.</p></main>)
+	: <main className="error"><h1>Unknown route</h1><p>Use <code>{defaultStudioRoute}</code>.</p></main>)

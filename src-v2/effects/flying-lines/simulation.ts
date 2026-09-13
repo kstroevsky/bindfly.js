@@ -41,8 +41,6 @@ class FlyingLinesSimulation implements Simulation<FlyingLinesState, FlyingLinesI
 		this.initialRandomSnapshot = environment.random.snapshot()
 		this.state = {
 			particles: createBuffer(capacityFor(parameters.particleCount)),
-			connectionRadius: parameters.connectionRadius,
-			background: parameters.background,
 		}
 		this.reset()
 	}

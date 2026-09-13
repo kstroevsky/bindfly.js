@@ -32,3 +32,15 @@ export interface ProximityEdgeBuffer2D {
 	readonly distances: FloatingPointArray
 	readonly opacities: FloatingPointArray
 }
+
+export interface WeightedLineSegmentBuffer2D {
+	readonly count: number
+	readonly capacity: number
+	readonly sourceParticleIndices: Uint32Array
+	readonly sourceX: FloatingPointArray
+	readonly sourceY: FloatingPointArray
+	readonly targetX: FloatingPointArray
+	readonly targetY: FloatingPointArray
+	readonly distances: FloatingPointArray
+	readonly opacities: FloatingPointArray
+}

@@ -1,5 +1,20 @@
 import { expect, test } from '@playwright/test'
 
+const consoleProblems = new WeakMap<import('@playwright/test').Page, string[]>()
+
+test.beforeEach(async ({ page }) => {
+	const problems: string[] = []
+	consoleProblems.set(page, problems)
+	page.on('console', (message) => {
+		if (message.type() === 'error' || message.type() === 'warning') problems.push(`${message.type()}: ${message.text()}`)
+	})
+	page.on('pageerror', (error) => problems.push(`pageerror: ${error.message}`))
+})
+
+test.afterEach(async ({ page }) => {
+	expect(consoleProblems.get(page) ?? []).toEqual([])
+})
+
 const metric = (page: import('@playwright/test').Page, name: string) =>
 	page.locator('.metric').filter({ has: page.locator('dt', { hasText: name }) }).locator('dd')
 
@@ -64,4 +79,24 @@ test('mobile viewport keeps controls and simulation available', async ({ page })
 	await expect(page.getByLabel('Experiment controls')).toBeVisible()
 	await expect(page.getByLabel('Interactive Flying Lines simulation')).toBeVisible()
 	await expect(metric(page, 'Points')).toHaveText('100')
+})
+
+test('Drooping Lines runs through the same main and worker Studio paths', async ({ page }) => {
+	await page.goto('/#/lab/drooping-lines')
+	await expect(page.getByRole('heading', { name: 'Drooping Lines' })).toBeVisible()
+	await expect(page.locator('#parameter-deformation')).toHaveValue('tan-x')
+	await expect(metric(page, 'Points')).toHaveText('100')
+
+	const canvas = page.getByLabel('Interactive Drooping Lines simulation')
+	await canvas.click({ position: { x: 180, y: 140 } })
+	await expect(metric(page, 'Points')).toHaveText('101')
+	await page.locator('#parameter-deformation').selectOption('atan-y')
+	await expect(metric(page, 'Points')).toHaveText('101')
+	await expect(page).toHaveURL(/#\/lab\/drooping-lines/)
+
+	await page.getByLabel('Runtime').selectOption('worker')
+	await expect(page.locator('.badge')).toContainText('worker')
+	await expect(metric(page, 'Points')).toHaveText('100')
+	await canvas.click({ position: { x: 200, y: 160 } })
+	await expect(metric(page, 'Points')).toHaveText('101')
 })

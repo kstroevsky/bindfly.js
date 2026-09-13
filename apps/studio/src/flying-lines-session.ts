@@ -1,9 +1,7 @@
-import { createProximityGraphWorkspace } from '../../../src-v2/analysis/proximity-graph.ts'
-import { createUniformGridProximityGraphWorkspace, shouldUseUniformGrid } from '../../../src-v2/analysis/uniform-grid-proximity-graph.ts'
+import { createAdaptiveProximityDerivation } from '../../../src-v2/analysis/adaptive-proximity-derivation.ts'
 import { createSeededRandom, getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
 import type { ParameterPatch, ParameterValues, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
 import { flyingLinesDefinition, snapshotFlyingLinesState } from '../../../src-v2/effects/flying-lines/definition.ts'
-import { applyFlyingLinesHotParameters } from '../../../src-v2/effects/flying-lines/parameter-update.ts'
 import { flyingLinesParameters } from '../../../src-v2/effects/flying-lines/parameters.ts'
 import type { FlyingLinesInput, FlyingLinesState } from '../../../src-v2/effects/flying-lines/types.ts'
 import { createFlyingLinesCanvasRenderer } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
@@ -32,13 +30,11 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 		viewport,
 	}, parameters)
 	const renderer = createFlyingLinesCanvasRenderer(options.canvas)
-	const brute = createProximityGraphWorkspace(500)
-	const grid = createUniformGridProximityGraphWorkspace(500)
-	let workspace = shouldUseUniformGrid(simulation.state.particles, simulation.state.connectionRadius) ? grid : brute
+	const proximity = createAdaptiveProximityDerivation(500)
 	let view: FlyingLinesRenderView = {
-		background: simulation.state.background,
+		background: parameters.background,
 		particles: simulation.state.particles,
-		edges: workspace.result,
+		edges: proximity.result,
 	}
 	let droppedSteps = 0
 	let telemetry: ExperimentTelemetry = {
@@ -48,7 +44,7 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 		step: 0,
 		frameMs: 0,
 		droppedSteps,
-		searchBackend: workspace === grid ? 'grid' : 'brute',
+		searchBackend: proximity.backend,
 	}
 	let disposed = false
 
@@ -56,11 +52,10 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 		if (disposed) throw new Error('Cannot use a disposed Flying Lines session.')
 	}
 	const refreshDerivedOwners = () => {
-		workspace = shouldUseUniformGrid(simulation.state.particles, simulation.state.connectionRadius) ? grid : brute
 		view = {
-			background: simulation.state.background,
+			background: parameters.background,
 			particles: simulation.state.particles,
-			edges: workspace.result,
+			edges: proximity.result,
 		}
 	}
 	const rebuild = () => {
@@ -79,16 +74,20 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 		render: (frame: RenderFrame) => {
 			assertActive()
 			const startedAt = performance.now()
-			workspace.analyze(simulation.state.particles, simulation.state.connectionRadius)
+			const edges = proximity.update({
+				points: simulation.state.particles,
+				connectionRadius: parameters.connectionRadius,
+			})
+			if (view.edges !== edges) view = { ...view, edges }
 			renderer.render(view, frame)
 			telemetry = {
 				points: simulation.state.particles.count,
-				edges: workspace.result.edgeCount,
-				components: workspace.result.componentCount,
+				edges: edges.edgeCount,
+				components: edges.componentCount,
 				step: frame.simulationStepIndex,
 				frameMs: performance.now() - startedAt,
 				droppedSteps,
-				searchBackend: workspace === grid ? 'grid' : 'brute',
+				searchBackend: proximity.backend,
 			}
 			return telemetry
 		},
@@ -103,7 +102,6 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 			if (!normalized.ok) throw new Error(normalized.issues[0]?.message ?? 'Invalid Flying Lines parameter patch.')
 			parameters = normalized.value
 			if (invalidation === 'hot-update') {
-				applyFlyingLinesHotParameters(simulation.state, parameters)
 				refreshDerivedOwners()
 			} else if (invalidation === 'reset-simulation') {
 				rebuild()
@@ -136,6 +134,7 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 			if (disposed) return
 			disposed = true
 			simulation.dispose()
+			proximity.dispose()
 			renderer.dispose()
 		},
 	}

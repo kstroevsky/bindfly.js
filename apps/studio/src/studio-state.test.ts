@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { normalizeParameters } from '../../../src-v2/core/parameters.ts'
-import { flyingLinesParameters } from '../../../src-v2/effects/flying-lines/parameters.ts'
+import { droopingLinesPlugin } from './drooping-lines-plugin.ts'
+import { flyingLinesPlugin } from './flying-lines-plugin.ts'
 import {
 	canonicalStringify,
 	createShareArtifact,
@@ -15,12 +15,10 @@ import {
 	resolveStudioDurableState,
 } from './studio-state.ts'
 
-const parametersResult = normalizeParameters(flyingLinesParameters, {})
-if (!parametersResult.ok) throw new Error('Defaults must be valid.')
-const parameters = parametersResult.value
+const parameters = flyingLinesPlugin.defaultParameters
 
 test('canonical state round-trips deterministically through JSON and base64url', () => {
-	const state = createStudioDurableState(parameters, 'fixture-✓', 'worker')
+	const state = createStudioDurableState(flyingLinesPlugin, parameters, 'fixture-✓', 'worker')
 	const encoded = encodeStudioState(state)
 	assert.match(encoded, /^[A-Za-z0-9_-]+$/)
 	assert.deepEqual(decodeStudioState(encoded), { ok: true, value: state })
@@ -29,7 +27,7 @@ test('canonical state round-trips deterministically through JSON and base64url',
 })
 
 test('URL state includes only durable choices and reproduces them', () => {
-	const state = createStudioDurableState({ ...parameters, particleCount: 42 }, 'url-fixture', 'main')
+	const state = createStudioDurableState(flyingLinesPlugin, { ...parameters, particleCount: 42 }, 'url-fixture', 'main')
 	const artifact = createShareArtifact(new URL('https://example.test/?runtime=worker#/lab/flying-lines'), state)
 	assert.equal(artifact.kind, 'url')
 	if (artifact.kind !== 'url') return
@@ -37,6 +35,7 @@ test('URL state includes only durable choices and reproduces them', () => {
 	assert.equal(resolved.ok, true)
 	if (!resolved.ok || !resolved.value) return
 	assert.equal(resolved.value.parameters.particleCount, 42)
+	assert.equal(resolved.value.experimentId, 'flying-lines')
 	assert.equal(resolved.value.seed, 'url-fixture')
 	assert.equal(resolved.value.runtime, 'main')
 	assert.equal(new URL(artifact.url).searchParams.has('runtime'), false)
@@ -44,7 +43,7 @@ test('URL state includes only durable choices and reproduces them', () => {
 })
 
 test('falls back to canonical JSON when the URL budget is exceeded', () => {
-	const state = createStudioDurableState(parameters, 'long-seed', 'main')
+	const state = createStudioDurableState(flyingLinesPlugin, parameters, 'long-seed', 'main')
 	const artifact = createShareArtifact(new URL('https://example.test/#/lab/flying-lines'), state, 20)
 	assert.equal(artifact.kind, 'json')
 	if (artifact.kind !== 'json') return
@@ -55,8 +54,8 @@ test('falls back to canonical JSON when the URL budget is exceeded', () => {
 test('rejects malformed, unknown, future, and invalid experiment state', () => {
 	assert.equal(parseStudioDurableState('{').ok, false)
 	assert.equal(parseStudioDurableState({ format: 'other', formatVersion: 1 }).ok, false)
-	assert.equal(parseStudioDurableState({ ...createStudioDurableState(parameters, 'x', 'main'), formatVersion: 99 }).ok, false)
-	const future = createStudioDurableState(parameters, 'x', 'main')
+	assert.equal(parseStudioDurableState({ ...createStudioDurableState(flyingLinesPlugin, parameters, 'x', 'main'), formatVersion: 99 }).ok, false)
+	const future = createStudioDurableState(flyingLinesPlugin, parameters, 'x', 'main')
 	assert.equal(parseStudioDurableState({ ...future, experiment: { ...future.experiment, stateVersion: 99 } }).ok, false)
 	assert.equal(decodeStudioState('***').ok, false)
 })
@@ -73,7 +72,7 @@ test('migrates the version-zero studio document', () => {
 	assert.equal(migrated.ok, true)
 	if (!migrated.ok) return
 	const resolved = resolveStudioDurableState(migrated.value)
-	assert.deepEqual(resolved, { ok: true, value: { parameters, seed: 'v0-seed', runtime: 'worker' } })
+	assert.deepEqual(resolved, { ok: true, value: { experimentId: 'flying-lines', parameters, seed: 'v0-seed', runtime: 'worker' } })
 })
 
 test('migrates every recorded legacy Flying Lines preset URL', () => {
@@ -95,4 +94,25 @@ test('migrates every recorded legacy Flying Lines preset URL', () => {
 	}
 	assert.equal(migrateLegacyUrl(new URL('https://example.test/#/FlyingLines-Unknown')).ok, false)
 	assert.deepEqual(migrateLegacyUrl(new URL('https://example.test/#/Pulse-Simple')), { ok: true, value: undefined })
+})
+
+test('durable state and legacy migration are heterogeneous and plugin-driven', () => {
+	const state = createStudioDurableState(droopingLinesPlugin, {
+		...droopingLinesPlugin.defaultParameters,
+		deformation: 'atan-y',
+	}, 'drooping-state', 'worker')
+	const parsed = parseStudioDurableState(canonicalStringify(state))
+	assert.equal(parsed.ok, true)
+	if (!parsed.ok) return
+	const resolved = resolveStudioDurableState(parsed.value)
+	assert.equal(resolved.ok, true)
+	if (!resolved.ok) return
+	assert.equal(resolved.value.experimentId, 'drooping-lines')
+	assert.equal(resolved.value.parameters.deformation, 'atan-y')
+
+	const legacy = migrateLegacyUrl(new URL('https://example.test/#/DroopingLines-AddByClick'))
+	assert.equal(legacy.ok, true)
+	if (!legacy.ok || !legacy.value) return
+	assert.equal(legacy.value.experimentId, 'drooping-lines')
+	assert.equal(legacy.value.parameters.deformation, 'atan-y')
 })
