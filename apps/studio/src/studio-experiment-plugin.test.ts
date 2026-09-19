@@ -6,7 +6,9 @@ import { flyingLinesPlugin } from './flying-lines-plugin.ts'
 import { studioExperimentRegistry } from './studio-experiment-registry.ts'
 
 test('typed plugin is erased only at the heterogeneous registry boundary', async () => {
-	assert.deepEqual(studioExperimentRegistry.list(), ['drooping-lines', 'flying-lines'])
+	assert.deepEqual(studioExperimentRegistry.list(), [
+		'drooping-lines', 'flying-lines', 'pulse-2023', 'spiral-1', 'spiral-2', 'spiral-3',
+	])
 	const plugin = await studioExperimentRegistry.load('flying-lines')
 	assert.equal(plugin, flyingLinesPlugin)
 	assert.equal(plugin.title, 'Flying Lines')
@@ -29,6 +31,19 @@ test('typed plugin is erased only at the heterogeneous registry boundary', async
 	assert.equal(drooping.defaultParameters.formulaMorph, 0)
 	assert.equal(drooping.parseParameterPatch({ formulaAX: 'globalThis' }).ok, false)
 	assert.notDeepEqual(drooping.parameters, plugin.parameters)
+
+	const pulse = await studioExperimentRegistry.load('pulse-2023')
+	assert.equal(pulse.title, 'Pulse 2023')
+	assert.equal(pulse.defaultParameters.formulaAY, 'positionY + tan(distance) * weight * cos(angle * exp(a)) * atan(a)')
+	assert.equal(pulse.parseParameterPatch({ formulaAX: 'globalThis' }).ok, false)
+	const pulsePayload = pulse.serializeConfiguration(pulse.defaultParameters, pulse.defaultSeed)
+	assert.deepEqual(pulse.parseConfiguration(pulsePayload, pulse.stateVersion), {
+		ok: true,
+		value: { parameters: pulse.defaultParameters, seed: pulse.defaultSeed },
+	})
+	assert.deepEqual(pulse.createInteractionController().handle({
+		phase: 'down', x: 12, y: 34, buttons: 1, shiftKey: false,
+	}), [{ type: 'set-center', x: 12, y: 34 }])
 })
 
 test('interaction semantics are supplied by the experiment plugin', () => {

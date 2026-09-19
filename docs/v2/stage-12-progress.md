@@ -14,21 +14,23 @@ Stage 12 is in progress on the current integration branch. This report records t
 - Preserved the moving-point simulation and render backend unchanged.
 - Added draft-based, full-width formula editors so incomplete expressions remain editable until Enter/Apply, with per-formula restoration to the frozen default.
 - Constrained the desktop Studio to the viewport so its sidebar scrolls independently, and deferred ResizeObserver writes to animation frames to prevent the development runtime overlay during parameter resets.
+- Added executable `pulse-2023`, `spiral-1`, `spiral-2` and `spiral-3` experiments backed by their frozen formula records.
+- Added a shared deterministic parametric phase simulation, formula-derived point buffer, proximity derivation and Canvas session used identically by main-thread and worker runtimes.
+- Preserved Pulse's two-operation accumulator update separately from the Spiral family's single-operation update, and migrated the recorded legacy routes through plugin-owned adapters.
 
 ## Verification status
 
-- V2 boundaries, typecheck, lint and 102 tests: PASS.
+- V2 boundaries, typecheck, lint and 106 tests: PASS.
 - Formula endpoint/midpoint semantics: PASS through unit tests.
 - Independent legacy formula parity for Pulse/Spiral catalog entries: PASS through direct `Math` expectations.
 - Drooping state migration and untrusted import rejection: PASS through codec tests.
 - Production V2 build: PASS.
-- Chromium browser suite: PASS, 5/5, including Drooping formula morphing and main/worker switching.
+- Chromium browser suite: PASS, 7/7, including Drooping formula editing, all four parametric Originals and main/worker switching.
 - Desktop and mobile rendered smoke checks: PASS with visible controls/canvas and no console or page errors.
-- React Doctor changed-scope scan: 83/100 with one pre-existing effect-chain warning in `studio-app.tsx`; this slice changed only the Stage label on that component and introduced no new React diagnostic.
+- React Doctor changed-scope scan: 83/100 with one pre-existing effect-chain warning in `studio-app.tsx`; the Stage 12 UI work introduced no new React diagnostic.
 
 ## Remaining Stage 12 work
 
-- Build formula-backed Pulse and Spiral execution sessions from the frozen catalog.
 - Add the synchronized side-by-side A/B Studio presentation using identical seed, state, step and scope.
 - Expose provenance in the experiment inspector/export rather than only in the engine catalog and documentation.
 - Complete browser comparison, hot-edit and restoration tests for the remaining Originals.

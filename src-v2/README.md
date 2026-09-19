@@ -18,4 +18,6 @@ These directories are logical architecture boundaries, not separately published 
 
 Stage 12 begins the `formula`-backed Bindfly Originals catalog. Each original freezes exact formula text and legacy Git-blob provenance. Drooping Lines now evaluates editable A/B formula transforms through canonical IR and morphs their output coordinates without resetting the shared moving-point simulation.
 
+`effects/parametric-originals` executes Pulse 2023 and Spiral I/II/III from that catalog. It owns their fixed-step phase state and formula-derived point buffers; proximity analysis, rendering and main/worker runtime composition remain separate consumers.
+
 Run `pnpm v2:check` to enforce the current boundary and toolchain contract.

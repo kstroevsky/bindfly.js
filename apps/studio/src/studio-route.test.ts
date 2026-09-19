@@ -8,6 +8,9 @@ test('routes every registered experiment and recognized legacy migration through
 	assert.equal(isStudioRoute(new URL('https://example.test/#/lab/flying-lines')), true)
 	assert.equal(isStudioRoute(new URL('https://example.test/#/lab/drooping-lines')), true)
 	assert.equal(isStudioRoute(new URL('https://example.test/#/DroopingLines-Simple')), true)
-	assert.equal(isStudioRoute(new URL('https://example.test/#/Pulse-Simple')), false)
+	assert.equal(isStudioRoute(new URL('https://example.test/#/Pulse-Simple')), true)
+	for (const id of ['pulse-2023', 'spiral-1', 'spiral-2', 'spiral-3']) {
+		assert.equal(isStudioRoute(new URL(`https://example.test/#/lab/${id}`)), true)
+	}
 	assert.equal(isStudioRoute(new URL('https://example.test/#/lab/missing')), false)
 })

@@ -75,7 +75,7 @@ test('migrates the version-zero studio document', () => {
 	assert.deepEqual(resolved, { ok: true, value: { experimentId: 'flying-lines', parameters, seed: 'v0-seed', runtime: 'worker' } })
 })
 
-test('migrates every recorded legacy Flying Lines preset URL', () => {
+test('migrates every recorded legacy Flying Lines preset URL and recognizes formula originals', () => {
 	const expected = [
 		['Simple', 100, 60, 250],
 		['SwitchColor', 100, 120, 150],
@@ -93,7 +93,12 @@ test('migrates every recorded legacy Flying Lines preset URL', () => {
 		assert.equal(migrated.value.migratedFrom?.startsWith('#/FlyingLines-'), true)
 	}
 	assert.equal(migrateLegacyUrl(new URL('https://example.test/#/FlyingLines-Unknown')).ok, false)
-	assert.deepEqual(migrateLegacyUrl(new URL('https://example.test/#/Pulse-Simple')), { ok: true, value: undefined })
+	const pulse = migrateLegacyUrl(new URL('https://example.test/#/Pulse-Simple'))
+	assert.equal(pulse.ok, true)
+	if (!pulse.ok || !pulse.value) return
+	assert.equal(pulse.value.experimentId, 'pulse-2023')
+	assert.equal(pulse.value.parameters.formulaAX, 'positionX + distance * cos(a) * -1')
+	assert.equal(pulse.value.parameters.particleCount, 100)
 })
 
 test('durable state and legacy migration are heterogeneous and plugin-driven', () => {

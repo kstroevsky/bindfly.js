@@ -127,3 +127,25 @@ test('Drooping Lines runs through the same main and worker Studio paths', async 
 	await canvas.click({ position: { x: 200, y: 160 } })
 	await expect(metric(page, 'Points')).toHaveText('101')
 })
+
+test('Pulse and the Spiral family execute from frozen formulas through the generic Studio', async ({ page }) => {
+	const originals = [
+		['pulse-2023', 'Pulse 2023'],
+		['spiral-1', 'Spiral I'],
+		['spiral-2', 'Spiral II'],
+		['spiral-3', 'Spiral III'],
+	] as const
+	for (const [id, title] of originals) {
+		await page.goto(`/#/lab/${id}`)
+		await expect(page.getByRole('heading', { name: title })).toBeVisible()
+		await expect(metric(page, 'Points')).toHaveText('100')
+		await expect.poll(async () => Number(await metric(page, 'Step').textContent())).toBeGreaterThan(0)
+		await expect(page.locator('#parameter-formulaAX')).not.toHaveValue('')
+	}
+
+	await page.goto('/#/lab/pulse-2023')
+	await page.getByLabel('Interactive Pulse 2023 simulation').click({ position: { x: 220, y: 180 } })
+	await page.getByLabel('Runtime').selectOption('worker')
+	await expect(page.locator('.badge')).toContainText('worker')
+	await expect(metric(page, 'Points')).toHaveText('100')
+})
