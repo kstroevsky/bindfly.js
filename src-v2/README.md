@@ -16,4 +16,6 @@ These directories are logical architecture boundaries, not separately published 
 
 `effects/moving-points` is the first Stage 10B common behavior owner. It exists because Flying Lines and Drooping Lines proved identical physical state, input and lifecycle semantics; their mathematical derivations and renderers remain separate.
 
+Stage 12 begins the `formula`-backed Bindfly Originals catalog. Each original freezes exact formula text and legacy Git-blob provenance. Drooping Lines now evaluates editable A/B formula transforms through canonical IR and morphs their output coordinates without resetting the shared moving-point simulation.
+
 Run `pnpm v2:check` to enforce the current boundary and toolchain contract.

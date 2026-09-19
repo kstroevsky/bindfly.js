@@ -37,7 +37,7 @@ const activeParticles = (state: { readonly particles: {
 
 test('Flying Lines and Drooping Lines have identical physical simulation semantics', () => {
 	const flyingParameters = normalizeParameters(flyingLinesParameters, physical)
-	const droopingParameters = normalizeParameters(droopingLinesParameters, { ...physical, deformation: 'atan-y' })
+	const droopingParameters = normalizeParameters(droopingLinesParameters, { ...physical, formulaMorph: 1 })
 	assert.equal(flyingParameters.ok, true)
 	assert.equal(droopingParameters.ok, true)
 	if (!flyingParameters.ok || !droopingParameters.ok) return

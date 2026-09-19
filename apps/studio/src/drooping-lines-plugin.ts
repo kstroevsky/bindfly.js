@@ -1,5 +1,6 @@
 import type { Result } from '../../../src-v2/core/result.ts'
 import { droopingLinesDefinition } from '../../../src-v2/effects/drooping-lines/definition.ts'
+import { compileDroopingFormulaPair } from '../../../src-v2/effects/drooping-lines/formula.ts'
 import type { DroopingLinesInput, DroopingLinesParameters } from '../../../src-v2/effects/drooping-lines/types.ts'
 import { createDroopingLinesSession } from './drooping-lines-session.ts'
 import { parseMovingPointInput } from './moving-point-input.ts'
@@ -12,12 +13,19 @@ const parseInput = (value: unknown): Result<DroopingLinesInput, string> => {
 	}
 }
 
+const formulaParameters = droopingLinesDefinition.presets?.[0]?.parameters
+if (!formulaParameters) throw new Error('Drooping Lines formula defaults are unavailable.')
+const legacy = (parameters: Partial<DroopingLinesParameters>, formulaMorph: number): DroopingLinesParameters => ({
+	...formulaParameters,
+	...parameters,
+	formulaMorph,
+})
 const legacyPresets: Readonly<Record<string, DroopingLinesParameters>> = {
-	Simple: { particleCount: 100, maxSpeed: 60, connectionRadius: 250, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(0, 0, 0, 0.7)', deformation: 'tan-x' },
-	SwitchColor: { particleCount: 100, maxSpeed: 120, connectionRadius: 150, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(255, 255, 0, 0.7)', deformation: 'tan-x' },
-	'Monochrome&Clickable': { particleCount: 100, maxSpeed: 120, connectionRadius: 150, particleLifetimeSeconds: 20, margin: 20, background: 'rgb(255, 255, 255)', deformation: 'atan-y' },
-	AddByClick: { particleCount: 100, maxSpeed: 120, connectionRadius: 200, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(0, 0, 0, 0.7)', deformation: 'atan-y' },
-	Blank: { particleCount: 1, maxSpeed: 120, connectionRadius: 200, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(0, 0, 0, 0.7)', deformation: 'atan-y' },
+	Simple: legacy({ particleCount: 100, maxSpeed: 60, connectionRadius: 250, background: 'rgba(0, 0, 0, 0.7)' }, 0),
+	SwitchColor: legacy({ particleCount: 100, maxSpeed: 120, connectionRadius: 150, background: 'rgba(255, 255, 0, 0.7)' }, 0),
+	'Monochrome&Clickable': legacy({ particleCount: 100, maxSpeed: 120, connectionRadius: 150, background: 'rgb(255, 255, 255)' }, 1),
+	AddByClick: legacy({ particleCount: 100, maxSpeed: 120, connectionRadius: 200, background: 'rgba(0, 0, 0, 0.7)' }, 1),
+	Blank: legacy({ particleCount: 1, maxSpeed: 120, connectionRadius: 200, background: 'rgba(0, 0, 0, 0.7)' }, 1),
 }
 
 export const droopingLinesPlugin = defineStudioExperiment({
@@ -34,6 +42,10 @@ export const droopingLinesPlugin = defineStudioExperiment({
 	createSession: createDroopingLinesSession,
 	createInteractionController: createMovingPointInteractionController,
 	parseInput,
+	validateParameters: (parameters) => {
+		const compiled = compileDroopingFormulaPair(parameters)
+		return compiled.ok ? { ok: true, value: undefined } : compiled
+	},
 	toDurableState: (parameters, seed) => ({ parameters, seed }),
 	fromDurableState: (state) => state,
 	migrateLegacyUrl: (url) => {

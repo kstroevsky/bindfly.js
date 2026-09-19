@@ -84,13 +84,15 @@ test('mobile viewport keeps controls and simulation available', async ({ page })
 test('Drooping Lines runs through the same main and worker Studio paths', async ({ page }) => {
 	await page.goto('/#/lab/drooping-lines')
 	await expect(page.getByRole('heading', { name: 'Drooping Lines' })).toBeVisible()
-	await expect(page.locator('#parameter-deformation')).toHaveValue('tan-x')
+	await expect(page.locator('#parameter-formulaAX')).toHaveValue('tan(x)')
+	await expect(page.locator('#parameter-formulaMorph')).toHaveValue('0')
 	await expect(metric(page, 'Points')).toHaveText('100')
 
 	const canvas = page.getByLabel('Interactive Drooping Lines simulation')
 	await canvas.click({ position: { x: 180, y: 140 } })
 	await expect(metric(page, 'Points')).toHaveText('101')
-	await page.locator('#parameter-deformation').selectOption('atan-y')
+	await page.locator('#parameter-formulaMorph').fill('1')
+	await page.locator('#parameter-formulaMorph').dispatchEvent('change')
 	await expect(metric(page, 'Points')).toHaveText('101')
 	await expect(page).toHaveURL(/#\/lab\/drooping-lines/)
 

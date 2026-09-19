@@ -1,4 +1,5 @@
 import type { Derivation } from '../../core/index.ts'
+import { evaluateFormulaTransformComparison2D } from '../../formula/index.ts'
 
 import type { DroopingGeometryInput, DroopingLineBuffer } from './types.ts'
 
@@ -11,6 +12,7 @@ export const createDroopingGeometry = (
 	const capacity = maximumPointCount * maximumPointCount
 	const result: DroopingLineBuffer = {
 		count: 0,
+		invalidFormulaPointCount: 0,
 		capacity,
 		sourceParticleIndices: new Uint32Array(capacity),
 		sourceX: new Float64Array(capacity),
@@ -24,7 +26,7 @@ export const createDroopingGeometry = (
 
 	return {
 		result,
-		update: ({ particles, connectionRadius, deformation }) => {
+		update: ({ particles, connectionRadius, formulaA, formulaB, formulaMorph }) => {
 			if (disposed) throw new Error('Cannot update disposed Drooping Lines geometry.')
 			if (!Number.isFinite(connectionRadius) || connectionRadius <= 0) {
 				throw new RangeError('Drooping Lines connection radius must be positive and finite.')
@@ -33,12 +35,22 @@ export const createDroopingGeometry = (
 				throw new RangeError(`Point count ${particles.count} exceeds geometry maximum ${maximumPointCount}.`)
 			}
 			result.count = 0
+			result.invalidFormulaPointCount = 0
 			const radiusSquared = connectionRadius * connectionRadius
 			for (let sourceIndex = 0; sourceIndex < particles.count; sourceIndex++) {
 				const particleX = particles.x[sourceIndex] ?? 0
 				const particleY = particles.y[sourceIndex] ?? 0
-				const sourceX = deformation === 'tan-x' ? Math.tan(particleX) : particleX
-				const sourceY = deformation === 'atan-y' ? Math.atan(particleY) : particleY
+				const evaluated = evaluateFormulaTransformComparison2D({
+					a: formulaA,
+					b: formulaB,
+					morph: formulaMorph,
+				}, { x: particleX, y: particleY })
+				if (!evaluated.ok) {
+					result.invalidFormulaPointCount += 1
+					continue
+				}
+				const sourceX = evaluated.value.morphed.x
+				const sourceY = evaluated.value.morphed.y
 				for (let targetIndex = 0; targetIndex < particles.count; targetIndex++) {
 					const targetX = particles.x[targetIndex] ?? 0
 					const targetY = particles.y[targetIndex] ?? 0
@@ -59,6 +71,6 @@ export const createDroopingGeometry = (
 			}
 			return result
 		},
-		dispose: () => { disposed = true; result.count = 0 },
+		dispose: () => { disposed = true; result.count = 0; result.invalidFormulaPointCount = 0 },
 	}
 }

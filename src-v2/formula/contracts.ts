@@ -92,6 +92,18 @@ export interface FormulaTransform2D {
 	readonly y: FormulaProgram
 }
 
+export interface FormulaTransformComparison2D {
+	readonly a: FormulaTransform2D
+	readonly b: FormulaTransform2D
+	readonly morph: number
+}
+
+export interface FormulaTransformComparisonResult2D {
+	readonly a: { readonly x: number; readonly y: number }
+	readonly b: { readonly x: number; readonly y: number }
+	readonly morphed: { readonly x: number; readonly y: number }
+}
+
 export interface CompileFormulaTransform2DInput extends FormulaCompileOptions {
 	readonly xSource: string
 	readonly ySource: string

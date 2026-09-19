@@ -1,4 +1,5 @@
 export * from './drooping-lines/definition.ts'
+export * from './drooping-lines/formula.ts'
 export * from './drooping-lines/geometry.ts'
 export * from './drooping-lines/parameters.ts'
 export * from './drooping-lines/simulation.ts'

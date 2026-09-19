@@ -228,7 +228,7 @@ export const StudioApp = () => {
 
 	return <main className="studio">
 		<aside className="panel" aria-label="Experiment controls">
-			<header><div><p className="eyebrow">Bindfly 2 · Stage 10A</p><h1>{plugin.title}</h1></div><p className="description">Versioned, reproducible experiment state.</p></header>
+			<header><div><p className="eyebrow">Bindfly 2 · Stage 12</p><h1>{plugin.title}</h1></div><p className="description">Versioned, reproducible experiment state.</p></header>
 			<label className="picker"><span>Experiment</span><select value={plugin.id} aria-label="Experiment" onChange={(event) => selectExperiment(event.currentTarget.value)}>{EXPERIMENTS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
 			<ParameterControls schema={plugin.parameters} values={parameters} onChange={updateParameter} />
 			<div className="picker-grid">

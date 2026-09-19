@@ -102,6 +102,7 @@ export interface DefineStudioExperimentOptions<
 	}): ExperimentSession<Schema, Input, SnapshotState, Telemetry>
 	createInteractionController(): TypedStudioInteractionController<Input>
 	parseInput(value: unknown): Result<Input, string>
+	validateParameters?(parameters: ParameterValues<Schema>): Result<unknown, string>
 	toDurableState(parameters: ParameterValues<Schema>, seed: string): DurableState
 	fromDurableState(state: DurableState): {
 		readonly parameters: ParameterValues<Schema>
@@ -125,13 +126,14 @@ export const defineStudioExperiment = <
 	Telemetry extends ExperimentTelemetry,
 >(options: DefineStudioExperimentOptions<Schema, State, Input, DurableState, SnapshotState, Telemetry>): StudioExperimentPlugin => {
 	const definition = options.definition
-	const defaults = normalizeParameters(definition.parameters, {})
-	if (!defaults.ok) throw new Error(`Experiment '${definition.id}' has invalid defaults.`)
-
 	const normalize = (input: unknown): Result<ParameterValues<Schema>, string> => {
 		const result = normalizeParameters(definition.parameters, input)
-		return result.ok ? result : { ok: false, error: firstParameterIssue(result.issues) }
+		if (!result.ok) return { ok: false, error: firstParameterIssue(result.issues) }
+		const validated = options.validateParameters?.(result.value)
+		return validated && !validated.ok ? validated : result
 	}
+	const defaults = normalize({})
+	if (!defaults.ok) throw new Error(`Experiment '${definition.id}' has invalid defaults: ${defaults.error}`)
 
 	return {
 		id: definition.id,

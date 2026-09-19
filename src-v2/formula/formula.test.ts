@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { readdir, readFile } from 'node:fs/promises'
 import test from 'node:test'
 
@@ -6,10 +7,12 @@ import type { Result } from '../core/index.ts'
 import type { FormulaIssue, FormulaProgram } from './contracts.ts'
 import {
 	compileFormula,
+	compileBindflyOriginal,
 	compileFormulaExperiment,
 	compileFormulaTransform2D,
 	evaluateFormula,
 	evaluateFormulaExperiment,
+	evaluateFormulaTransformComparison2D,
 	evaluateFormulaTransform2D,
 	parseFormula,
 	parseFormulaProgram,
@@ -18,6 +21,7 @@ import {
 	serializeFormulaProgram,
 	serializeFormulaExperiment,
 	serializeFormulaTransform2D,
+	bindflyOriginals,
 } from './index.ts'
 
 const expectCompiled = (source: string, variables: readonly string[] = []) => {
@@ -123,6 +127,64 @@ test('2D transforms execute and serialize tan/atan formula configuration', () =>
 	assert.deepEqual(evaluated, { ok: true, value: { x: Math.tan(0.25), y: Math.atan(2) } })
 	const serialized = serializeFormulaTransform2D(transform.value)
 	assert.deepEqual(parseFormulaTransform2D(serialized), { ok: true, value: transform.value })
+})
+
+test('formula morphing evaluates synchronized A/B outputs and interpolates coordinates', () => {
+	const a = compileFormulaTransform2D({ xSource: 'x', ySource: 'y', variables: ['x', 'y'] })
+	const b = compileFormulaTransform2D({ xSource: 'x * 3', ySource: 'y * -1', variables: ['x', 'y'] })
+	assert.equal(a.ok, true)
+	assert.equal(b.ok, true)
+	if (!a.ok || !b.ok) return
+	assert.deepEqual(evaluateFormulaTransformComparison2D({ a: a.value, b: b.value, morph: 0.25 }, { x: 4, y: 8 }), {
+		ok: true,
+		value: {
+			a: { x: 4, y: 8 },
+			b: { x: 12, y: -8 },
+			morphed: { x: 6, y: 4 },
+		},
+	})
+	assert.equal(evaluateFormulaTransformComparison2D({ a: a.value, b: b.value, morph: -0.1 }, { x: 4, y: 8 }).ok, false)
+	assert.equal(evaluateFormulaTransformComparison2D({ a: a.value, b: b.value, morph: 1.1 }, { x: 4, y: 8 }).ok, false)
+})
+
+test('Bindfly Originals preserve frozen source provenance and exact legacy coordinate formulas', async () => {
+	assert.deepEqual(Object.keys(bindflyOriginals), [
+		'drooping-tan-x', 'drooping-atan-y', 'pulse-2023', 'spiral-1', 'spiral-2', 'spiral-3',
+	])
+	const scope = { a: 2.7, angle: 0.4, distance: 5, positionX: 100, positionY: 80, weight: 0.25 }
+	const expected = {
+		'pulse-2023': {
+			x: scope.positionX + scope.distance * Math.cos(scope.a) * -1,
+			y: scope.positionY + Math.tan(scope.distance) * scope.weight * Math.cos(scope.angle * Math.exp(scope.a)) * Math.atan(scope.a),
+		},
+		'spiral-1': {
+			x: scope.positionX + scope.distance * Math.cos(scope.angle * Math.exp(scope.a)) * Math.sin(scope.a),
+			y: scope.positionY + scope.distance * Math.cos(scope.a) * -1,
+		},
+		'spiral-2': {
+			x: scope.positionX + scope.distance * Math.cos(scope.angle * Math.exp(scope.a)) * Math.atan(scope.a),
+			y: scope.positionY + scope.distance * Math.cos(scope.a) * -1,
+		},
+		'spiral-3': {
+			x: scope.positionX + scope.distance * Math.cos(scope.angle * Math.exp(scope.a)) * Math.atan(scope.a),
+			y: scope.positionY + scope.distance * Math.cos(Math.sin(scope.a)) * -1,
+		},
+	} as const
+	for (const original of Object.values(bindflyOriginals)) {
+		const source = await readFile(original.provenance.legacyPath)
+		const hash = createHash('sha1')
+			.update(`blob ${source.byteLength}\0`)
+			.update(source)
+			.digest('hex')
+		assert.equal(hash, original.provenance.legacyGitBlob, original.id)
+		assert.equal(Object.isFrozen(original.provenance), true)
+	}
+	for (const id of Object.keys(expected) as (keyof typeof expected)[]) {
+		const compiled = compileBindflyOriginal(id)
+		assert.equal(compiled.ok, true, id)
+		if (!compiled.ok) continue
+		assert.deepEqual(evaluateFormulaExperiment(compiled.value, scope), { ok: true, value: expected[id] })
+	}
 })
 
 test('formula-defined experiments execute deterministically and serialize configuration', () => {

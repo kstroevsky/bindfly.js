@@ -9,12 +9,12 @@ test('generic worker validation keeps experiment payload opaque until plugin val
 	const result = parseStudioWorkerInitializePayload({
 		canvas: { getContext: () => null },
 		experimentId: 'drooping-lines',
-		parameters: { deformation: 'atan-y' },
+		parameters: { formulaMorph: 1 },
 		seed: 'drooping-worker',
 		viewport,
 	})
 	assert.equal(result.experimentId, 'drooping-lines')
-	assert.deepEqual(result.parameters, { deformation: 'atan-y' })
+	assert.deepEqual(result.parameters, { formulaMorph: 1 })
 	assert.deepEqual(result.viewport, viewport)
 })
 

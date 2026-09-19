@@ -99,7 +99,7 @@ test('migrates every recorded legacy Flying Lines preset URL', () => {
 test('durable state and legacy migration are heterogeneous and plugin-driven', () => {
 	const state = createStudioDurableState(droopingLinesPlugin, {
 		...droopingLinesPlugin.defaultParameters,
-		deformation: 'atan-y',
+		formulaMorph: 1,
 	}, 'drooping-state', 'worker')
 	const parsed = parseStudioDurableState(canonicalStringify(state))
 	assert.equal(parsed.ok, true)
@@ -108,11 +108,12 @@ test('durable state and legacy migration are heterogeneous and plugin-driven', (
 	assert.equal(resolved.ok, true)
 	if (!resolved.ok) return
 	assert.equal(resolved.value.experimentId, 'drooping-lines')
-	assert.equal(resolved.value.parameters.deformation, 'atan-y')
+	assert.equal(resolved.value.parameters.formulaMorph, 1)
+	assert.equal(resolved.value.parameters.formulaBY, 'atan(y)')
 
 	const legacy = migrateLegacyUrl(new URL('https://example.test/#/DroopingLines-AddByClick'))
 	assert.equal(legacy.ok, true)
 	if (!legacy.ok || !legacy.value) return
 	assert.equal(legacy.value.experimentId, 'drooping-lines')
-	assert.equal(legacy.value.parameters.deformation, 'atan-y')
+	assert.equal(legacy.value.parameters.formulaMorph, 1)
 })

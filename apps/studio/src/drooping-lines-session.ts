@@ -1,6 +1,7 @@
 import { createSeededRandom, getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
 import type { ParameterPatch, ParameterValues, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
 import { droopingLinesDefinition, snapshotDroopingLinesState } from '../../../src-v2/effects/drooping-lines/definition.ts'
+import { compileDroopingFormulaPair } from '../../../src-v2/effects/drooping-lines/formula.ts'
 import { createDroopingGeometry } from '../../../src-v2/effects/drooping-lines/geometry.ts'
 import { droopingLinesParameters } from '../../../src-v2/effects/drooping-lines/parameters.ts'
 import type { DroopingLinesInput, DroopingLinesState } from '../../../src-v2/effects/drooping-lines/types.ts'
@@ -25,6 +26,9 @@ export type DroopingLinesSession = ExperimentSession<
 
 export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOptions): DroopingLinesSession => {
 	let parameters = options.parameters
+	const initialFormulas = compileDroopingFormulaPair(parameters)
+	if (!initialFormulas.ok) throw new Error(initialFormulas.error)
+	let formulas = initialFormulas.value
 	let viewport = options.viewport
 	let simulation: Simulation<DroopingLinesState, DroopingLinesInput> = droopingLinesDefinition.createSimulation({
 		random: createSeededRandom(options.seed), viewport,
@@ -66,7 +70,9 @@ export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOp
 			const lines = geometry.update({
 				particles: simulation.state.particles,
 				connectionRadius: parameters.connectionRadius,
-				deformation: parameters.deformation,
+				formulaA: formulas.a,
+				formulaB: formulas.b,
+				formulaMorph: parameters.formulaMorph,
 			})
 			renderer.render(view, frame)
 			telemetry = {
@@ -86,7 +92,10 @@ export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOp
 			const invalidation = getParameterPatchInvalidation(droopingLinesParameters, patch)
 			const normalized = normalizeParameters(droopingLinesParameters, { ...parameters, ...patch })
 			if (!normalized.ok) throw new Error(normalized.issues[0]?.message ?? 'Invalid Drooping Lines parameter patch.')
+			const nextFormulas = compileDroopingFormulaPair(normalized.value)
+			if (!nextFormulas.ok) throw new Error(nextFormulas.error)
 			parameters = normalized.value
+			formulas = nextFormulas.value
 			if (invalidation === 'hot-update') Object.assign(view, { background: parameters.background })
 			else if (invalidation === 'reset-simulation') rebuild()
 			else throw new Error('Drooping Lines requires a runtime rebuild for this parameter patch.')

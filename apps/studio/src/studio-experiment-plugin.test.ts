@@ -25,8 +25,9 @@ test('typed plugin is erased only at the heterogeneous registry boundary', async
 
 	const drooping = await studioExperimentRegistry.load('drooping-lines')
 	assert.equal(drooping.title, 'Drooping Lines')
-	assert.equal(drooping.defaultParameters.deformation, 'tan-x')
-	assert.equal(drooping.parseParameterPatch({ deformation: 'missing' }).ok, false)
+	assert.equal(drooping.defaultParameters.formulaAX, 'tan(x)')
+	assert.equal(drooping.defaultParameters.formulaMorph, 0)
+	assert.equal(drooping.parseParameterPatch({ formulaAX: 'globalThis' }).ok, false)
 	assert.notDeepEqual(drooping.parameters, plugin.parameters)
 })
 

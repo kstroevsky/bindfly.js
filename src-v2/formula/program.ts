@@ -4,6 +4,8 @@ import type {
 	CompileFormulaTransform2DInput,
 	FormulaIssue,
 	FormulaProgram,
+	FormulaTransformComparison2D,
+	FormulaTransformComparisonResult2D,
 	FormulaTransform2D,
 } from './contracts.ts'
 import {
@@ -69,6 +71,35 @@ export const evaluateFormulaTransform2D = (
 	if (!x.ok) return x
 	const y = evaluateFormula(transform.y, scope)
 	return y.ok ? { ok: true, value: { x: x.value, y: y.value } } : y
+}
+
+/**
+ * Evaluates both transforms against the same scope, then linearly interpolates
+ * their output coordinates. Formula source and syntax are never interpolated.
+ */
+export const evaluateFormulaTransformComparison2D = (
+	comparison: FormulaTransformComparison2D,
+	scope: Readonly<Record<string, number>>,
+): Result<FormulaTransformComparisonResult2D, FormulaIssue> => {
+	if (!Number.isFinite(comparison.morph) || comparison.morph < 0 || comparison.morph > 1) {
+		return { ok: false, error: issue('numeric-domain', 'Formula morph must be finite and between 0 and 1.') }
+	}
+	const a = evaluateFormulaTransform2D(comparison.a, scope)
+	if (!a.ok) return a
+	const b = evaluateFormulaTransform2D(comparison.b, scope)
+	if (!b.ok) return b
+	const inverse = 1 - comparison.morph
+	return {
+		ok: true,
+		value: {
+			a: a.value,
+			b: b.value,
+			morphed: {
+				x: inverse * a.value.x + comparison.morph * b.value.x,
+				y: inverse * a.value.y + comparison.morph * b.value.y,
+			},
+		},
+	}
 }
 
 export const serializeFormulaTransform2D = (transform: FormulaTransform2D): string => JSON.stringify({
