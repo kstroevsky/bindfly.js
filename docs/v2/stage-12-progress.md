@@ -17,10 +17,11 @@ Stage 12 is in progress on the current integration branch. This report records t
 - Added executable `pulse-2023`, `spiral-1`, `spiral-2` and `spiral-3` experiments backed by their frozen formula records.
 - Added a shared deterministic parametric phase simulation, formula-derived point buffer, proximity derivation and Canvas session used identically by main-thread and worker runtimes.
 - Preserved Pulse's two-operation accumulator update separately from the Spiral family's single-operation update, and migrated the recorded legacy routes through plugin-owned adapters.
+- Added durable Morph/Compare presentation for every formula-backed experiment. Compare mode derives exact A/B endpoints from one simulation state and renders labeled panes on both main-thread and Worker runtimes.
 
 ## Verification status
 
-- V2 boundaries, typecheck, lint and 106 tests: PASS.
+- V2 boundaries, typecheck, lint and 107 tests: PASS.
 - Formula endpoint/midpoint semantics: PASS through unit tests.
 - Independent legacy formula parity for Pulse/Spiral catalog entries: PASS through direct `Math` expectations.
 - Drooping state migration and untrusted import rejection: PASS through codec tests.
@@ -31,6 +32,5 @@ Stage 12 is in progress on the current integration branch. This report records t
 
 ## Remaining Stage 12 work
 
-- Add the synchronized side-by-side A/B Studio presentation using identical seed, state, step and scope.
 - Expose provenance in the experiment inspector/export rather than only in the engine catalog and documentation.
 - Complete browser comparison, hot-edit and restoration tests for the remaining Originals.

@@ -29,7 +29,7 @@ Drooping Lines owns four editable hot parameters (`formulaAX`, `formulaAY`, `for
 - `t = 0` and `t = 1` reproduce the two Stage 10A Drooping transforms exactly; intermediate values are defined and reproducible.
 - The formula catalog preserves Pulse/Spiral identity before their execution sessions are built.
 - Formula editing changes derived geometry, not physical moving-point state, so hot updates do not reset the deterministic world.
-- A synchronized side-by-side Studio view can consume the already-computed A/B contract, but its two-pane presentation is a later Stage 12 slice. This ADR does not claim that UI is complete.
+- ADR 0017 consumes the A/B contract for synchronized side-by-side presentation without changing the interpolation semantics defined here.
 - The original formulas remain intentionally unusual; no textbook replacement or numerical cleanup is authorized.
 
 ## Rollback

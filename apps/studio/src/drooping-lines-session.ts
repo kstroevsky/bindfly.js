@@ -34,8 +34,10 @@ export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOp
 		random: createSeededRandom(options.seed), viewport,
 	}, parameters)
 	const geometry = createDroopingGeometry(MAXIMUM_MOVING_POINT_COUNT)
+	const geometryA = createDroopingGeometry(MAXIMUM_MOVING_POINT_COUNT)
+	const geometryB = createDroopingGeometry(MAXIMUM_MOVING_POINT_COUNT)
 	const renderer = createDroopingLinesCanvasRenderer(options.canvas)
-	const view: DroopingLinesRenderView = {
+	let view: DroopingLinesRenderView = {
 		background: parameters.background,
 		particles: simulation.state.particles,
 		lines: geometry.result,
@@ -57,7 +59,6 @@ export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOp
 	const rebuild = () => {
 		simulation.dispose()
 		simulation = droopingLinesDefinition.createSimulation({ random: createSeededRandom(options.seed), viewport }, parameters)
-		Object.assign(view, { background: parameters.background, particles: simulation.state.particles })
 	}
 
 	return {
@@ -74,6 +75,33 @@ export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOp
 				formulaB: formulas.b,
 				formulaMorph: parameters.formulaMorph,
 			})
+			if (parameters.formulaView === 'compare') {
+				const linesA = geometryA.update({
+					particles: simulation.state.particles,
+					connectionRadius: parameters.connectionRadius,
+					formulaA: formulas.a,
+					formulaB: formulas.b,
+					formulaMorph: 0,
+				})
+				const linesB = geometryB.update({
+					particles: simulation.state.particles,
+					connectionRadius: parameters.connectionRadius,
+					formulaA: formulas.a,
+					formulaB: formulas.b,
+					formulaMorph: 1,
+				})
+				view = {
+					background: parameters.background,
+					particles: simulation.state.particles,
+					lines,
+					comparison: {
+						a: { particles: simulation.state.particles, lines: linesA },
+						b: { particles: simulation.state.particles, lines: linesB },
+					},
+				}
+			} else {
+				view = { background: parameters.background, particles: simulation.state.particles, lines }
+			}
 			renderer.render(view, frame)
 			telemetry = {
 				points: simulation.state.particles.count,
@@ -96,8 +124,8 @@ export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOp
 			if (!nextFormulas.ok) throw new Error(nextFormulas.error)
 			parameters = normalized.value
 			formulas = nextFormulas.value
-			if (invalidation === 'hot-update') Object.assign(view, { background: parameters.background })
-			else if (invalidation === 'reset-simulation') rebuild()
+			if (invalidation === 'reset-simulation') rebuild()
+			else if (invalidation === 'hot-update') return
 			else throw new Error('Drooping Lines requires a runtime rebuild for this parameter patch.')
 		},
 		resize: (nextViewport: Viewport) => {
@@ -119,6 +147,8 @@ export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOp
 			disposed = true
 			simulation.dispose()
 			geometry.dispose()
+			geometryA.dispose()
+			geometryB.dispose()
 			renderer.dispose()
 		},
 	}

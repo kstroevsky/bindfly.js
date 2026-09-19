@@ -117,6 +117,8 @@ test('Drooping Lines runs through the same main and worker Studio paths', async 
 	await page.getByRole('button', { name: 'Restore default Formula AX' }).click()
 	await expect(formula).toHaveValue('tan(x)')
 	await expect(page).toHaveURL(urlBeforeFormula)
+	await page.locator('#parameter-formulaView').selectOption('compare')
+	await expect(page.locator('#parameter-formulaView')).toHaveValue('compare')
 	await page.locator('#parameter-formulaMorph').fill('1')
 	await expect(metric(page, 'Points')).toHaveText('101')
 	await expect(page).toHaveURL(/#\/lab\/drooping-lines/)
@@ -144,6 +146,10 @@ test('Pulse and the Spiral family execute from frozen formulas through the gener
 	}
 
 	await page.goto('/#/lab/pulse-2023')
+	await page.locator('#parameter-formulaBX').fill('positionX + distance * sin(a)')
+	await page.getByRole('button', { name: 'Apply Formula BX' }).click()
+	await page.locator('#parameter-formulaView').selectOption('compare')
+	await expect(page.locator('#parameter-formulaView')).toHaveValue('compare')
 	await page.getByLabel('Interactive Pulse 2023 simulation').click({ position: { x: 220, y: 180 } })
 	await page.getByLabel('Runtime').selectOption('worker')
 	await expect(page.locator('.badge')).toContainText('worker')

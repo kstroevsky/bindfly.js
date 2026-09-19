@@ -36,7 +36,11 @@ export const createParametricOriginalSession = (
 		random: createSeededRandom(options.seed), viewport,
 	}, parameters)
 	const points = createParametricPointDerivation(MAXIMUM_PARAMETRIC_POINT_COUNT)
+	const pointsA = createParametricPointDerivation(MAXIMUM_PARAMETRIC_POINT_COUNT)
+	const pointsB = createParametricPointDerivation(MAXIMUM_PARAMETRIC_POINT_COUNT)
 	const proximity = createAdaptiveProximityDerivation(MAXIMUM_PARAMETRIC_POINT_COUNT)
+	const proximityA = createAdaptiveProximityDerivation(MAXIMUM_PARAMETRIC_POINT_COUNT)
+	const proximityB = createAdaptiveProximityDerivation(MAXIMUM_PARAMETRIC_POINT_COUNT)
 	const renderer = createFlyingLinesCanvasRenderer(options.canvas)
 	let view: FlyingLinesRenderView = {
 		background: parameters.background,
@@ -69,7 +73,7 @@ export const createParametricOriginalSession = (
 		render: (frame: RenderFrame) => {
 			assertActive()
 			const startedAt = performance.now()
-			const derivedPoints = points.update({
+			const derivePoints = (derivation: ReturnType<typeof createParametricPointDerivation>, formulaMorph: number) => derivation.update({
 				state: simulation.state,
 				kind: bundle.spec.kind,
 				viewportWidth: viewport.cssWidth,
@@ -77,10 +81,27 @@ export const createParametricOriginalSession = (
 				weight: parameters.weight,
 				formulaA: formulas.a,
 				formulaB: formulas.b,
-				formulaMorph: parameters.formulaMorph,
+				formulaMorph,
 			})
+			const derivedPoints = derivePoints(points, parameters.formulaMorph)
 			const edges = proximity.update({ points: derivedPoints, connectionRadius: parameters.connectionRadius })
-			view = { background: parameters.background, particles: derivedPoints, edges }
+			if (parameters.formulaView === 'compare') {
+				const derivedPointsA = derivePoints(pointsA, 0)
+				const derivedPointsB = derivePoints(pointsB, 1)
+				const edgesA = proximityA.update({ points: derivedPointsA, connectionRadius: parameters.connectionRadius })
+				const edgesB = proximityB.update({ points: derivedPointsB, connectionRadius: parameters.connectionRadius })
+				view = {
+					background: parameters.background,
+					particles: derivedPoints,
+					edges,
+					comparison: {
+						a: { particles: derivedPointsA, edges: edgesA },
+						b: { particles: derivedPointsB, edges: edgesB },
+					},
+				}
+			} else {
+				view = { background: parameters.background, particles: derivedPoints, edges }
+			}
 			renderer.render(view, frame)
 			telemetry = {
 				points: derivedPoints.count,
@@ -125,7 +146,11 @@ export const createParametricOriginalSession = (
 			disposed = true
 			simulation.dispose()
 			points.dispose()
+			pointsA.dispose()
+			pointsB.dispose()
 			proximity.dispose()
+			proximityA.dispose()
+			proximityB.dispose()
 			renderer.dispose()
 		},
 	}
