@@ -5,7 +5,7 @@ These directories are logical architecture boundaries, not separately published 
 | Module | Responsibility | May depend on |
 | --- | --- | --- |
 | `core` | Domain-neutral simulation/state primitives introduced in Phase 2 | nothing |
-| `formula` | Formula language contracts introduced later | `core` |
+| `formula` | Bounded parser, typed AST, canonical IR, serialization and deterministic interpreter | `core` |
 | `effects` | Experiment definitions plus common behavior proven by multiple experiments | `core`, `formula` |
 | `rendering` | Renderer adapters | `core` |
 | `runtime` | Main/worker execution adapters and protocol | `core` |

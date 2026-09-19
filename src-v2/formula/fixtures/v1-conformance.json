@@ -1,0 +1,12 @@
+{
+  "format": "bindfly-formula-conformance",
+  "version": 1,
+  "cases": [
+    { "id": "precedence", "source": "-2^2 + 3*4", "variables": [], "scope": {}, "expected": 8 },
+    { "id": "right-power", "source": "2^3^2", "variables": [], "scope": {}, "expected": 512 },
+    { "id": "tangent", "source": "tan(x)", "variables": ["x"], "scope": { "x": 0.25 }, "expected": 0.25534192122103627 },
+    { "id": "inverse-tangent", "source": "atan(y)", "variables": ["y"], "scope": { "y": 2 }, "expected": 1.1071487177940904 },
+    { "id": "min-max", "source": "min(a,b)+max(a,b)", "variables": ["b", "a"], "scope": { "a": -4, "b": 7 }, "expected": 3 },
+    { "id": "scalar-transform", "source": "sqrt(x^2+y^2)", "variables": ["x", "y"], "scope": { "x": 3, "y": 4 }, "expected": 5 }
+  ]
+}
