@@ -1,4 +1,4 @@
-import type { FlyingLinesInput } from '../../../src-v2/effects/flying-lines/types.ts'
+import type { MovingPointInput } from '../../../src-v2/effects/moving-points/types.ts'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -14,7 +14,7 @@ const nonNegative = (value: unknown, label: string): number => {
 	return number
 }
 
-export const parseFlyingLinesInput = (value: unknown): FlyingLinesInput => {
+export const parseMovingPointInput = (value: unknown): MovingPointInput => {
 	if (!isRecord(value) || typeof value.type !== 'string') throw new TypeError('Point input must be a typed object.')
 	switch (value.type) {
 		case 'add-point':

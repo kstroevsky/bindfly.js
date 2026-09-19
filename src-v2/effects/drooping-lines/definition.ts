@@ -1,5 +1,6 @@
 import { defineExperiment, normalizeParameters } from '../../core/index.ts'
 import type { ExperimentStateCodec } from '../../core/index.ts'
+import { snapshotMovingPointState } from '../moving-points/snapshot.ts'
 
 import { droopingLinesParameters } from './parameters.ts'
 import { createDroopingLinesSimulation } from './simulation.ts'
@@ -41,18 +42,7 @@ const codec: ExperimentStateCodec<DroopingLinesDurableState, string> = {
 const defaults = normalizeParameters(droopingLinesParameters, {})
 if (!defaults.ok) throw new Error('Drooping Lines defaults are invalid.')
 
-export const snapshotDroopingLinesState = (state: Readonly<DroopingLinesState>): DroopingLinesState => ({
-	particles: {
-		count: state.particles.count,
-		capacity: state.particles.count,
-		ids: state.particles.ids.slice(0, state.particles.count),
-		x: state.particles.x.slice(0, state.particles.count),
-		y: state.particles.y.slice(0, state.particles.count),
-		velocityX: state.particles.velocityX.slice(0, state.particles.count),
-		velocityY: state.particles.velocityY.slice(0, state.particles.count),
-		lifeSeconds: state.particles.lifeSeconds.slice(0, state.particles.count),
-	},
-})
+export const snapshotDroopingLinesState = snapshotMovingPointState
 
 export const droopingLinesDefinition = defineExperiment<
 	typeof droopingLinesParameters,

@@ -2,11 +2,12 @@ import type { Result } from '../../../src-v2/core/result.ts'
 import { droopingLinesDefinition } from '../../../src-v2/effects/drooping-lines/definition.ts'
 import type { DroopingLinesInput, DroopingLinesParameters } from '../../../src-v2/effects/drooping-lines/types.ts'
 import { createDroopingLinesSession } from './drooping-lines-session.ts'
-import { parseFlyingLinesInput } from './flying-lines-input.ts'
+import { parseMovingPointInput } from './moving-point-input.ts'
+import { createMovingPointInteractionController } from './moving-point-interaction.ts'
 import { defineStudioExperiment } from './studio-experiment-plugin.ts'
 
 const parseInput = (value: unknown): Result<DroopingLinesInput, string> => {
-	try { return { ok: true, value: parseFlyingLinesInput(value) } } catch (error) {
+	try { return { ok: true, value: parseMovingPointInput(value) } } catch (error) {
 		return { ok: false, error: error instanceof Error ? error.message : 'Drooping Lines input is invalid.' }
 	}
 }
@@ -31,34 +32,7 @@ export const droopingLinesPlugin = defineStudioExperiment({
 		{ id: 'droppedSteps', label: 'Dropped' },
 	],
 	createSession: createDroopingLinesSession,
-	createInteractionController: () => {
-		let previous: { readonly x: number; readonly y: number } | undefined
-		let moved = false
-		return {
-			handle: (event): readonly DroopingLinesInput[] => {
-				if (event.phase === 'down') {
-					if (event.shiftKey) return [{ type: 'remove-nearest', x: event.x, y: event.y, maxDistance: 18 }]
-					previous = { x: event.x, y: event.y }
-					moved = false
-					return []
-				}
-				if (event.phase === 'move') {
-					if (!previous || event.buttons === 0) return []
-					if (Math.hypot(event.x - previous.x, event.y - previous.y) >= 2) moved = true
-					const input: DroopingLinesInput = { type: 'move-nearest', fromX: previous.x, fromY: previous.y, x: event.x, y: event.y, maxDistance: 14 }
-					previous = { x: event.x, y: event.y }
-					return [input]
-				}
-				if (event.phase === 'up') {
-					const shouldAdd = previous !== undefined && !moved
-					previous = undefined
-					return shouldAdd ? [{ type: 'add-point', x: event.x, y: event.y }] : []
-				}
-				previous = undefined
-				return []
-			},
-		}
-	},
+	createInteractionController: createMovingPointInteractionController,
 	parseInput,
 	toDurableState: (parameters, seed) => ({ parameters, seed }),
 	fromDurableState: (state) => state,

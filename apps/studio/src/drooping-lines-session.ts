@@ -4,6 +4,7 @@ import { droopingLinesDefinition, snapshotDroopingLinesState } from '../../../sr
 import { createDroopingGeometry } from '../../../src-v2/effects/drooping-lines/geometry.ts'
 import { droopingLinesParameters } from '../../../src-v2/effects/drooping-lines/parameters.ts'
 import type { DroopingLinesInput, DroopingLinesState } from '../../../src-v2/effects/drooping-lines/types.ts'
+import { MAXIMUM_MOVING_POINT_COUNT } from '../../../src-v2/effects/moving-points/parameters.ts'
 import { createDroopingLinesCanvasRenderer } from '../../../src-v2/rendering/canvas2d/drooping-lines-renderer.ts'
 import type { DroopingLinesRenderView } from '../../../src-v2/rendering/canvas2d/drooping-lines-renderer.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
@@ -28,7 +29,7 @@ export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOp
 	let simulation: Simulation<DroopingLinesState, DroopingLinesInput> = droopingLinesDefinition.createSimulation({
 		random: createSeededRandom(options.seed), viewport,
 	}, parameters)
-	const geometry = createDroopingGeometry(500)
+	const geometry = createDroopingGeometry(MAXIMUM_MOVING_POINT_COUNT)
 	const renderer = createDroopingLinesCanvasRenderer(options.canvas)
 	const view: DroopingLinesRenderView = {
 		background: parameters.background,

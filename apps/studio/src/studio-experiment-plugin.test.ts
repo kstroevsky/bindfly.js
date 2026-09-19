@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import { droopingLinesPlugin } from './drooping-lines-plugin.ts'
 import { flyingLinesPlugin } from './flying-lines-plugin.ts'
 import { studioExperimentRegistry } from './studio-experiment-registry.ts'
 
@@ -31,16 +32,22 @@ test('typed plugin is erased only at the heterogeneous registry boundary', async
 
 test('interaction semantics are supplied by the experiment plugin', () => {
 	const interaction = flyingLinesPlugin.createInteractionController()
-	assert.deepEqual(interaction.handle({ phase: 'down', x: 10, y: 20, buttons: 1, shiftKey: false }), [])
-	assert.deepEqual(interaction.handle({ phase: 'up', x: 10, y: 20, buttons: 0, shiftKey: false }), [
+	const droopingInteraction = droopingLinesPlugin.createInteractionController()
+	const handle = (event: Parameters<typeof interaction.handle>[0]) => {
+		const flying = interaction.handle(event)
+		assert.deepEqual(droopingInteraction.handle(event), flying)
+		return flying
+	}
+	assert.deepEqual(handle({ phase: 'down', x: 10, y: 20, buttons: 1, shiftKey: false }), [])
+	assert.deepEqual(handle({ phase: 'up', x: 10, y: 20, buttons: 0, shiftKey: false }), [
 		{ type: 'add-point', x: 10, y: 20 },
 	])
-	assert.deepEqual(interaction.handle({ phase: 'down', x: 30, y: 40, buttons: 1, shiftKey: true }), [
+	assert.deepEqual(handle({ phase: 'down', x: 30, y: 40, buttons: 1, shiftKey: true }), [
 		{ type: 'remove-nearest', x: 30, y: 40, maxDistance: 18 },
 	])
-	assert.deepEqual(interaction.handle({ phase: 'down', x: 50, y: 60, buttons: 1, shiftKey: false }), [])
-	assert.deepEqual(interaction.handle({ phase: 'move', x: 55, y: 65, buttons: 1, shiftKey: false }), [
+	assert.deepEqual(handle({ phase: 'down', x: 50, y: 60, buttons: 1, shiftKey: false }), [])
+	assert.deepEqual(handle({ phase: 'move', x: 55, y: 65, buttons: 1, shiftKey: false }), [
 		{ type: 'move-nearest', fromX: 50, fromY: 60, x: 55, y: 65, maxDistance: 14 },
 	])
-	assert.deepEqual(interaction.handle({ phase: 'up', x: 55, y: 65, buttons: 0, shiftKey: false }), [])
+	assert.deepEqual(handle({ phase: 'up', x: 55, y: 65, buttons: 0, shiftKey: false }), [])
 })

@@ -4,6 +4,7 @@ import type { ParameterPatch, ParameterValues, RenderFrame, Simulation, Simulati
 import { flyingLinesDefinition, snapshotFlyingLinesState } from '../../../src-v2/effects/flying-lines/definition.ts'
 import { flyingLinesParameters } from '../../../src-v2/effects/flying-lines/parameters.ts'
 import type { FlyingLinesInput, FlyingLinesState } from '../../../src-v2/effects/flying-lines/types.ts'
+import { MAXIMUM_MOVING_POINT_COUNT } from '../../../src-v2/effects/moving-points/parameters.ts'
 import { createFlyingLinesCanvasRenderer } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
 import type { FlyingLinesRenderView } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
@@ -30,7 +31,7 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 		viewport,
 	}, parameters)
 	const renderer = createFlyingLinesCanvasRenderer(options.canvas)
-	const proximity = createAdaptiveProximityDerivation(500)
+	const proximity = createAdaptiveProximityDerivation(MAXIMUM_MOVING_POINT_COUNT)
 	let view: FlyingLinesRenderView = {
 		background: parameters.background,
 		particles: simulation.state.particles,
