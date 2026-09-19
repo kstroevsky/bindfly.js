@@ -98,11 +98,16 @@ export const StudioApp = () => {
 		if (!canvas || !viewportElement) return
 		let cancelled = false
 		let controller: StudioController | undefined
+		let resizeFrameId: number | undefined
 		const measure = () => createViewport({
 			cssWidth: Math.max(1, viewportElement.clientWidth),
 			cssHeight: Math.max(1, viewportElement.clientHeight),
 			devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
 		})
+		const handleFailure = (failure: unknown) => {
+			setError(failure instanceof Error ? failure.message : 'Runtime failed.')
+			if (runtimeKind === 'worker') selectRuntime('main')
+		}
 		const capability = probeWorkerCanvasSupport(canvas)
 		setWorkerCapability(capability)
 		if (runtimeKind === 'worker' && (!capability.supported || !supportsWorker(plugin))) {
@@ -111,7 +116,11 @@ export const StudioApp = () => {
 		}
 
 		const resizeObserver = new ResizeObserver(() => {
-			if (controller) void controller.resize(measure())
+			if (resizeFrameId !== undefined) return
+			resizeFrameId = window.requestAnimationFrame(() => {
+				resizeFrameId = undefined
+				if (controller) void controller.resize(measure()).catch(handleFailure)
+			})
 		})
 		resizeObserver.observe(viewportElement)
 		const initialize = async () => {
@@ -123,10 +132,7 @@ export const StudioApp = () => {
 				parameters: runtimeConfiguration.parameters,
 				seed: runtimeConfiguration.seed,
 				onMetrics: setMetrics,
-				onFailure: (failure: unknown) => {
-					setError(failure instanceof Error ? failure.message : 'Runtime failed.')
-					if (runtimeKind === 'worker') selectRuntime('main')
-				},
+				onFailure: handleFailure,
 			}
 			controller = runtimeKind === 'worker'
 				? await createWorkerStudioController(options)
@@ -142,6 +148,7 @@ export const StudioApp = () => {
 		return () => {
 			cancelled = true
 			resizeObserver.disconnect()
+			if (resizeFrameId !== undefined) window.cancelAnimationFrame(resizeFrameId)
 			controllerRef.current = undefined
 			void controller?.dispose()
 		}

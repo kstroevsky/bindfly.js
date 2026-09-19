@@ -17,6 +17,7 @@ export interface BooleanParameterDefinition extends ParameterDefinitionBase<'boo
 
 export interface StringParameterDefinition extends ParameterDefinitionBase<'string', string> {
 	readonly maxLength?: number
+	readonly control?: 'text' | 'formula'
 }
 
 export interface EnumParameterDefinition<Values extends readonly string[] = readonly string[]>

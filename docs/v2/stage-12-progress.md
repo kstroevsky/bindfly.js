@@ -12,6 +12,8 @@ Stage 12 is in progress on the current integration branch. This report records t
 - Migrated Drooping durable state from version 1 to version 2 without changing the meaning of either original preset.
 - Rejected malformed formula source at UI, worker/session and imported-state boundaries.
 - Preserved the moving-point simulation and render backend unchanged.
+- Added draft-based, full-width formula editors so incomplete expressions remain editable until Enter/Apply, with per-formula restoration to the frozen default.
+- Constrained the desktop Studio to the viewport so its sidebar scrolls independently, and deferred ResizeObserver writes to animation frames to prevent the development runtime overlay during parameter resets.
 
 ## Verification status
 

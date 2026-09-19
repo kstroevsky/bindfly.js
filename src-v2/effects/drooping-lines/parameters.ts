@@ -14,16 +14,16 @@ export const droopingLinesParameters = defineParameterSchema({
 		kind: 'string', default: '#050508', maxLength: 32, invalidation: 'hot-update',
 	},
 	formulaAX: {
-		kind: 'string', default: tangent.xSource, maxLength: 4096, invalidation: 'hot-update',
+		kind: 'string', default: tangent.xSource, maxLength: 4096, control: 'formula', invalidation: 'hot-update',
 	},
 	formulaAY: {
-		kind: 'string', default: tangent.ySource, maxLength: 4096, invalidation: 'hot-update',
+		kind: 'string', default: tangent.ySource, maxLength: 4096, control: 'formula', invalidation: 'hot-update',
 	},
 	formulaBX: {
-		kind: 'string', default: arctangent.xSource, maxLength: 4096, invalidation: 'hot-update',
+		kind: 'string', default: arctangent.xSource, maxLength: 4096, control: 'formula', invalidation: 'hot-update',
 	},
 	formulaBY: {
-		kind: 'string', default: arctangent.ySource, maxLength: 4096, invalidation: 'hot-update',
+		kind: 'string', default: arctangent.ySource, maxLength: 4096, control: 'formula', invalidation: 'hot-update',
 	},
 	formulaMorph: {
 		kind: 'number', default: 0, min: 0, max: 1, step: 0.01, invalidation: 'hot-update',

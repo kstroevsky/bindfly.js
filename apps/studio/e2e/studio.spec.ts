@@ -58,6 +58,21 @@ test('hot updates preserve the running world and URL state restores it', async (
 	await expect(metric(page, 'Points')).toHaveText('100')
 })
 
+test('speed reset stays healthy and the desktop sidebar scrolls independently', async ({ page }) => {
+	await page.setViewportSize({ width: 1365, height: 692 })
+	await page.goto('/#/lab/drooping-lines')
+	const panel = page.getByLabel('Experiment controls')
+	await expect(panel).toBeVisible()
+	await expect.poll(() => panel.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true)
+	await panel.evaluate((element) => { element.scrollTop = element.scrollHeight })
+	await expect.poll(() => panel.evaluate((element) => element.scrollTop)).toBeGreaterThan(0)
+
+	await page.locator('#parameter-maxSpeed').fill('90')
+	await expect(page.locator('#parameter-maxSpeed')).toHaveValue('90')
+	await expect(metric(page, 'Points')).toHaveText('100')
+	await expect(page.getByText('Uncaught runtime errors:')).toHaveCount(0)
+})
+
 test('canonical JSON export can be imported after a local change', async ({ page }) => {
 	await page.goto('/')
 	const downloadPromise = page.waitForEvent('download')
@@ -91,8 +106,18 @@ test('Drooping Lines runs through the same main and worker Studio paths', async 
 	const canvas = page.getByLabel('Interactive Drooping Lines simulation')
 	await canvas.click({ position: { x: 180, y: 140 } })
 	await expect(metric(page, 'Points')).toHaveText('101')
+	const urlBeforeFormula = page.url()
+	const formula = page.locator('#parameter-formulaAX')
+	await formula.fill('')
+	await formula.pressSequentially('x * 2')
+	await expect(formula).toHaveValue('x * 2')
+	await expect(page).toHaveURL(urlBeforeFormula)
+	await page.getByRole('button', { name: 'Apply Formula AX' }).click()
+	await expect.poll(() => page.url()).not.toBe(urlBeforeFormula)
+	await page.getByRole('button', { name: 'Restore default Formula AX' }).click()
+	await expect(formula).toHaveValue('tan(x)')
+	await expect(page).toHaveURL(urlBeforeFormula)
 	await page.locator('#parameter-formulaMorph').fill('1')
-	await page.locator('#parameter-formulaMorph').dispatchEvent('change')
 	await expect(metric(page, 'Points')).toHaveText('101')
 	await expect(page).toHaveURL(/#\/lab\/drooping-lines/)
 
