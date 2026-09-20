@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "base_sha256": "a1e4d827fdf7fc351c3a651c83ec6fc7619e169c6298bc30d62f9c1f818c5ce0",
+  "closed_world": true,
+  "source_feedback": [
+    "User mathematical-experience review dated 2026-09-20; complete approved normative projection: docs/plan-evolution/revision-3/approved-feedback-payload.md; SHA-256 d86206b78375ea7e1e4038de2249dd9edad43fa1ca1e655e50338991022d2255."
+  ],
+  "changes": [
+    {
+      "feedback_id": "MXR-01",
+      "operation": "AMEND",
+      "requirement_ids": ["STAGE-13", "ANAL-004", "TOPO-001"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap", "Stage 13 — Analysis runtime and topology"], ["57. Accepted Milestone B review and revised execution roadmap", "Stage 13 — Analysis engine and first mathematical lens"], ["57. Accepted Milestone B review and revised execution roadmap", "Preserved backlog mapping"]],
+      "required_literals": ["Deliver Stage 13 in this order:", "How connected is this structure, and how does that change with scale?", "publish \\(\\beta_1\\) only from a validated simplicial-complex/homology computation"],
+      "forbidden_literals": ["Stage 13 is infrastructure-only"],
+      "allowed_new_numeric_tokens": ["0", "1", "2", "3", "4", "13"],
+      "allowed_new_versioned_tokens": ["13A", "13B", "13C", "13D"],
+      "reason": "Preserve the accepted analysis scheduler/topology order while making Stage 13 a visible mathematical vertical slice."
+    },
+    {
+      "feedback_id": "MXR-02",
+      "operation": "ADD",
+      "requirement_ids": ["PRODUCT-002", "LENS-001", "PROBE-001", "CONTROL-001", "STRUCT-001", "WORKSPACE-001"],
+      "allowed_sections": [["58. Accepted mathematical-experience review after Stage 12"], ["58. Accepted mathematical-experience review after Stage 12", "Difference lens"], ["58. Accepted mathematical-experience review after Stage 12", "Probe and evaluation trace"], ["58. Accepted mathematical-experience review after Stage 12", "Freeze, Step and causal comparison"], ["58. Accepted mathematical-experience review after Stage 12", "First structure-at-scale lens"], ["58. Accepted mathematical-experience review after Stage 12", "Workspace information hierarchy"]],
+      "required_literals": ["What new mathematical question can the user ask and answer?", "The existing black field, subtle panel, fine colored lines and cyan/pink accents remain suitable", "The Difference lens is a synchronized derived view, never a second independent simulation.", "The probe must not execute a second parser/evaluator with different semantics", "Step advances exactly one fixed simulation step", "Evolve the Studio incrementally toward three modes without creating three engines:"],
+      "forbidden_literals": ["independent drifting simulations", "graph cycle rank is topological beta1"],
+      "allowed_new_numeric_tokens": ["0", "1", "2", "3", "12", "13", "58"],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Add the accepted Difference, Probe, causal-control, structure-at-scale and workspace product contracts."
+    },
+    {
+      "feedback_id": "MXR-03",
+      "operation": "AMEND",
+      "requirement_ids": ["STAGE-14"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap", "Stage 14 — Dynamical-systems laboratory"]],
+      "required_literals": ["Preserve every Bindfly Original in an explicit **Original mode**", "Add a separate **Controlled mode** only as a mathematical variant", "do not interpolate AST text"],
+      "forbidden_literals": ["replace Original mode with Controlled mode"],
+      "allowed_new_numeric_tokens": ["14", "17", "2023"],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Sequence controlled phase and declared formula coefficients without weakening historical-original preservation."
+    },
+    {
+      "feedback_id": "MXR-04",
+      "operation": "AMEND",
+      "requirement_ids": ["STAGE-17"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap", "Stage 17 — Educational and product layer"]],
+      "required_literals": ["Parameter sweeps render reproducible small multiples", "a visual grid alone is not an analysis result"],
+      "forbidden_literals": ["unversioned parameter sweeps"],
+      "allowed_new_numeric_tokens": ["0", "17"],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Make later parameter sweeps reproducible and analyzer-backed rather than cosmetic."
+    },
+    {
+      "feedback_id": "MXR-05",
+      "operation": "ADD",
+      "requirement_ids": ["VARIANT-001", "SWEEP-001"],
+      "allowed_sections": [["58. Accepted mathematical-experience review after Stage 12", "Explicitly deferred product extensions"]],
+      "required_literals": ["Original mode retains exact historical behavior and labeling.", "output morphing remains distinct and AST text is not interpolated", "WebGL/WebGPU and visual effects remain Stage 15 backend work"],
+      "forbidden_literals": ["cosmetic rendering is the Stage 13 solution"],
+      "allowed_new_numeric_tokens": ["13", "14", "15", "17", "2023"],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Keep controlled phase, parameterized formulas, sweeps and cosmetic backend work explicitly deferred to their approved stages."
+    }
+  ]
+}
