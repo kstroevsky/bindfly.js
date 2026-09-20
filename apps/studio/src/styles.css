@@ -61,6 +61,11 @@ h2 { margin: 0 0 8px; color: #9b9ba8; font-size: 11px; letter-spacing: 0.1em; te
 .inspector dl div { display: flex; justify-content: space-between; gap: 12px; }
 .inspector dt { color: #737382; }
 .inspector dd { margin: 0; text-align: right; }
+.provenance { display: grid; gap: 8px; margin-top: 14px; }
+.provenance article { display: grid; gap: 4px; padding: 9px; border-radius: 8px; background: #12121a; }
+.provenance strong { color: #f4f4f6; }
+.provenance span { color: #9b9ba8; line-height: 1.4; }
+.provenance code { overflow-wrap: anywhere; color: #8be9fd; font-size: 10px; }
 .error-message { margin: 0; color: #ff8f8f; font-size: 12px; }
 
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

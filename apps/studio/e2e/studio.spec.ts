@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { readFile } from 'node:fs/promises'
 
 const consoleProblems = new WeakMap<import('@playwright/test').Page, string[]>()
 
@@ -150,6 +151,27 @@ test('Pulse and the Spiral family execute from frozen formulas through the gener
 	await page.getByRole('button', { name: 'Apply Formula BX' }).click()
 	await page.locator('#parameter-formulaView').selectOption('compare')
 	await expect(page.locator('#parameter-formulaView')).toHaveValue('compare')
+	await page.getByText('Inspector').click()
+	await expect(page.getByRole('heading', { name: 'Formula provenance' })).toBeVisible()
+	await expect(page.locator('.provenance')).toContainText('src/shared/2d/animations/Pulse/index.js')
+	const downloadPromise = page.waitForEvent('download')
+	await page.getByRole('button', { name: 'Export JSON' }).click()
+	const download = await downloadPromise
+	const downloadPath = await download.path()
+	if (!downloadPath) throw new Error('Pulse export did not produce a local file.')
+	const exported = JSON.parse(await readFile(downloadPath, 'utf8')) as {
+		readonly format: string
+		readonly provenance: readonly { readonly id: string; readonly legacyGitBlob: string }[]
+	}
+	expect(exported.format).toBe('bindfly-studio-export')
+	expect(exported.provenance).toEqual([{
+		id: 'pulse-2023',
+		legacyGitBlob: '192936b1e58ebbbea7bc8d1ca1e20801c3f7a6ac',
+		format: 'bindfly-original-formula',
+		version: 1,
+		legacyPath: 'src/shared/2d/animations/Pulse/index.js',
+		capturedBehavior: 'drawLinesWithoutAdding per-particle coordinates',
+	}])
 	await page.getByLabel('Interactive Pulse 2023 simulation').click({ position: { x: 220, y: 180 } })
 	await page.getByLabel('Runtime').selectOption('worker')
 	await expect(page.locator('.badge')).toContainText('worker')

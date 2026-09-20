@@ -1,6 +1,6 @@
-# Stage 12 progress: formula-backed Bindfly Originals
+# Stage 12 report: formula-backed Bindfly Originals
 
-Stage 12 is in progress on the current integration branch. This report records the first bounded slice; it does not mark the stage complete.
+Stage 12 is complete on the current integration branch.
 
 ## Implemented
 
@@ -18,19 +18,23 @@ Stage 12 is in progress on the current integration branch. This report records t
 - Added a shared deterministic parametric phase simulation, formula-derived point buffer, proximity derivation and Canvas session used identically by main-thread and worker runtimes.
 - Preserved Pulse's two-operation accumulator update separately from the Spiral family's single-operation update, and migrated the recorded legacy routes through plugin-owned adapters.
 - Added durable Morph/Compare presentation for every formula-backed experiment. Compare mode derives exact A/B endpoints from one simulation state and renders labeled panes on both main-thread and Worker runtimes.
+- Added immutable plugin provenance, a visible Inspector record and a versioned JSON export manifest containing the original ID, format version, legacy path, Git blob and captured behavior. Import rejects forged provenance while retaining compatibility with raw configuration JSON.
 
 ## Verification status
 
-- V2 boundaries, typecheck, lint and 107 tests: PASS.
+- V2 boundaries, typecheck, lint and 108 tests: PASS.
 - Formula endpoint/midpoint semantics: PASS through unit tests.
 - Independent legacy formula parity for Pulse/Spiral catalog entries: PASS through direct `Math` expectations.
 - Drooping state migration and untrusted import rejection: PASS through codec tests.
 - Production V2 build: PASS.
-- Chromium browser suite: PASS, 7/7, including Drooping formula editing, all four parametric Originals and main/worker switching.
+- Chromium browser suite: PASS, 7/7, including Drooping formula editing, all four parametric Originals, synchronized comparison, provenance inspection/export and main/worker switching.
 - Desktop and mobile rendered smoke checks: PASS with visible controls/canvas and no console or page errors.
-- React Doctor changed-scope scan: 83/100 with one pre-existing effect-chain warning in `studio-app.tsx`; the Stage 12 UI work introduced no new React diagnostic.
+- React Doctor changed-scope scan: 84/100 with one pre-existing effect-chain warning in `studio-app.tsx`; the Stage 12 UI work introduced no new React diagnostic.
 
-## Remaining Stage 12 work
+## Exit criterion
 
-- Expose provenance in the experiment inspector/export rather than only in the engine catalog and documentation.
-- Complete browser comparison, hot-edit and restoration tests for the remaining Originals.
+Met. The approved legacy Drooping, Pulse and Spiral mathematics is editable and reproducible through bounded formula IR rather than legacy animation classes. Exact source provenance is frozen, mechanically checked, visible and exported. Formula morphing and synchronized A/B comparison use explicit output-interpolation semantics.
+
+## Next stage
+
+Stage 13 adds snapshot-analysis scheduling, budgets, cancellation, sampling and stale-result rejection before topology analyzers are attached to the live Studio.

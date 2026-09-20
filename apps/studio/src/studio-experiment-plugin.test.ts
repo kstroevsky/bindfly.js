@@ -29,11 +29,13 @@ test('typed plugin is erased only at the heterogeneous registry boundary', async
 	assert.equal(drooping.title, 'Drooping Lines')
 	assert.equal(drooping.defaultParameters.formulaAX, 'tan(x)')
 	assert.equal(drooping.defaultParameters.formulaMorph, 0)
+	assert.deepEqual(drooping.provenance.map(({ id }) => id), ['drooping-tan-x', 'drooping-atan-y'])
 	assert.equal(drooping.parseParameterPatch({ formulaAX: 'globalThis' }).ok, false)
 	assert.notDeepEqual(drooping.parameters, plugin.parameters)
 
 	const pulse = await studioExperimentRegistry.load('pulse-2023')
 	assert.equal(pulse.title, 'Pulse 2023')
+	assert.deepEqual(pulse.provenance.map(({ id }) => id), ['pulse-2023'])
 	assert.equal(pulse.defaultParameters.formulaAY, 'positionY + tan(distance) * weight * cos(angle * exp(a)) * atan(a)')
 	assert.equal(pulse.parseParameterPatch({ formulaAX: 'globalThis' }).ok, false)
 	const pulsePayload = pulse.serializeConfiguration(pulse.defaultParameters, pulse.defaultSeed)

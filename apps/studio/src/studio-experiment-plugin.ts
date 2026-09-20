@@ -33,6 +33,15 @@ export interface MetricDescriptor {
 	readonly format?: (value: number | string) => string
 }
 
+export interface StudioProvenanceEntry {
+	readonly id: string
+	readonly format: string
+	readonly version: number
+	readonly legacyPath: string
+	readonly legacyGitBlob: string
+	readonly capturedBehavior: string
+}
+
 export interface ErasedExperimentSession {
 	readonly parameters: StudioParameterValues
 	readonly telemetry: Readonly<ExperimentTelemetry>
@@ -57,6 +66,7 @@ export interface StudioExperimentPlugin {
 	readonly defaultSeed: string
 	readonly executionProfiles: readonly ExecutionProfile[]
 	readonly metrics: readonly MetricDescriptor[]
+	readonly provenance: readonly StudioProvenanceEntry[]
 	normalizeParameters(value: unknown): Result<StudioParameterValues, string>
 	parseInput(value: unknown): Result<unknown, string>
 	parseParameterPatch(value: unknown): Result<StudioParameterPatch, string>
@@ -89,6 +99,7 @@ export interface DefineStudioExperimentOptions<
 	readonly definition: ExperimentDefinition<Schema, State, Input, DurableState, string, SnapshotState>
 	readonly title: string
 	readonly defaultSeed: string
+	readonly provenance?: readonly StudioProvenanceEntry[]
 	readonly metrics: readonly {
 		readonly id: keyof Telemetry & string
 		readonly label: string
@@ -145,6 +156,7 @@ export const defineStudioExperiment = <
 		defaultSeed: options.defaultSeed,
 		executionProfiles: definition.capabilities.executionProfiles,
 		metrics: options.metrics,
+		provenance: Object.freeze((options.provenance ?? []).map((entry) => Object.freeze({ ...entry }))),
 		normalizeParameters: (value) => {
 			const result = normalize(value)
 			return result.ok

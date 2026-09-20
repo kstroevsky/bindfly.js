@@ -9,7 +9,7 @@ import { createMainStudioController, createWorkerStudioController } from './stud
 import type { StudioController, StudioMetrics, StudioRuntimeKind } from './studio-controller.ts'
 import { DEFAULT_STUDIO_EXPERIMENT_ID, getStudioExperimentPlugin, listStudioExperimentPlugins } from './studio-experiment-registry.ts'
 import type { StudioExperimentPlugin, StudioParameterValues, StudioPointerEvent } from './studio-experiment-plugin.ts'
-import { createShareArtifact, createStudioDurableState, parseStudioDurableState, readStudioStateFromUrl, resolveStudioDurableState } from './studio-state.ts'
+import { canonicalStringify, createShareArtifact, createStudioDurableState, createStudioExportDocument, parseStudioImportDocument, readStudioStateFromUrl, resolveStudioDurableState } from './studio-state.ts'
 
 const EMPTY_METRICS: StudioMetrics = {
 	points: 0, edges: 0, components: 0, step: 0, frameMs: 0, droppedSteps: 0, searchBackend: 'brute',
@@ -201,9 +201,8 @@ export const StudioApp = () => {
 
 	const exportJson = () => {
 		const state = createStudioDurableState(plugin, parameters, seed, runtimeKind)
-		const artifact = createShareArtifact(new URL(window.location.href), state, 0)
-		if (artifact.kind !== 'json') return
-		const href = URL.createObjectURL(new Blob([artifact.json], { type: 'application/json' }))
+		const exported = canonicalStringify(createStudioExportDocument(plugin, state))
+		const href = URL.createObjectURL(new Blob([exported], { type: 'application/json' }))
 		const anchor = document.createElement('a')
 		anchor.href = href
 		anchor.download = `bindfly-${plugin.id}.json`
@@ -214,7 +213,7 @@ export const StudioApp = () => {
 
 	const importJson = async (file: File | undefined) => {
 		if (!file) return
-		const parsed = parseStudioDurableState(await file.text())
+		const parsed = parseStudioImportDocument(await file.text())
 		if (!parsed.ok) { setError(parsed.error); return }
 		const resolved = resolveStudioDurableState(parsed.value)
 		if (!resolved.ok) { setError(resolved.error); return }
@@ -252,7 +251,7 @@ export const StudioApp = () => {
 					return <div className="metric" key={descriptor.id}><dt>{descriptor.label}</dt><dd>{descriptor.format ? descriptor.format(value) : String(value)}</dd></div>
 				})}
 			</dl></section>
-			<details className="inspector"><summary>Inspector</summary><dl><div><dt>Experiment</dt><dd>{plugin.id} v{plugin.stateVersion}</dd></div><div><dt>Timing</dt><dd>{Math.round(1 / plugin.timing.fixedStepSeconds)} Hz · {plugin.timing.deterministicTier}</dd></div><div><dt>Derivation</dt><dd>{metrics.searchBackend} · step {metrics.step} · {metrics.points} samples</dd></div><div><dt>Worker capability</dt><dd>{workerCapability.supported && supportsWorker(plugin) ? 'Supported by this experiment and browser.' : workerCapability.reason ?? 'Unavailable for this experiment.'}</dd></div></dl></details>
+			<details className="inspector"><summary>Inspector</summary><dl><div><dt>Experiment</dt><dd>{plugin.id} v{plugin.stateVersion}</dd></div><div><dt>Timing</dt><dd>{Math.round(1 / plugin.timing.fixedStepSeconds)} Hz · {plugin.timing.deterministicTier}</dd></div><div><dt>Derivation</dt><dd>{metrics.searchBackend} · step {metrics.step} · {metrics.points} samples</dd></div><div><dt>Worker capability</dt><dd>{workerCapability.supported && supportsWorker(plugin) ? 'Supported by this experiment and browser.' : workerCapability.reason ?? 'Unavailable for this experiment.'}</dd></div></dl>{plugin.provenance.length > 0 ? <section className="provenance" aria-labelledby="provenance-heading"><h2 id="provenance-heading">Formula provenance</h2>{plugin.provenance.map((entry) => <article key={entry.id}><strong>{entry.id} · v{entry.version}</strong><span>{entry.capturedBehavior}</span><code>{entry.legacyPath}</code><code>{entry.legacyGitBlob}</code></article>)}</section> : null}</details>
 		</aside>
 		<section className="viewport" ref={viewportRef}><canvas key={`${plugin.id}-${runtimeKind}-${stateGeneration}`} ref={canvasRef} tabIndex={0} aria-label={`Interactive ${plugin.title} simulation`} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerCancel} /><div className="badge">seed · {seed} · derivation {metrics.searchBackend} · {runtimeKind}</div></section>
 	</main>

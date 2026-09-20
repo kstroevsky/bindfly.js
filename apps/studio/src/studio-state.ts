@@ -1,13 +1,15 @@
 import type { Result } from '../../../src-v2/core/result.ts'
 import { createVersionedStateEnvelope, parseVersionedStateEnvelope } from '../../../src-v2/core/state-codec.ts'
 import { getStudioExperimentPlugin, listStudioExperimentPlugins } from './studio-experiment-registry.ts'
-import type { StudioExperimentPlugin, StudioParameterValues } from './studio-experiment-plugin.ts'
+import type { StudioExperimentPlugin, StudioParameterValues, StudioProvenanceEntry } from './studio-experiment-plugin.ts'
 import type { StudioRuntimeKind } from './studio-controller.ts'
 
 export const STUDIO_STATE_FORMAT = 'bindfly-studio'
 export const STUDIO_STATE_FORMAT_VERSION = 1
 export const STUDIO_STATE_QUERY_KEY = 's'
 export const DEFAULT_URL_BUDGET = 1800
+export const STUDIO_EXPORT_FORMAT = 'bindfly-studio-export'
+export const STUDIO_EXPORT_VERSION = 1
 
 export interface StudioDurableState {
 	readonly format: typeof STUDIO_STATE_FORMAT
@@ -19,6 +21,13 @@ export interface StudioDurableState {
 	}
 	readonly renderer: 'canvas2d'
 	readonly runtime: StudioRuntimeKind
+}
+
+export interface StudioExportDocument {
+	readonly format: typeof STUDIO_EXPORT_FORMAT
+	readonly version: typeof STUDIO_EXPORT_VERSION
+	readonly configuration: StudioDurableState
+	readonly provenance: readonly StudioProvenanceEntry[]
 }
 
 export interface ResolvedStudioState {
@@ -50,6 +59,21 @@ const canonicalize = (value: unknown, seen: Set<object>): unknown => {
 
 export const canonicalStringify = (value: unknown): string =>
 	JSON.stringify(canonicalize(value, new Set()))
+
+export const createStudioExportDocument = (
+	plugin: StudioExperimentPlugin,
+	configuration: StudioDurableState,
+): StudioExportDocument => {
+	if (configuration.experiment.experimentId !== plugin.id) {
+		throw new Error(`Cannot export '${configuration.experiment.experimentId}' with plugin '${plugin.id}'.`)
+	}
+	return {
+		format: STUDIO_EXPORT_FORMAT,
+		version: STUDIO_EXPORT_VERSION,
+		configuration,
+		provenance: plugin.provenance,
+	}
+}
 
 const encodeBase64Url = (value: string): string => {
 	const bytes = new TextEncoder().encode(value)
@@ -147,6 +171,29 @@ export const parseStudioDurableState = (serialized: unknown): Result<StudioDurab
 		ok: true,
 		value: createStudioDurableState(plugin, configuration.value.parameters, configuration.value.seed, runtime),
 	}
+}
+
+export const parseStudioImportDocument = (serialized: unknown): Result<StudioDurableState, string> => {
+	let value: unknown = serialized
+	if (typeof serialized === 'string') {
+		try { value = JSON.parse(serialized) as unknown } catch { return { ok: false, error: 'Studio import is not valid JSON.' } }
+	}
+	if (!isRecord(value) || value.format !== STUDIO_EXPORT_FORMAT) return parseStudioDurableState(value)
+	if (value.version !== STUDIO_EXPORT_VERSION) {
+		return { ok: false, error: `Studio export version '${String(value.version)}' is unsupported.` }
+	}
+	const configuration = parseStudioDurableState(value.configuration)
+	if (!configuration.ok) return configuration
+	const plugin = getStudioExperimentPlugin(configuration.value.experiment.experimentId)
+	if (!plugin) return { ok: false, error: 'Studio export references an unsupported experiment.' }
+	try {
+		if (canonicalStringify(value.provenance) !== canonicalStringify(plugin.provenance)) {
+			return { ok: false, error: 'Studio export provenance does not match the registered experiment.' }
+		}
+	} catch {
+		return { ok: false, error: 'Studio export provenance is malformed.' }
+	}
+	return configuration
 }
 
 export const resolveStudioDurableState = (state: StudioDurableState): Result<ResolvedStudioState, string> => {

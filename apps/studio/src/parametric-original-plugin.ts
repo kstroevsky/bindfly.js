@@ -47,6 +47,14 @@ const createParametricOriginalPlugin = (bundle: ParametricOriginalDefinitionBund
 		definition: bundle.definition,
 		title: original.title,
 		defaultSeed: `bindfly-${bundle.spec.id}-original-v1`,
+		provenance: [{
+			id: original.id,
+			format: original.format,
+			version: original.version,
+			legacyPath: original.provenance.legacyPath,
+			legacyGitBlob: original.provenance.legacyGitBlob,
+			capturedBehavior: original.provenance.capturedBehavior,
+		}],
 		metrics: [
 			{ id: 'points', label: 'Points' },
 			{ id: 'edges', label: 'Lines' },

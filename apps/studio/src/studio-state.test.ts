@@ -7,9 +7,11 @@ import {
 	canonicalStringify,
 	createShareArtifact,
 	createStudioDurableState,
+	createStudioExportDocument,
 	decodeStudioState,
 	encodeStudioState,
 	migrateLegacyUrl,
+	parseStudioImportDocument,
 	parseStudioDurableState,
 	readStudioStateFromUrl,
 	resolveStudioDurableState,
@@ -49,6 +51,24 @@ test('falls back to canonical JSON when the URL budget is exceeded', () => {
 	if (artifact.kind !== 'json') return
 	assert.match(artifact.reason, /exceeds 20/)
 	assert.deepEqual(parseStudioDurableState(artifact.json), { ok: true, value: state })
+})
+
+test('exports validated formula provenance while accepting legacy raw configuration imports', () => {
+	const state = createStudioDurableState(
+		droopingLinesPlugin,
+		droopingLinesPlugin.defaultParameters,
+		droopingLinesPlugin.defaultSeed,
+		'main',
+	)
+	const exported = createStudioExportDocument(droopingLinesPlugin, state)
+	assert.equal(exported.format, 'bindfly-studio-export')
+	assert.deepEqual(exported.provenance.map(({ id }) => id), ['drooping-tan-x', 'drooping-atan-y'])
+	assert.deepEqual(parseStudioImportDocument(canonicalStringify(exported)), { ok: true, value: state })
+	assert.deepEqual(parseStudioImportDocument(canonicalStringify(state)), { ok: true, value: state })
+	assert.equal(parseStudioImportDocument(canonicalStringify({
+		...exported,
+		provenance: [{ ...exported.provenance[0], legacyGitBlob: 'forged' }],
+	})).ok, false)
 })
 
 test('rejects malformed, unknown, future, and invalid experiment state', () => {
