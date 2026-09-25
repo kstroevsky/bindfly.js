@@ -65,6 +65,6 @@ The post-resync point creation is important: it proves RNG and stable-ID allocat
 
 ## Current boundary and next slice
 
-Stage 16 is **not complete**. Stage 16A proves the authority/replica and checkpoint contracts without network transport. The next slice should define authoritative distributed step/tick scheduling and the reconnect handshake, then place a WebSocket transport around the already-tested domain protocol. Persistent room storage and the separate privacy/security/operations review also remain open.
+Stage 16A proves the initial authority/replica and checkpoint contracts without network transport. Authoritative distributed scheduling, log-head versus applied-state watermarks and reconnect/replay semantics are implemented by Stage 16B and recorded in `docs/v2/stage-16b-report.md`. WebSocket transport, persistent room storage and the separate privacy/security/operations review remain open.
 
 The integration fixture currently supplies fixed canonical configuration bytes. Before a real shared Flying Lines room is exposed through WebSockets, its collaboration adapter must define canonical configuration bytes for every future-affecting configuration value required by that room version rather than using the fixture marker.
