@@ -9,6 +9,8 @@ import { checkV2Boundaries, dependencyPolicy } from './check-v2-boundaries.mjs'
 const modulePath = (moduleName, file = 'index.ts') =>
 	moduleName === 'studio'
 		? path.join('apps', 'studio', 'src', file)
+		: moduleName === 'collaboration-server'
+			? path.join('apps', 'collaboration-server', 'src', file)
 		: path.join('src-v2', moduleName, file)
 
 const withFixture = async (files, callback) => {
@@ -35,6 +37,7 @@ test('allows the canonical dependency direction', async () => {
 		[modulePath('rendering')]: "import '@bindfly-v2/core'\n",
 		[modulePath('runtime')]: "import '@bindfly-v2/core'\n",
 		[modulePath('collaboration')]: "import '@bindfly-v2/core'\n",
+		[modulePath('collaboration-server')]: "import '@bindfly-v2/core'\nimport '@bindfly-v2/collaboration'\n",
 		[modulePath('analysis')]: "import '@bindfly-v2/core'\n",
 		[modulePath('benchmarks')]: [
 			"import '@bindfly-v2/core'",
@@ -42,6 +45,7 @@ test('allows the canonical dependency direction', async () => {
 			"import '@bindfly-v2/rendering'",
 			"import '@bindfly-v2/runtime'",
 			"import '@bindfly-v2/collaboration'",
+			"import '@bindfly-v2/collaboration-server'",
 			"import '@bindfly-v2/analysis'",
 		].join('\n'),
 		[modulePath('studio')]: "import '@bindfly-v2/benchmarks'\n",

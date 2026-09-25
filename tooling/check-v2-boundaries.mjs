@@ -11,6 +11,7 @@ const moduleRoots = {
 	rendering: path.join('src-v2', 'rendering'),
 	runtime: path.join('src-v2', 'runtime'),
 	collaboration: path.join('src-v2', 'collaboration'),
+	'collaboration-server': path.join('apps', 'collaboration-server', 'src'),
 	analysis: path.join('src-v2', 'analysis'),
 	benchmarks: path.join('src-v2', 'benchmarks'),
 	studio: path.join('apps', 'studio', 'src'),
@@ -23,8 +24,9 @@ const allowedDependencies = {
 	rendering: ['core'],
 	runtime: ['core'],
 	collaboration: ['core'],
+	'collaboration-server': ['core', 'collaboration'],
 	analysis: ['core'],
-	benchmarks: ['core', 'formula', 'effects', 'rendering', 'runtime', 'collaboration', 'analysis'],
+	benchmarks: ['core', 'formula', 'effects', 'rendering', 'runtime', 'collaboration', 'collaboration-server', 'analysis'],
 	studio: ['core', 'formula', 'effects', 'rendering', 'runtime', 'collaboration', 'analysis', 'benchmarks'],
 }
 

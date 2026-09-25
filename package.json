@@ -25,7 +25,7 @@
     "lint:fix": "eslint --fix .",
     "v2:boundaries": "node tooling/check-v2-boundaries.mjs",
     "v2:typecheck": "tsc -p tsconfig.v2.json",
-    "v2:lint": "eslint --no-eslintrc --config tooling/eslint-v2.cjs \"src-v2/**/*.{ts,tsx}\" \"apps/studio/src/**/*.{ts,tsx}\"",
+    "v2:lint": "eslint --no-eslintrc --config tooling/eslint-v2.cjs \"src-v2/**/*.{ts,tsx}\" \"apps/collaboration-server/src/**/*.ts\" \"apps/studio/src/**/*.{ts,tsx}\"",
     "v2:test": "node tooling/run-v2-tests.mjs",
     "v2:check": "pnpm run v2:boundaries && pnpm run v2:typecheck && pnpm run v2:lint && pnpm run v2:test",
     "v2:build": "webpack --config webpack.v2.config.js --mode production",
@@ -45,7 +45,8 @@
     "react-scripts": "5.0.1",
     "three": "^0.162.0",
     "three.meshline": "^1.4.0",
-    "web-vitals": "^3.5.2"
+    "web-vitals": "^3.5.2",
+    "ws": "8.21.3"
   },
   "devDependencies": {
     "@babel/core": "^7.24.5",
@@ -62,6 +63,7 @@
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.0",
     "@types/three": "^0.162.0",
+    "@types/ws": "8.18.1",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "babel-loader": "^9.1.3",
     "clean-webpack-plugin": "^4.0.0",
