@@ -16,6 +16,7 @@ test('typed plugin is erased only at the heterogeneous registry boundary', async
 		{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
 		{ rendererId: 'canvas2d', runtimeId: 'worker' },
 	])
+	assert.deepEqual(plugin.temporalSemantics, { kind: 'continuous' })
 	assert.equal(plugin.defaultParameters.particleCount, 100)
 	assert.equal(plugin.parseParameterPatch({ unknown: 1 }).ok, false)
 
@@ -46,6 +47,14 @@ test('typed plugin is erased only at the heterogeneous registry boundary', async
 	assert.deepEqual(pulse.createInteractionController().handle({
 		phase: 'down', x: 12, y: 34, buttons: 1, shiftKey: false,
 	}), [{ type: 'set-center', x: 12, y: 34 }])
+
+	const scalarField = await studioExperimentRegistry.load('scalar-field-2d')
+	assert.deepEqual(scalarField.temporalSemantics, { kind: 'static' })
+	assert.equal(scalarField.metrics.some(({ id }) => id === 'step'), false)
+	const vectorField = await studioExperimentRegistry.load('vector-field-2d')
+	assert.deepEqual(vectorField.temporalSemantics, { kind: 'continuous' })
+	const discreteMap = await studioExperimentRegistry.load('discrete-map-2d')
+	assert.deepEqual(discreteMap.temporalSemantics, { kind: 'discrete', stepLabel: 'Iterate' })
 })
 
 test('interaction semantics are supplied by the experiment plugin', () => {

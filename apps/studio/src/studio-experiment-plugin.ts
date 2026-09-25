@@ -12,6 +12,10 @@ export type StudioParameterValue = boolean | number | string
 export type StudioParameterValues = Readonly<Record<string, StudioParameterValue>>
 export type StudioParameterPatch = Readonly<Record<string, StudioParameterValue>>
 export type StudioFormulaView = RuntimeFormulaView
+export type StudioTemporalSemantics =
+	| { readonly kind: 'static' }
+	| { readonly kind: 'continuous'; readonly stepLabel?: string }
+	| { readonly kind: 'discrete'; readonly stepLabel?: string }
 
 export interface StudioPointerEvent {
 	readonly phase: 'down' | 'move' | 'up' | 'cancel'
@@ -89,6 +93,7 @@ export interface StudioExperimentPlugin {
 	readonly provenance: readonly StudioProvenanceEntry[]
 	readonly pointCloudSources: readonly RuntimePointCloudCaptureRequest['source'][]
 	readonly formulaViews: readonly StudioFormulaView[]
+	readonly temporalSemantics: StudioTemporalSemantics
 	readonly formatPointInspection?: (value: unknown) => StudioPointInspectionView | undefined
 	normalizeParameters(value: unknown): Result<StudioParameterValues, string>
 	parseInput(value: unknown): Result<unknown, string>
@@ -126,6 +131,7 @@ export interface DefineStudioExperimentOptions<
 	readonly provenance?: readonly StudioProvenanceEntry[]
 	readonly pointCloudSources?: readonly RuntimePointCloudCaptureRequest['source'][]
 	readonly formulaViews?: readonly StudioFormulaView[]
+	readonly temporalSemantics?: StudioTemporalSemantics
 	readonly formatPointInspection?: (value: unknown) => StudioPointInspectionView | undefined
 	readonly metrics: readonly {
 		readonly id: keyof Telemetry & string
@@ -187,6 +193,7 @@ export const defineStudioExperiment = <
 		provenance: Object.freeze((options.provenance ?? []).map((entry) => Object.freeze({ ...entry }))),
 		pointCloudSources: Object.freeze([...(options.pointCloudSources ?? [])]),
 		formulaViews: Object.freeze([...(options.formulaViews ?? ['morph'])]),
+		temporalSemantics: Object.freeze(options.temporalSemantics ?? { kind: 'continuous' }),
 		...(options.formatPointInspection ? { formatPointInspection: options.formatPointInspection } : {}),
 		normalizeParameters: (value) => {
 			const result = normalize(value)

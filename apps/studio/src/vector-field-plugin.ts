@@ -31,6 +31,7 @@ export const vectorFieldPlugin = defineStudioExperiment({
 	definition: vectorFieldDefinition,
 	title: 'Vector Field Lab',
 	defaultSeed: 'vector-field-hopf-v1',
+	temporalSemantics: { kind: 'continuous' },
 	metrics: [
 		{ id: 'points', label: 'Trajectories' },
 		{ id: 'edges', label: 'Field samples' },

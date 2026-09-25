@@ -31,6 +31,7 @@ export const discreteMapPlugin = defineStudioExperiment({
 	definition: discreteMapDefinition,
 	title: 'Discrete Map Lab',
 	defaultSeed: 'henon-map-v1',
+	temporalSemantics: { kind: 'discrete', stepLabel: 'Iterate' },
 	metrics: [
 		{ id: 'points', label: 'Orbits' },
 		{ id: 'edges', label: 'Iteration' },

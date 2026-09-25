@@ -180,8 +180,8 @@ test('Pulse and the Spiral family execute from frozen formulas through the gener
 
 test('Vector Field and Discrete Map run through main and worker Studio paths', async ({ page }) => {
 	const experiments = [
-		{ id: 'vector-field-2d', title: 'Vector Field Lab', metric: 'Trajectories' },
-		{ id: 'discrete-map-2d', title: 'Discrete Map Lab', metric: 'Orbits' },
+		{ id: 'vector-field-2d', title: 'Vector Field Lab', metric: 'Trajectories', stepLabel: 'Step' },
+		{ id: 'discrete-map-2d', title: 'Discrete Map Lab', metric: 'Orbits', stepLabel: 'Iterate' },
 	] as const
 
 	for (const experiment of experiments) {
@@ -203,12 +203,12 @@ test('Vector Field and Discrete Map run through main and worker Studio paths', a
 		await page.getByRole('button', { name: 'Freeze' }).click()
 		await expect(page.getByRole('button', { name: 'Run' })).toBeEnabled()
 		const frozenStep = Number(await metric(page, 'Step').textContent())
-		await page.getByRole('button', { name: 'Step', exact: true }).click()
+		await page.getByRole('button', { name: experiment.stepLabel, exact: true }).click()
 		await expect(metric(page, 'Step')).toHaveText(String(frozenStep + 1))
 	}
 })
 
-test('Scalar Field samples, probes and runs through main and worker Studio paths', async ({ page }) => {
+test('Scalar Field samples and probes through main and worker Studio paths without temporal controls', async ({ page }) => {
 	await page.goto('/#/lab/scalar-field-2d')
 	await expect(page.getByRole('heading', { name: 'Scalar Field Lab' })).toBeVisible()
 	const samples = page.locator('.metric').filter({ has: page.locator('dt', { hasText: /^Samples$/ }) }).locator('dd')
@@ -231,12 +231,12 @@ test('Scalar Field samples, probes and runs through main and worker Studio paths
 	await expect.poll(async () => Number(await samples.textContent())).toBeGreaterThan(0)
 	await canvas.click({ position: { x: 250, y: 150 } })
 	await expect(page.getByLabel('Point probe')).toContainText('Formula Probe · scalar field')
-
-	await page.getByRole('button', { name: 'Freeze' }).click()
-	await expect(page.getByRole('button', { name: 'Run' })).toBeEnabled()
-	const frozenStep = Number(await metric(page, 'Step').textContent())
-	await page.getByRole('button', { name: 'Step', exact: true }).click()
-	await expect(metric(page, 'Step')).toHaveText(String(frozenStep + 1))
+	await expect(page.getByRole('button', { name: 'Run', exact: true })).toHaveCount(0)
+	await expect(page.getByRole('button', { name: 'Freeze', exact: true })).toHaveCount(0)
+	await expect(page.getByRole('button', { name: 'Step', exact: true })).toHaveCount(0)
+	await expect(page.getByRole('button', { name: 'Reset', exact: true })).toHaveCount(0)
+	await page.getByText('Inspector').click()
+	await expect(page.getByText('Static field')).toBeVisible()
 })
 
 test('Freeze keeps simulation state fixed while formula perturbations remain inspectable', async ({ page }) => {

@@ -15,10 +15,10 @@ export const scalarFieldPlugin = defineStudioExperiment({
 	definition: scalarFieldDefinition,
 	title: 'Scalar Field Lab',
 	defaultSeed: 'scalar-field-radial-v1',
+	temporalSemantics: { kind: 'static' },
 	metrics: [
 		{ id: 'points', label: 'Samples' },
 		{ id: 'edges', label: 'Invalid samples' },
-		{ id: 'step', label: 'Step' },
 		{ id: 'frameMs', label: 'Frame', format: (value) => `${Number(value).toFixed(1)} ms` },
 	],
 	createSession: createScalarFieldSession,
