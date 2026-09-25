@@ -1,33 +1,12 @@
 import { createPhaseSpaceTransform } from '../../core/index.ts'
 import type { RenderFrame, Renderer, Viewport } from '../../core/index.ts'
-
-export interface ScalarFieldRenderGrid {
-	readonly columns: number
-	readonly rows: number
-	readonly minX: number
-	readonly maxX: number
-	readonly minY: number
-	readonly maxY: number
-	readonly values: Float64Array
-	readonly validCount: number
-	readonly invalidCount: number
-}
-
-export interface ScalarFieldRenderView {
-	readonly background: string
-	readonly domainRadius: number
-	readonly title: string
-	readonly grid: ScalarFieldRenderGrid
-	readonly contourLevel: number
-	readonly valueScale: number
-}
+import { createScalarFieldRaster, extractScalarFieldContourSegments } from '../scalar-field.ts'
+import type { ScalarFieldContourSegment, ScalarFieldRenderGrid, ScalarFieldRenderView } from '../scalar-field.ts'
 
 interface Point {
 	readonly x: number
 	readonly y: number
 }
-
-type Edge = 'top' | 'right' | 'bottom' | 'left'
 
 const clamp = (value: number, minimum: number, maximum: number) => Math.min(maximum, Math.max(minimum, value))
 
@@ -39,12 +18,6 @@ const fieldColor = (value: number, scale: number): string => {
 	return `hsl(${hue}, 72%, ${lightness}%)`
 }
 
-const interpolate = (a: Point, b: Point, valueA: number, valueB: number, level: number): Point => {
-	const denominator = valueB - valueA
-	const t = denominator === 0 ? 0.5 : clamp((level - valueA) / denominator, 0, 1)
-	return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }
-}
-
 const drawSegment = (
 	context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
 	start: Point,
@@ -54,10 +27,38 @@ const drawSegment = (
 	context.lineTo(end.x, end.y)
 }
 
+type RasterCanvas = HTMLCanvasElement | OffscreenCanvas
+
+const createRasterCanvas = (
+	host: HTMLCanvasElement | OffscreenCanvas,
+	width: number,
+	height: number,
+): RasterCanvas | undefined => {
+	if ('style' in host) {
+		const canvas = host.ownerDocument?.createElement('canvas')
+		if (!canvas) return undefined
+		canvas.width = width
+		canvas.height = height
+		return canvas
+	}
+	if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(width, height)
+	return undefined
+}
+
 class ScalarFieldCanvasRenderer implements Renderer<ScalarFieldRenderView> {
 	private readonly canvas: HTMLCanvasElement | OffscreenCanvas
 	private readonly context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
 	private viewport: Viewport | undefined
+	private rasterCache: {
+		readonly grid: ScalarFieldRenderGrid
+		readonly valueScale: number
+		readonly canvas: RasterCanvas
+	} | undefined
+	private contourCache: {
+		readonly grid: ScalarFieldRenderGrid
+		readonly contourLevel: number
+		readonly segments: readonly ScalarFieldContourSegment[]
+	} | undefined
 	private disposed = false
 
 	constructor(canvas: HTMLCanvasElement | OffscreenCanvas) {
@@ -81,6 +82,33 @@ class ScalarFieldCanvasRenderer implements Renderer<ScalarFieldRenderView> {
 		this.context.setTransform(viewport.devicePixelRatio, 0, 0, viewport.devicePixelRatio, 0, 0)
 	}
 
+	private cachedRaster(grid: ScalarFieldRenderGrid, valueScale: number): RasterCanvas | undefined {
+		if (this.rasterCache?.grid === grid && this.rasterCache.valueScale === valueScale) return this.rasterCache.canvas
+		const raster = createScalarFieldRaster(grid, valueScale)
+		const canvas = createRasterCanvas(this.canvas, raster.width, raster.height)
+		if (!canvas) {
+			this.rasterCache = undefined
+			return undefined
+		}
+		const context = 'style' in canvas ? canvas.getContext('2d') : canvas.getContext('2d')
+		if (!context) {
+			this.rasterCache = undefined
+			return undefined
+		}
+		const image = context.createImageData(raster.width, raster.height)
+		image.data.set(raster.rgba)
+		context.putImageData(image, 0, 0)
+		this.rasterCache = { grid, valueScale, canvas }
+		return canvas
+	}
+
+	private cachedContours(grid: ScalarFieldRenderGrid, contourLevel: number): readonly ScalarFieldContourSegment[] {
+		if (this.contourCache?.grid === grid && this.contourCache.contourLevel === contourLevel) return this.contourCache.segments
+		const segments = extractScalarFieldContourSegments(grid, contourLevel)
+		this.contourCache = { grid, contourLevel, segments }
+		return segments
+	}
+
 	render(view: Readonly<ScalarFieldRenderView>, _frame: RenderFrame): void {
 		if (this.disposed) throw new Error('Cannot render with a disposed scalar-field renderer.')
 		if (!this.viewport) throw new Error('Scalar-field renderer must be resized before rendering.')
@@ -93,64 +121,34 @@ class ScalarFieldCanvasRenderer implements Renderer<ScalarFieldRenderView> {
 		this.context.fillStyle = view.background
 		this.context.fillRect(0, 0, this.viewport.cssWidth, this.viewport.cssHeight)
 
-		for (let row = 0; row < grid.rows - 1; row++) {
-			for (let column = 0; column < grid.columns - 1; column++) {
-				const values = [
-					valueAt(row, column),
-					valueAt(row, column + 1),
-					valueAt(row + 1, column + 1),
-					valueAt(row + 1, column),
-				]
-				if (!values.every(Number.isFinite)) continue
-				const average = values.reduce((sum, value) => sum + value, 0) / values.length
-				const topLeft = transform.toCanvas({ x: xAt(column), y: yAt(row) })
-				const bottomRight = transform.toCanvas({ x: xAt(column + 1), y: yAt(row + 1) })
-				this.context.fillStyle = fieldColor(average, view.valueScale)
-				this.context.fillRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x + 0.5, bottomRight.y - topLeft.y + 0.5)
+		const raster = this.cachedRaster(grid, view.valueScale)
+		if (raster) {
+			this.context.imageSmoothingEnabled = false
+			this.context.drawImage(raster, 0, 0, this.viewport.cssWidth, this.viewport.cssHeight)
+		} else {
+			for (let row = 0; row < grid.rows - 1; row++) {
+				for (let column = 0; column < grid.columns - 1; column++) {
+					const values = [
+						valueAt(row, column),
+						valueAt(row, column + 1),
+						valueAt(row + 1, column + 1),
+						valueAt(row + 1, column),
+					]
+					if (!values.every(Number.isFinite)) continue
+					const average = values.reduce((sum, value) => sum + value, 0) / values.length
+					const topLeft = transform.toCanvas({ x: xAt(column), y: yAt(row) })
+					const bottomRight = transform.toCanvas({ x: xAt(column + 1), y: yAt(row + 1) })
+					this.context.fillStyle = fieldColor(average, view.valueScale)
+					this.context.fillRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x + 0.5, bottomRight.y - topLeft.y + 0.5)
+				}
 			}
 		}
 
 		this.context.strokeStyle = 'rgba(255, 255, 255, 0.9)'
 		this.context.lineWidth = 1.25
 		this.context.beginPath()
-		for (let row = 0; row < grid.rows - 1; row++) {
-			for (let column = 0; column < grid.columns - 1; column++) {
-				const topLeftValue = valueAt(row, column)
-				const topRightValue = valueAt(row, column + 1)
-				const bottomRightValue = valueAt(row + 1, column + 1)
-				const bottomLeftValue = valueAt(row + 1, column)
-				const values = [topLeftValue, topRightValue, bottomRightValue, bottomLeftValue]
-				if (!values.every(Number.isFinite)) continue
-
-				const topLeft = transform.toCanvas({ x: xAt(column), y: yAt(row) })
-				const topRight = transform.toCanvas({ x: xAt(column + 1), y: yAt(row) })
-				const bottomRight = transform.toCanvas({ x: xAt(column + 1), y: yAt(row + 1) })
-				const bottomLeft = transform.toCanvas({ x: xAt(column), y: yAt(row + 1) })
-				const above = values.map((value) => value >= view.contourLevel)
-				const caseIndex = (above[0] ? 1 : 0) | (above[1] ? 2 : 0) | (above[2] ? 4 : 0) | (above[3] ? 8 : 0)
-				if (caseIndex === 0 || caseIndex === 15) continue
-
-				const crossings = new Map<Edge, Point>()
-				if (above[0] !== above[1]) crossings.set('top', interpolate(topLeft, topRight, topLeftValue, topRightValue, view.contourLevel))
-				if (above[1] !== above[2]) crossings.set('right', interpolate(topRight, bottomRight, topRightValue, bottomRightValue, view.contourLevel))
-				if (above[2] !== above[3]) crossings.set('bottom', interpolate(bottomRight, bottomLeft, bottomRightValue, bottomLeftValue, view.contourLevel))
-				if (above[3] !== above[0]) crossings.set('left', interpolate(bottomLeft, topLeft, bottomLeftValue, topLeftValue, view.contourLevel))
-
-				if (crossings.size === 2) {
-					const points = [...crossings.values()]
-					if (points[0] && points[1]) drawSegment(this.context, points[0], points[1])
-				} else if (crossings.size === 4) {
-					const centerAbove = values.reduce((sum, value) => sum + value, 0) / 4 >= view.contourLevel
-					const pairs: readonly (readonly [Edge, Edge])[] = caseIndex === 5
-						? centerAbove ? [['top', 'right'], ['bottom', 'left']] : [['top', 'left'], ['right', 'bottom']]
-						: centerAbove ? [['top', 'left'], ['right', 'bottom']] : [['top', 'right'], ['bottom', 'left']]
-					for (const [first, second] of pairs) {
-						const start = crossings.get(first)
-						const end = crossings.get(second)
-						if (start && end) drawSegment(this.context, start, end)
-					}
-				}
-			}
+		for (const segment of this.cachedContours(grid, view.contourLevel)) {
+			drawSegment(this.context, transform.toCanvas(segment.start), transform.toCanvas(segment.end))
 		}
 		this.context.stroke()
 
@@ -174,6 +172,12 @@ class ScalarFieldCanvasRenderer implements Renderer<ScalarFieldRenderView> {
 	dispose(): void {
 		this.disposed = true
 		this.viewport = undefined
+		if (this.rasterCache) {
+			this.rasterCache.canvas.width = 0
+			this.rasterCache.canvas.height = 0
+		}
+		this.rasterCache = undefined
+		this.contourCache = undefined
 		this.canvas.width = 0
 		this.canvas.height = 0
 	}

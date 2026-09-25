@@ -94,7 +94,7 @@ export const createScalarFieldSession = (options: {
 			renderer.render({
 				background: parameters.background,
 				domainRadius: parameters.domainRadius,
-				title: 'Scalar field · z = f(x,y) · selected level set',
+				title: 'Scalar field · sampled z = f(x,y) · piecewise-linear level set',
 				grid: currentGrid,
 				contourLevel: parameters.contourLevel,
 				valueScale: parameters.valueScale,
