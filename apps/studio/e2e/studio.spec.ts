@@ -197,9 +197,51 @@ test('Freeze keeps simulation state fixed while formula perturbations remain ins
 	await expect(metric(page, 'Step')).toHaveText(frozenStep ?? '')
 
 	await page.getByRole('button', { name: 'Step', exact: true }).click()
+	const steppedStep = Number(frozenStep) + 1
+	await expect(metric(page, 'Step')).toHaveText(String(steppedStep))
 	await expect(page.locator('.formula-history li')).toHaveCount(1)
+	await expect(page.locator('.formula-history li').first()).toContainText(`step ${steppedStep}`)
 	await page.getByRole('button', { name: 'Run' }).click()
 	await expect(page.getByRole('heading', { name: 'Formula trail' })).toHaveCount(0)
+})
+
+test('Difference and Probe expose synchronized formula causality on main and worker runtimes', async ({ page }) => {
+	await page.goto('/#/lab/pulse-2023')
+	await page.locator('#parameter-particleCount').fill('3')
+	const formulas = [
+		['AX', '100'],
+		['AY', '100'],
+		['BX', '110'],
+		['BY', '100'],
+	] as const
+	for (const [axis, source] of formulas) {
+		const field = page.locator(`#parameter-formula${axis}`)
+		await field.fill(source)
+		await page.getByRole('button', { name: `Apply Formula ${axis}` }).click()
+	}
+	await page.getByRole('button', { name: 'Compare' }).click()
+	await page.getByRole('button', { name: 'Difference vectors' }).click()
+	await expect(page.getByRole('button', { name: 'Difference vectors' })).toHaveAttribute('aria-pressed', 'true')
+
+	const assertProbe = async () => {
+		await page.getByRole('button', { name: 'Probe point' }).click()
+		await page.getByLabel('Interactive Pulse 2023 simulation').click({ position: { x: 100, y: 100 } })
+		const probe = page.getByLabel('Point probe')
+		await expect(probe).toBeVisible()
+		await expect(probe).toContainText('A valid / B valid')
+		await expect(probe).toContainText('dx')
+		await expect(probe).toContainText('10.0000')
+		await expect(probe.getByText('Scope')).toBeVisible()
+		await probe.getByText('Trace · Formula A').click()
+		await expect(probe).toContainText('x · 100')
+		await page.getByRole('button', { name: 'Clear probe' }).click()
+		await page.getByRole('button', { name: /Probe on/ }).click()
+	}
+
+	await assertProbe()
+	await page.getByLabel('Runtime').selectOption('worker')
+	await expect(page.locator('.badge')).toContainText('worker')
+	await assertProbe()
 })
 
 test('Analyze computes persistence in the dedicated Ripser WASM worker', async ({ page }) => {
