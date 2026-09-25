@@ -1,5 +1,6 @@
 import { createExperimentRegistry } from '../../../src-v2/core/registry.ts'
 import { droopingLinesPlugin } from './drooping-lines-plugin.ts'
+import { discreteMapPlugin } from './discrete-map-plugin.ts'
 import { flyingLinesPlugin } from './flying-lines-plugin.ts'
 import { parametricOriginalPlugins } from './parametric-original-plugin.ts'
 import type { StudioExperimentPlugin } from './studio-experiment-plugin.ts'
@@ -7,6 +8,7 @@ import { vectorFieldPlugin } from './vector-field-plugin.ts'
 
 const plugins: readonly StudioExperimentPlugin[] = [
 	droopingLinesPlugin,
+	discreteMapPlugin,
 	flyingLinesPlugin,
 	...parametricOriginalPlugins,
 	vectorFieldPlugin,

@@ -21,6 +21,7 @@ export interface PhasePortraitRenderView {
 	readonly domainRadius: number
 	readonly title: string
 	readonly trajectories: readonly PhasePortraitTrajectory[]
+	readonly trajectoryStyle?: 'curve' | 'points'
 	readonly field?: readonly VectorFieldSample[]
 }
 
@@ -96,16 +97,27 @@ class PhasePortraitCanvasRenderer implements Renderer<PhasePortraitRenderView> {
 
 		for (const trajectory of view.trajectories) {
 			const hue = (trajectory.id * 137.508 + 190) % 360
-			this.context.strokeStyle = `hsla(${hue}, 84%, 70%, 0.9)`
-			this.context.lineWidth = 1.35
-			this.context.beginPath()
-			for (let index = 0; index < trajectory.trailX.length; index++) {
-				const x = this.toCanvasX(trajectory.trailX[index] ?? 0, radius)
-				const y = this.toCanvasY(trajectory.trailY[index] ?? 0, radius)
-				if (index === 0) this.context.moveTo(x, y)
-				else this.context.lineTo(x, y)
+			if (view.trajectoryStyle === 'points') {
+				this.context.fillStyle = `hsla(${hue}, 84%, 70%, 0.72)`
+				for (let index = 0; index < trajectory.trailX.length; index++) {
+					const x = this.toCanvasX(trajectory.trailX[index] ?? 0, radius)
+					const y = this.toCanvasY(trajectory.trailY[index] ?? 0, radius)
+					this.context.beginPath()
+					this.context.arc(x, y, 1.35, 0, Math.PI * 2)
+					this.context.fill()
+				}
+			} else {
+				this.context.strokeStyle = `hsla(${hue}, 84%, 70%, 0.9)`
+				this.context.lineWidth = 1.35
+				this.context.beginPath()
+				for (let index = 0; index < trajectory.trailX.length; index++) {
+					const x = this.toCanvasX(trajectory.trailX[index] ?? 0, radius)
+					const y = this.toCanvasY(trajectory.trailY[index] ?? 0, radius)
+					if (index === 0) this.context.moveTo(x, y)
+					else this.context.lineTo(x, y)
+				}
+				this.context.stroke()
 			}
-			this.context.stroke()
 			this.context.fillStyle = trajectory.status === 'active'
 				? `hsl(${hue}, 88%, 74%)`
 				: trajectory.status === 'escaped' ? 'rgba(251, 191, 36, 0.95)' : 'rgba(248, 113, 113, 0.95)'
