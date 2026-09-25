@@ -27,6 +27,16 @@ export interface AuthoritativeEvent<Input> {
 	readonly input: Input
 }
 
+export interface AuthoritativeTick {
+	readonly protocolVersion: typeof COLLABORATION_PROTOCOL_VERSION
+	readonly roomId: string
+	readonly experimentId: string
+	readonly stateVersion: number
+	readonly stepIndex: number
+	readonly logHeadSequence: SequenceNumber
+	readonly appliedSequence: SequenceNumber
+}
+
 export interface SnapshotChecksum {
 	readonly algorithm: typeof SNAPSHOT_CHECKSUM_ALGORITHM
 	readonly encodingVersion: typeof CANONICAL_SNAPSHOT_ENCODING_VERSION
@@ -38,7 +48,7 @@ export interface AuthoritativeSnapshot {
 	readonly roomId: string
 	readonly experimentId: string
 	readonly stateVersion: number
-	readonly lastSequence: SequenceNumber
+	readonly lastAppliedSequence: SequenceNumber
 	readonly stepIndex: number
 	readonly configurationBytes: Uint8Array
 	readonly stateBytes: Uint8Array
@@ -49,8 +59,8 @@ export interface DivergenceEvidence {
 	readonly matches: boolean
 	readonly authoritativeChecksum: SnapshotChecksum
 	readonly replicaChecksum: SnapshotChecksum
-	readonly authoritativeLastSequence: SequenceNumber
-	readonly replicaLastSequence: SequenceNumber
+	readonly authoritativeLastAppliedSequence: SequenceNumber
+	readonly replicaLastAppliedSequence: SequenceNumber
 	readonly authoritativeStepIndex: number
 	readonly replicaStepIndex: number
 }
@@ -64,6 +74,45 @@ export interface CollaborationStateAdapter<Input> {
 	restoreStateBytes(bytes: Uint8Array): void
 }
 
+export interface CollaborationResumeRequest {
+	readonly protocolVersion: number
+	readonly roomId: string
+	readonly experimentId: string
+	readonly stateVersion: number
+	readonly lastAppliedSequence: SequenceNumber
+	readonly stepIndex: number
+	readonly checksum?: SnapshotChecksum
+}
+
+export type CollaborationResumePlan<Input> =
+	| {
+		readonly ok: true
+		readonly mode: 'replay'
+		readonly events: readonly AuthoritativeEvent<Input>[]
+		readonly tick: AuthoritativeTick
+	}
+	| {
+		readonly ok: true
+		readonly mode: 'snapshot'
+		readonly snapshot: AuthoritativeSnapshot
+		readonly events: readonly AuthoritativeEvent<Input>[]
+		readonly tick: AuthoritativeTick
+	}
+	| {
+		readonly ok: false
+		readonly code: CollaborationResumeErrorCode
+		readonly error: string
+	}
+
+export type CollaborationResumeErrorCode =
+	| 'PROTOCOL_VERSION_MISMATCH'
+	| 'ROOM_MISMATCH'
+	| 'EXPERIMENT_MISMATCH'
+	| 'STATE_VERSION_MISMATCH'
+	| 'INVALID_SEQUENCE'
+	| 'INVALID_STEP_INDEX'
+	| 'AHEAD_OF_AUTHORITY'
+
 export type AuthoritativeSubmitErrorCode =
 	| 'PROTOCOL_VERSION_MISMATCH'
 	| 'ROOM_MISMATCH'
@@ -72,6 +121,7 @@ export type AuthoritativeSubmitErrorCode =
 	| 'AHEAD_OF_AUTHORITY'
 	| 'INVALID_INPUT'
 	| 'INPUT_TOO_LARGE'
+	| 'RATE_LIMIT_EXCEEDED'
 	| 'UNAUTHORIZED'
 	| 'IDEMPOTENCY_CONFLICT'
 
@@ -88,6 +138,6 @@ export type ReplicaReceiveStatus =
 
 export interface ReplicaReceiveResult {
 	readonly status: ReplicaReceiveStatus
-	readonly lastSequence: SequenceNumber
+	readonly lastAppliedSequence: SequenceNumber
 	readonly stepIndex: number
 }

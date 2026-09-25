@@ -12,7 +12,7 @@ export interface CanonicalSnapshotV1Input {
 	readonly roomId: string
 	readonly experimentId: string
 	readonly stateVersion: number
-	readonly lastSequence: number
+	readonly lastAppliedSequence: number
 	readonly stepIndex: number
 	readonly configurationBytes: Uint8Array
 	readonly stateBytes: Uint8Array
@@ -40,7 +40,7 @@ export const encodeCanonicalSnapshotV1 = (input: CanonicalSnapshotV1Input): Uint
 	assertNonEmpty(input.roomId, 'Snapshot roomId')
 	assertNonEmpty(input.experimentId, 'Snapshot experimentId')
 	assertUint32(input.stateVersion, 'Snapshot stateVersion')
-	assertSafeInteger(input.lastSequence, 'Snapshot lastSequence')
+	assertSafeInteger(input.lastAppliedSequence, 'Snapshot lastAppliedSequence')
 	assertSafeInteger(input.stepIndex, 'Snapshot stepIndex')
 
 	const room = encodedString(input.roomId)
@@ -85,7 +85,7 @@ export const encodeCanonicalSnapshotV1 = (input: CanonicalSnapshotV1Input): Uint
 	writeLengthPrefixed(room)
 	writeLengthPrefixed(experiment)
 	writeUint32(input.stateVersion)
-	writeUint64(input.lastSequence)
+	writeUint64(input.lastAppliedSequence)
 	writeUint64(input.stepIndex)
 	writeLengthPrefixed(input.configurationBytes)
 	writeLengthPrefixed(input.stateBytes)

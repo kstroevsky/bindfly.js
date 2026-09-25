@@ -12,7 +12,7 @@ test('snapshot checksum v1 is SHA-256 over the explicitly encoded canonical snap
 		roomId: 'room-1',
 		experimentId: 'fixture',
 		stateVersion: 3,
-		lastSequence: 7,
+		lastAppliedSequence: 7,
 		stepIndex: 11,
 		configurationBytes: new Uint8Array([1, 2, 3]),
 		stateBytes: new Uint8Array([4, 5, 6, 7]),
@@ -26,7 +26,7 @@ test('snapshot checksum v1 is SHA-256 over the explicitly encoded canonical snap
 
 	const changed = await createSnapshotChecksum(encodeCanonicalSnapshotV1({
 		roomId: 'room-1', experimentId: 'fixture', stateVersion: 3,
-		lastSequence: 8, stepIndex: 11,
+		lastAppliedSequence: 8, stepIndex: 11,
 		configurationBytes: new Uint8Array([1, 2, 3]), stateBytes: new Uint8Array([4, 5, 6, 7]),
 	}))
 	assert.notEqual(changed.value, checksum.value)
