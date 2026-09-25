@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/bindfly_2_implementation_plan.md",
-  "sha256": "965aff4fcd0cd3da4ed2b63a9fcf718fda5a7cede411844a2227b711a75cda33",
-  "bytes": 109358,
+  "sha256": "543d85c6f142799b582ddeb6c14a2ce1e58b8d7a183cfa9836a7666c88b85b7a",
+  "bytes": 109338,
   "lines": 3078,
   "sections": [
     {
@@ -1846,7 +1846,7 @@
       "heading": "Stage 14 — Dynamical-systems laboratory",
       "start_line": 2817,
       "end_line": 2832,
-      "sha256": "a9fec7ac59cba95ecb2033fb1ab40290ee16cea9b2595589440cba9b3c897ebd",
+      "sha256": "877c926cd48d70f7b4f963666eea34c82c6917493c5ac8a52eaa95a7a6ca6f4b",
       "code_fences": 0,
       "display_math_markers": 0,
       "numeric_tokens": [
@@ -1890,7 +1890,7 @@
       "heading": "Stage 17 — Educational and product layer",
       "start_line": 2847,
       "end_line": 2856,
-      "sha256": "4b347c32f9d1ef2b7a566a25345853baf36b3a2d9b7398289ee7d885362b529a",
+      "sha256": "8bea0006e86a7dbf535b5241a17848370213e9604f8b94d25d51eac11692caf4",
       "code_fences": 0,
       "display_math_markers": 0,
       "numeric_tokens": [
@@ -2094,7 +2094,7 @@
       "heading": "Explicitly deferred product extensions",
       "start_line": 3072,
       "end_line": 3078,
-      "sha256": "9b360add0f094f72ca3939032196c01ac9a4e85f486c9573f0552f056f3751d7",
+      "sha256": "94dbab2ab627ca1e5a8de52098907ea60b0bcaa1ef1e27736bd0a65fa0b60527",
       "code_fences": 0,
       "display_math_markers": 0,
       "numeric_tokens": [

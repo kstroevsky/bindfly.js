@@ -6,7 +6,7 @@ PASS. S13R-01 through S13R-07A are each mapped and implemented. Stage 13 is spli
 
 ## Preservation pass
 
-PASS. All revision-3 requirements remain present: the user-visible Stage 13 question, Difference/Probe/Freeze/structure lenses, filled triangles, validated persistent-homology ordering, Explore/Compare/Analyze, exact historical Original labeling, later controlled/parameterized/sweep work, current visual language, analysis/derivation separation, visible failure/provenance and the Stage 14–17 order. The six accepted anchors paraphrased in the first patch were restored verbatim before verification.
+PASS. All revision-3 requirements remain present: the user-visible Stage 13 question, Difference/Probe/Freeze/structure lenses, filled triangles, validated persistent-homology ordering, Explore/Compare/Analyze, exact historical Original labeling, later controlled/parameterized/sweep work, current visual language, analysis/derivation separation, visible failure/provenance and the Stage 14–17 order. Unchanged sections remain byte-identical to the locked base.
 
 ## Exact-contract pass
 
@@ -23,13 +23,13 @@ PASS. The following exact contracts are retained structurally:
 - graph cycle-rank and \(\beta_1\) equations plus the seven named validation fixtures;
 - edge/triangle filtration births and one persistence computation per snapshot;
 - \(a_i=a_{controlled}\), formula-parameter declaration/collision rules and the two distinct sweep modes;
-- deferred finite-difference sensitivity formula.
+- deferred finite-difference sensitivity formula plus reuse of frozen state, declared formula parameters and the comparison buffer.
 
-No illustrative triangle threshold is promoted to an approved default.
+No illustrative triangle threshold is promoted to an approved default and no ordering is imposed between the two Stage 17 sweep modes beyond keeping them distinct.
 
 ## Negative-control pass
 
-PASS. The candidate does not modify exact Original simulation semantics, implement Controlled mode inside `parametric-originals/simulation.ts`, interpolate AST text, stream full buffers for Probe, create an arbitrary RPC framework, couple analysis ε to visual radius, run expensive analysis in the render Worker, use a cubic triangle loop, label graph cycles β₁, recompute persistence for every ε change, merge frozen and dynamic sweep semantics, start collaborative formula editing in the first multiplayer slice, or bring sensitivity into Stage 13.
+PASS. The candidate preserves exact Original simulation semantics without introducing a path-specific implementation prohibition. It does not interpolate AST text, stream full buffers for Probe, create an arbitrary RPC framework, couple analysis ε to visual radius, run expensive analysis in the render Worker, use a cubic triangle loop, label graph cycles β₁, recompute persistence for every ε change, merge frozen and dynamic sweep semantics, start collaborative formula editing in the first multiplayer slice, or bring sensitivity into Stage 13.
 
 ## Cross-interface pass
 
@@ -49,8 +49,12 @@ PASS.
 
 ## Standalone pass
 
-PASS. The candidate supplies executable ordering, interfaces, enum members, formulas, validation fixtures, failure behavior, worker ownership, migration requirement and deferrals. It does not rely on conversational context or “as before” references for the amended contracts.
+PASS. The candidate supplies executable ordering, interfaces, enum members, formulas, validation fixtures, failure behavior, worker ownership, migration requirements and deferrals. It does not rely on conversational context or implicit prior-plan references for the amended contracts.
+
+## Repair verification
+
+The final repair removed three independently demonstrated losses/drifts: a path-specific Controlled-mode prohibition not authorized by the delta, an unapproved sequencing word between the two sweep modes, and omission of declared formula parameters from sensitivity reuse. The candidate was rebuilt from the locked base plus the original delta and these bounded repairs. Mechanical verification was rerun and a fresh independent verifier then returned PASS with zero unauthorized changes, dangling dependencies, cross-interface contradictions or standalone gaps.
 
 ## Disposition
 
-Semantic verification: PASS after repairing independent findings for Step provenance/pinned-snapshot behavior, sweep budget preconditions, authorized initial snapshot copying, comparison count and validity/missing-slot semantics, analysis-ε ownership, pinned Analyze geometry and the sourced `k`/`b` examples. Independent forward verification must be rerun before promotion.
+Semantic verification: PASS. Revision 4 is ready for promotion with independent verification PASS.

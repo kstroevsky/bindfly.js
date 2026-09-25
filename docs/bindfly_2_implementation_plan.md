@@ -2818,7 +2818,7 @@ The Stage 13 Studio begins the Explore / Compare / Analyze workspace model descr
 
 Implement dimensional vector fields, discrete maps, trajectories, RK4 and scalar fields; later add equilibria, stability, Lyapunov, basins and bifurcations through optional analyzers.
 
-Preserve every Bindfly Original in an explicit **Original mode** with its exact historical accumulator semantics. Do not modify `parametric-originals/simulation.ts` to implement controlled exploration. Add a separate **Controlled mode** with the initial semantic
+Preserve every Bindfly Original in an explicit **Original mode** with its exact historical accumulator semantics. Do not modify exact Original simulation semantics. Add a separate **Controlled mode** with the initial semantic
 
 $$
 a_i=a_{controlled}
@@ -2850,7 +2850,7 @@ Add guided lessons, parameter sweeps, saved experiments, explanations, topology/
 
 Parameter sweeps render reproducible small multiples and may plot validated derived quantities such as \(\beta_0\), \(\beta_1\), mean displacement or Lyapunov estimates. They must pin the frozen snapshot/initial conditions, formula and parameter range, seed, analyzer version and approximation metadata; a visual grid alone is not an analysis result.
 
-Keep two sweep modes distinct. A **formula sweep on a frozen state** reuses the same simulation step, point inputs and seed while varying a declared formula parameter. A later **dynamic simulation sweep** reruns from the same initial state and seed for the same step count at each parameter value; it has different cost and reproducibility semantics and must not be presented as the frozen-state sweep.
+Keep two sweep modes distinct. A **formula sweep on a frozen state** reuses the same simulation step, point inputs and seed while varying a declared formula parameter. A **dynamic simulation sweep** reruns from the same initial state and seed for the same step count at each parameter value; it has different cost and reproducibility semantics and must not be presented as the frozen-state sweep.
 
 **Exit criterion:** Bindfly is a coherent learning/research tool rather than only an engine demonstration.
 
@@ -3073,6 +3073,6 @@ After Difference, Probe and Freeze are stable, add a bounded local formula-pertu
 
 - **Controlled phase:** Stage 14 starts with \(a_i=a_{controlled}\) for every point and the label `Controlled phase · mathematical variant`. Original mode retains exact historical behavior and labeling. Uniform/gradient/original-distribution-plus-offset variants and \(a_i=a_0+k i\) are later extensions.
 - **Parameterized formulas:** Stage 14 may add declared coefficients such as `k` and `b` to canonical formula scope and schema-generated controls. Declarations include stable ID/default/minimum/maximum/step; reject function/system-variable collisions and duplicates; output morphing remains distinct and AST text is not interpolated.
-- **Parameter sweeps:** Stage 17 keeps frozen-state formula sweeps separate from later full dynamic-simulation sweeps; both require explicit reproducibility metadata and remain gated on formula/analyzer provenance and budgets.
-- **Sensitivity:** local finite-difference sensitivity \(S_k(i)\approx |F(k+\delta)_i-F(k-\delta)_i|/(2\delta)\) may reuse frozen state and the comparison buffer later, but is explicitly out of Stage 13.
+- **Parameter sweeps:** Stage 17 keeps frozen-state formula sweeps separate from full dynamic-simulation sweeps; both require explicit reproducibility metadata and remain gated on formula/analyzer provenance and budgets.
+- **Sensitivity:** local finite-difference sensitivity \(S_k(i)\approx |F(k+\delta)_i-F(k-\delta)_i|/(2\delta)\) may reuse frozen state, declared formula parameters and the comparison buffer later, but is explicitly out of Stage 13.
 - **Cosmetic rendering:** WebGL/WebGPU and visual effects remain Stage 15 backend work, not the solution to mathematical legibility.
