@@ -100,7 +100,7 @@ const ParameterControlsInner = ({ schema, values, hiddenIds = [], onChange }: Pa
 						: <input id={inputId} type="text" value={model.value as string} maxLength={definition.maxLength} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.value)} />
 					break
 				case 'enum':
-					control = <select id={inputId} value={model.value as string} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.value)}>{definition.values.map((value) => <option key={value} value={value}>{value}</option>)}</select>
+					control = <select id={inputId} value={model.value as string} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.value)}>{definition.values.map((value) => <option key={value} value={value}>{definition.labels?.[value] ?? value}</option>)}</select>
 					break
 			}
 
@@ -110,7 +110,7 @@ const ParameterControlsInner = ({ schema, values, hiddenIds = [], onChange }: Pa
 					{control}
 				</div>
 				: <label className="control" key={model.id} htmlFor={inputId}>
-					<span className="control-row"><span>{model.label}</span><output htmlFor={inputId}>{String(model.value)}{model.units ? ` ${model.units}` : ''}</output></span>
+					<span className="control-row"><span>{model.label}</span><output htmlFor={inputId}>{definition.kind === 'enum' ? definition.labels?.[model.value as string] ?? String(model.value) : String(model.value)}{model.units ? ` ${model.units}` : ''}</output></span>
 					{control}
 					<small id={descriptionId} className="control-meta">{model.invalidation.replace('-', ' ')}</small>
 				</label>

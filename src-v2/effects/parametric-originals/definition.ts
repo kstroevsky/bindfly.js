@@ -57,7 +57,7 @@ export const createParametricOriginalDefinition = (
 	const original = bindflyOriginals[spec.id]
 	const parameters = createParametricOriginalParameters(original)
 	const codec: ExperimentStateCodec<ParametricOriginalDurableState, string> = {
-		currentVersion: 3,
+		currentVersion: 4,
 		serialize: (state) => JSON.stringify(state),
 		parse: (serialized) => {
 			if (typeof serialized !== 'string') return { ok: false, error: `${original.title} state must be a string.` }
@@ -79,7 +79,7 @@ export const createParametricOriginalDefinition = (
 		},
 		migrate: (serialized, context) => {
 			if (context.fromVersion === context.toVersion) return { ok: true, value: serialized }
-			if ((context.fromVersion !== 1 && context.fromVersion !== 2) || context.toVersion !== 3 || typeof serialized !== 'string') {
+			if (![1, 2, 3].includes(context.fromVersion) || context.toVersion !== 4 || typeof serialized !== 'string') {
 				return { ok: false, error: `No ${original.title} migration from ${context.fromVersion} to ${context.toVersion}.` }
 			}
 			try {
@@ -89,6 +89,8 @@ export const createParametricOriginalDefinition = (
 				}
 				const migratedParameters = { ...value.parameters }
 				if (context.fromVersion === 1) delete migratedParameters.formulaView
+				if (migratedParameters.phaseMode === 'Original') migratedParameters.phaseMode = 'original'
+				if (migratedParameters.phaseMode === 'Controlled phase · mathematical variant') migratedParameters.phaseMode = 'controlled'
 				return { ok: true, value: JSON.stringify({ ...value, parameters: migratedParameters }) }
 			} catch {
 				return { ok: false, error: `${original.title} legacy state is not valid JSON.` }
@@ -99,7 +101,7 @@ export const createParametricOriginalDefinition = (
 	if (!defaults.ok) throw new Error(`${original.title} defaults are invalid.`)
 	const definition = defineExperiment({
 		id: spec.id,
-		stateVersion: 3,
+		stateVersion: 4,
 		timing: { fixedStepSeconds: 1 / 120, deterministicTier: 'same-build-cpu', stateTolerance: 1e-9 },
 		parameters,
 		stateCodec: codec,

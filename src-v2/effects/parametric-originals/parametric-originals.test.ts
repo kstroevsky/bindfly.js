@@ -71,7 +71,7 @@ test('Controlled phase holds one declared phase for every point without changing
 	assert.ok(preset)
 	const controlled = bundle.definition.createSimulation(
 		{ random: createSeededRandom('controlled-phase'), viewport },
-		{ ...preset.parameters, particleCount: 3, phaseMode: 'Controlled phase · mathematical variant', controlledPhase: 1.25 },
+		{ ...preset.parameters, particleCount: 3, phaseMode: 'controlled', controlledPhase: 1.25 },
 	)
 	assert.deepEqual([...controlled.state.phases.values], [1.25, 1.25, 1.25])
 	controlled.step(step)
@@ -80,11 +80,39 @@ test('Controlled phase holds one declared phase for every point without changing
 
 	const original = bundle.definition.createSimulation(
 		{ random: createSeededRandom('controlled-phase'), viewport },
-		{ ...preset.parameters, particleCount: 3, phaseMode: 'Original', controlledPhase: 1.25 },
+		{ ...preset.parameters, particleCount: 3, phaseMode: 'original', controlledPhase: 1.25 },
 	)
 	original.step(step)
 	let expectedAccumulator = 2.6
 	assert.deepEqual([...original.state.phases.values], Array.from({ length: 3 }, () => (expectedAccumulator -= 0.999995)))
+})
+
+test('controlled phase uses stable durable values and migrates the Stage 14 display-label value', () => {
+	const bundle = createParametricOriginalDefinition({ id: 'spiral-1', kind: 'spiral', legacyRouteName: 'Spiral' })
+	const phaseMode = bundle.definition.parameters.phaseMode
+	assert.equal(phaseMode.kind, 'enum')
+	if (phaseMode.kind !== 'enum') return
+	assert.deepEqual(phaseMode.values, ['original', 'controlled'])
+	assert.equal(phaseMode.labels?.controlled, 'Controlled phase · mathematical variant')
+	assert.equal(bundle.definition.stateVersion, 4)
+
+	const preset = bundle.definition.presets?.[0]
+	assert.ok(preset)
+	const legacy = JSON.stringify({
+		seed: 'legacy-controlled-phase',
+		parameters: { ...preset.parameters, phaseMode: 'Controlled phase · mathematical variant' },
+	})
+	const migrated = bundle.definition.stateCodec.migrate(legacy, {
+		experimentId: bundle.definition.id,
+		fromVersion: 3,
+		toVersion: 4,
+	})
+	assert.equal(migrated.ok, true)
+	if (!migrated.ok) return
+	const parsed = bundle.definition.stateCodec.parse(migrated.value)
+	assert.equal(parsed.ok, true)
+	if (!parsed.ok) return
+	assert.equal(parsed.value.parameters.phaseMode, 'controlled')
 })
 
 test('derives exact Spiral II coordinates through formula IR', () => {

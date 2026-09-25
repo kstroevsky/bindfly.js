@@ -24,6 +24,7 @@ export interface StringParameterDefinition extends ParameterDefinitionBase<'stri
 export interface EnumParameterDefinition<Values extends readonly string[] = readonly string[]>
 	extends ParameterDefinitionBase<'enum', Values[number]> {
 	readonly values: Values
+	readonly labels?: Readonly<Partial<Record<Values[number], string>>>
 }
 
 export type ParameterDefinition =

@@ -10,7 +10,7 @@ export interface CreateParametricOriginalSimulationInput {
 
 const INITIAL_ACCUMULATOR = 2.6
 const LEGACY_ACCUMULATOR_DELTA = 0.999995
-const CONTROLLED_PHASE_MODE = 'Controlled phase · mathematical variant'
+const CONTROLLED_PHASE_MODE = 'controlled'
 
 export const createParametricOriginalSimulation = ({
 	parameters,

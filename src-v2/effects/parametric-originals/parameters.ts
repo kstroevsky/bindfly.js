@@ -28,8 +28,12 @@ export const createParametricOriginalParameters = (original: BindflyOriginalForm
 	},
 	phaseMode: {
 		kind: 'enum',
-		default: 'Original',
-		values: ['Original', 'Controlled phase · mathematical variant'] as const,
+		default: 'original',
+		values: ['original', 'controlled'] as const,
+		labels: {
+			original: 'Original',
+			controlled: 'Controlled phase · mathematical variant',
+		},
 		invalidation: 'reset-simulation',
 	},
 	controlledPhase: {
