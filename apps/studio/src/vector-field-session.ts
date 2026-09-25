@@ -13,7 +13,7 @@ import type {
 	VectorFieldParameters,
 	VectorFieldState,
 } from '../../../src-v2/effects/vector-field/types.ts'
-import { evaluateFormula, isFormulaConfigurationParameter } from '../../../src-v2/formula/index.ts'
+import { evaluateFormula, isFormulaConfigurationParameter, referencedFormulaVariables } from '../../../src-v2/formula/index.ts'
 import type { FormulaProgram } from '../../../src-v2/formula/index.ts'
 import {
 	createPhasePortraitCanvasRenderer,
@@ -70,6 +70,14 @@ export const createVectorFieldSession = (options: {
 	let simulation = createSimulation()
 	const renderer = createPhasePortraitCanvasRenderer(options.canvas)
 	renderer.resize(viewport)
+	const referencedVariables = (compiled: VectorFieldPrograms): ReadonlySet<string> => new Set([
+		...referencedFormulaVariables(compiled.dx),
+		...referencedFormulaVariables(compiled.dy),
+	])
+	let fieldDependencies = referencedVariables(programs)
+	let cachedFieldSamples: readonly VectorFieldSample[] | undefined
+	let cachedFieldTime: number | undefined
+	let fieldSamplesDirty = true
 	let droppedSteps = 0
 	let telemetry: ExperimentTelemetry = {
 		points: simulation.state.trajectories.length,
@@ -88,7 +96,7 @@ export const createVectorFieldSession = (options: {
 		simulation.dispose()
 		simulation = createSimulation()
 	}
-	const fieldSamples = (): readonly VectorFieldSample[] => {
+	const sampleField = (): readonly VectorFieldSample[] => {
 		const samples: VectorFieldSample[] = []
 		const density = parameters.fieldDensity
 		const bounds = createPhaseSpaceTransform(viewport, parameters.domainRadius).visibleBounds
@@ -104,6 +112,16 @@ export const createVectorFieldSession = (options: {
 			}
 		}
 		return samples
+	}
+	const fieldSamples = (): readonly VectorFieldSample[] => {
+		const sampleTime = simulation.state.time
+		const timeDependent = fieldDependencies.has('t')
+		if (!cachedFieldSamples || fieldSamplesDirty || timeDependent && cachedFieldTime !== sampleTime) {
+			cachedFieldSamples = sampleField()
+			cachedFieldTime = sampleTime
+			fieldSamplesDirty = false
+		}
+		return cachedFieldSamples
 	}
 	const renderView = (): PhasePortraitRenderView => ({
 		background: parameters.background,
@@ -143,10 +161,22 @@ export const createVectorFieldSession = (options: {
 			if (!nextPrograms.ok) throw new Error(nextPrograms.error)
 			const previous = parameters as unknown as Readonly<Record<string, unknown>>
 			const schema: ParameterSchema = vectorFieldParameters
+			const previousFieldDependencies = fieldDependencies
+			const nextFieldDependencies = referencedVariables(nextPrograms.value)
 			const formulaChanged = Object.entries(patch).some(([parameterId, value]) =>
 				isFormulaConfigurationParameter(schema[parameterId]) && value !== previous[parameterId])
+			const fieldConfigurationChanged = Object.entries(patch).some(([parameterId, value]) => {
+				if (value === previous[parameterId]) return false
+				if (parameterId === 'fieldDensity' || parameterId === 'domainRadius') return true
+				const definition = schema[parameterId]
+				if (definition?.kind === 'string' && definition.control === 'formula') return true
+				return definition?.kind === 'number' && definition.semantic === 'formula-parameter'
+					&& (previousFieldDependencies.has(parameterId) || nextFieldDependencies.has(parameterId))
+			})
 			parameters = normalized.value
 			programs = nextPrograms.value
+			fieldDependencies = nextFieldDependencies
+			if (fieldConfigurationChanged) fieldSamplesDirty = true
 			if (invalidation === 'reset-simulation') rebuild()
 			else if (invalidation === 'hot-update') {
 				if (formulaChanged) beginVectorFieldConfigurationEpoch(simulation.state, parameters.trailLength)
@@ -155,6 +185,7 @@ export const createVectorFieldSession = (options: {
 		resize: (nextViewport) => {
 			assertActive()
 			viewport = nextViewport
+			fieldSamplesDirty = true
 			renderer.resize(viewport)
 			simulation.resize(viewport)
 		},

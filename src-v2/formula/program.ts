@@ -21,6 +21,17 @@ import { issue } from './internal.ts'
 const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value)
 
+export const referencedFormulaVariables = (program: FormulaProgram): readonly string[] => {
+	const referencedIndices = new Set<number>()
+	for (const instruction of program.instructions) {
+		if (instruction.op === 'variable') referencedIndices.add(instruction.index)
+	}
+	return Object.freeze([...referencedIndices]
+		.sort((left, right) => left - right)
+		.map((index) => program.variables[index])
+		.filter((name): name is string => name !== undefined))
+}
+
 export const serializeFormulaProgram = (program: FormulaProgram): string => JSON.stringify({
 	format: FORMULA_PROGRAM_FORMAT,
 	version: FORMULA_PROGRAM_VERSION,

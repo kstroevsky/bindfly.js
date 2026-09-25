@@ -19,6 +19,7 @@ import {
 	parseFormulaProgram,
 	parseFormulaExperiment,
 	parseFormulaTransform2D,
+	referencedFormulaVariables,
 	serializeFormulaProgram,
 	serializeFormulaExperiment,
 	serializeFormulaTransform2D,
@@ -137,6 +138,13 @@ test('canonical programs serialize, recompile and preserve sorted variable ident
 	assert.deepEqual(parsed, { ok: true, value: first })
 	assert.equal(parseFormulaProgram(serialized.replace('"version":1', '"version":99')).ok, false)
 	assert.equal(evaluateFormula({ ...first, version: 99 as 1 }, { a: 1, b: 2 }).ok, false)
+})
+
+test('derives actual variable dependencies from compiled bytecode without changing serialization', () => {
+	const program = expectCompiled('mu*x + x', ['t', 'x', 'y', 'mu'])
+	assert.deepEqual(referencedFormulaVariables(program), ['mu', 'x'])
+	const serialized = JSON.parse(serializeFormulaProgram(program)) as Record<string, unknown>
+	assert.equal('referencedVariables' in serialized, false)
 })
 
 test('traces the canonical VM with compiler-owned source spans', () => {
