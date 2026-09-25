@@ -599,7 +599,7 @@ export const StudioApp = () => {
 
 	return <main className="studio">
 		<aside className="panel" aria-label="Experiment controls">
-			<header><div><p className="eyebrow">Bindfly 2 · Stage 13</p><h1>{plugin.title}</h1></div><p className="description">Versioned, reproducible experiment state.</p></header>
+			<header><div><p className="eyebrow">Bindfly 2 · Stage 14</p><h1>{plugin.title}</h1></div><p className="description">Versioned, reproducible experiment state.</p></header>
 			<label className="picker"><span>Experiment</span><select value={plugin.id} aria-label="Experiment" onChange={(event) => selectExperiment(event.currentTarget.value)}>{EXPERIMENTS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
 			<nav className="workspace-tabs" aria-label="Studio workspace">
 				<button type="button" aria-pressed={workspace === 'explore'} onClick={() => selectWorkspace('explore')}>Explore</button>

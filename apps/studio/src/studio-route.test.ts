@@ -14,5 +14,6 @@ test('routes every registered experiment and recognized legacy migration through
 	}
 	assert.equal(isStudioRoute(new URL('https://example.test/#/lab/vector-field-2d')), true)
 	assert.equal(isStudioRoute(new URL('https://example.test/#/lab/discrete-map-2d')), true)
+	assert.equal(isStudioRoute(new URL('https://example.test/#/lab/scalar-field-2d')), true)
 	assert.equal(isStudioRoute(new URL('https://example.test/#/lab/missing')), false)
 })
