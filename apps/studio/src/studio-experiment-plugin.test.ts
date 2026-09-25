@@ -7,7 +7,7 @@ import { studioExperimentRegistry } from './studio-experiment-registry.ts'
 
 test('typed plugin is erased only at the heterogeneous registry boundary', async () => {
 	assert.deepEqual(studioExperimentRegistry.list(), [
-		'drooping-lines', 'flying-lines', 'pulse-2023', 'spiral-1', 'spiral-2', 'spiral-3',
+		'drooping-lines', 'flying-lines', 'pulse-2023', 'spiral-1', 'spiral-2', 'spiral-3', 'vector-field-2d',
 	])
 	const plugin = await studioExperimentRegistry.load('flying-lines')
 	assert.equal(plugin, flyingLinesPlugin)

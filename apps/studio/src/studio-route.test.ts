@@ -12,5 +12,6 @@ test('routes every registered experiment and recognized legacy migration through
 	for (const id of ['pulse-2023', 'spiral-1', 'spiral-2', 'spiral-3']) {
 		assert.equal(isStudioRoute(new URL(`https://example.test/#/lab/${id}`)), true)
 	}
+	assert.equal(isStudioRoute(new URL('https://example.test/#/lab/vector-field-2d')), true)
 	assert.equal(isStudioRoute(new URL('https://example.test/#/lab/missing')), false)
 })

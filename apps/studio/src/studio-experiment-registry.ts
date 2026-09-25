@@ -3,8 +3,14 @@ import { droopingLinesPlugin } from './drooping-lines-plugin.ts'
 import { flyingLinesPlugin } from './flying-lines-plugin.ts'
 import { parametricOriginalPlugins } from './parametric-original-plugin.ts'
 import type { StudioExperimentPlugin } from './studio-experiment-plugin.ts'
+import { vectorFieldPlugin } from './vector-field-plugin.ts'
 
-const plugins: readonly StudioExperimentPlugin[] = [droopingLinesPlugin, flyingLinesPlugin, ...parametricOriginalPlugins]
+const plugins: readonly StudioExperimentPlugin[] = [
+	droopingLinesPlugin,
+	flyingLinesPlugin,
+	...parametricOriginalPlugins,
+	vectorFieldPlugin,
+]
 const pluginsById = new Map(plugins.map((plugin) => [plugin.id, plugin]))
 
 export const DEFAULT_STUDIO_EXPERIMENT_ID = flyingLinesPlugin.id
