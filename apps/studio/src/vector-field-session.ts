@@ -1,4 +1,4 @@
-import { getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
+import { createPhaseSpaceTransform, getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
 import type { ParameterPatch, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
 import {
 	compileVectorFieldPrograms,
@@ -91,11 +91,14 @@ export const createVectorFieldSession = (options: {
 	const fieldSamples = (): readonly VectorFieldSample[] => {
 		const samples: VectorFieldSample[] = []
 		const density = parameters.fieldDensity
-		const radius = parameters.domainRadius
-		for (let row = 0; row < density; row++) {
-			const y = radius - (row / (density - 1)) * radius * 2
-			for (let column = 0; column < density; column++) {
-				const x = -radius + (column / (density - 1)) * radius * 2
+		const bounds = createPhaseSpaceTransform(viewport, parameters.domainRadius).visibleBounds
+		const aspect = viewport.cssWidth / viewport.cssHeight
+		const rows = aspect >= 1 ? density : Math.max(2, Math.round(density / aspect))
+		const columns = aspect >= 1 ? Math.max(2, Math.round(density * aspect)) : density
+		for (let row = 0; row < rows; row++) {
+			const y = bounds.maxY - (row / (rows - 1)) * (bounds.maxY - bounds.minY)
+			for (let column = 0; column < columns; column++) {
+				const x = bounds.minX + (column / (columns - 1)) * (bounds.maxX - bounds.minX)
 				const evaluated = evaluateVectorField(programs, createVectorFieldScope(parameters, x, y, simulation.state.time))
 				if (evaluated.ok) samples.push({ x, y, ...evaluated.value })
 			}
@@ -159,8 +162,7 @@ export const createVectorFieldSession = (options: {
 		snapshot: () => { assertActive(); return snapshotVectorFieldState(simulation.state) },
 		inspectPoint: ({ x, y }) => {
 			assertActive()
-			const mathematicalX = (x / viewport.cssWidth * 2 - 1) * parameters.domainRadius
-			const mathematicalY = (1 - y / viewport.cssHeight * 2) * parameters.domainRadius
+			const { x: mathematicalX, y: mathematicalY } = createPhaseSpaceTransform(viewport, parameters.domainRadius).toMathematical({ x, y })
 			const scope = createVectorFieldScope(parameters, mathematicalX, mathematicalY, simulation.state.time)
 			return {
 				kind: 'vector-field-probe',

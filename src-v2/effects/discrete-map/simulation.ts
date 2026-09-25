@@ -1,3 +1,4 @@
+import { createPhaseSpaceTransform } from '../../core/index.ts'
 import type { Result, Simulation, SimulationStep, Viewport } from '../../core/index.ts'
 import type { FormulaIssue } from '../../formula/index.ts'
 
@@ -94,8 +95,7 @@ export const createDiscreteMapSimulation = (input: {
 			if (event.type !== 'add-initial-condition') throw new Error('Unknown discrete-map input.')
 			if (![event.x, event.y].every(Number.isFinite)) throw new TypeError('Map initial-condition coordinates must be finite.')
 			if (state.orbits.length >= MAXIMUM_DISCRETE_MAP_ORBITS) return
-			const x = (event.x / viewport.cssWidth * 2 - 1) * parameters.domainRadius
-			const y = (1 - event.y / viewport.cssHeight * 2) * parameters.domainRadius
+			const { x, y } = createPhaseSpaceTransform(viewport, parameters.domainRadius).toMathematical(event)
 			state.orbits.push(createOrbit(state.nextOrbitId++, x, y))
 		},
 		resize: (nextViewport) => { assertActive(); viewport = nextViewport },

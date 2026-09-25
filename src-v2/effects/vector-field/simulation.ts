@@ -1,3 +1,4 @@
+import { createPhaseSpaceTransform } from '../../core/index.ts'
 import type { Result, Simulation, SimulationStep, Viewport } from '../../core/index.ts'
 import type { FormulaIssue } from '../../formula/index.ts'
 import type {
@@ -108,8 +109,7 @@ export const createVectorFieldSimulation = (input: {
 			if (event.type !== 'add-initial-condition') throw new Error('Unknown vector-field input.')
 			if (![event.x, event.y].every(Number.isFinite)) throw new TypeError('Initial-condition coordinates must be finite.')
 			if (state.trajectories.length >= MAXIMUM_VECTOR_FIELD_TRAJECTORIES) return
-			const x = (event.x / viewport.cssWidth * 2 - 1) * parameters.domainRadius
-			const y = (1 - event.y / viewport.cssHeight * 2) * parameters.domainRadius
+			const { x, y } = createPhaseSpaceTransform(viewport, parameters.domainRadius).toMathematical(event)
 			state.trajectories.push(createTrajectory(state.nextTrajectoryId++, x, y))
 		},
 		resize: (nextViewport) => { assertActive(); viewport = nextViewport },

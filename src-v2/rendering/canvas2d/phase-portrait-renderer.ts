@@ -1,3 +1,4 @@
+import { createPhaseSpaceTransform } from '../../core/index.ts'
 import type { RenderFrame, Renderer, Viewport } from '../../core/index.ts'
 
 export interface PhasePortraitTrajectory {
@@ -52,28 +53,21 @@ class PhasePortraitCanvasRenderer implements Renderer<PhasePortraitRenderView> {
 		this.context.setTransform(viewport.devicePixelRatio, 0, 0, viewport.devicePixelRatio, 0, 0)
 	}
 
-	private toCanvasX(x: number, radius: number) {
-		return ((x / radius) + 1) * 0.5 * (this.viewport?.cssWidth ?? 0)
-	}
-
-	private toCanvasY(y: number, radius: number) {
-		return (1 - ((y / radius) + 1) * 0.5) * (this.viewport?.cssHeight ?? 0)
-	}
-
 	render(view: Readonly<PhasePortraitRenderView>, _frame: RenderFrame): void {
 		if (this.disposed) throw new Error('Cannot render with a disposed phase-portrait renderer.')
 		if (!this.viewport) throw new Error('Phase-portrait renderer must be resized before rendering.')
-		const radius = view.domainRadius
+		const transform = createPhaseSpaceTransform(this.viewport, view.domainRadius)
 		this.context.fillStyle = view.background
 		this.context.fillRect(0, 0, this.viewport.cssWidth, this.viewport.cssHeight)
 
 		this.context.strokeStyle = 'rgba(255, 255, 255, 0.16)'
 		this.context.lineWidth = 1
 		this.context.beginPath()
-		this.context.moveTo(this.toCanvasX(0, radius), 0)
-		this.context.lineTo(this.toCanvasX(0, radius), this.viewport.cssHeight)
-		this.context.moveTo(0, this.toCanvasY(0, radius))
-		this.context.lineTo(this.viewport.cssWidth, this.toCanvasY(0, radius))
+		const origin = transform.toCanvas({ x: 0, y: 0 })
+		this.context.moveTo(origin.x, 0)
+		this.context.lineTo(origin.x, this.viewport.cssHeight)
+		this.context.moveTo(0, origin.y)
+		this.context.lineTo(this.viewport.cssWidth, origin.y)
 		this.context.stroke()
 
 		if (view.field) {
@@ -81,8 +75,9 @@ class PhasePortraitCanvasRenderer implements Renderer<PhasePortraitRenderView> {
 			for (const sample of view.field) {
 				const magnitude = Math.hypot(sample.dx, sample.dy)
 				if (!Number.isFinite(magnitude) || magnitude <= 1e-12) continue
-				const x = this.toCanvasX(sample.x, radius)
-				const y = this.toCanvasY(sample.y, radius)
+				const canvasPoint = transform.toCanvas(sample)
+				const x = canvasPoint.x
+				const y = canvasPoint.y
 				const length = cell * 0.32 * Math.tanh(magnitude)
 				const ux = sample.dx / magnitude
 				const uy = sample.dy / magnitude
@@ -100,8 +95,8 @@ class PhasePortraitCanvasRenderer implements Renderer<PhasePortraitRenderView> {
 			if (view.trajectoryStyle === 'points') {
 				this.context.fillStyle = `hsla(${hue}, 84%, 70%, 0.72)`
 				for (let index = 0; index < trajectory.trailX.length; index++) {
-					const x = this.toCanvasX(trajectory.trailX[index] ?? 0, radius)
-					const y = this.toCanvasY(trajectory.trailY[index] ?? 0, radius)
+					const point = transform.toCanvas({ x: trajectory.trailX[index] ?? 0, y: trajectory.trailY[index] ?? 0 })
+					const { x, y } = point
 					this.context.beginPath()
 					this.context.arc(x, y, 1.35, 0, Math.PI * 2)
 					this.context.fill()
@@ -111,8 +106,8 @@ class PhasePortraitCanvasRenderer implements Renderer<PhasePortraitRenderView> {
 				this.context.lineWidth = 1.35
 				this.context.beginPath()
 				for (let index = 0; index < trajectory.trailX.length; index++) {
-					const x = this.toCanvasX(trajectory.trailX[index] ?? 0, radius)
-					const y = this.toCanvasY(trajectory.trailY[index] ?? 0, radius)
+					const point = transform.toCanvas({ x: trajectory.trailX[index] ?? 0, y: trajectory.trailY[index] ?? 0 })
+					const { x, y } = point
 					if (index === 0) this.context.moveTo(x, y)
 					else this.context.lineTo(x, y)
 				}
@@ -122,7 +117,8 @@ class PhasePortraitCanvasRenderer implements Renderer<PhasePortraitRenderView> {
 				? `hsl(${hue}, 88%, 74%)`
 				: trajectory.status === 'escaped' ? 'rgba(251, 191, 36, 0.95)' : 'rgba(248, 113, 113, 0.95)'
 			this.context.beginPath()
-			this.context.arc(this.toCanvasX(trajectory.x, radius), this.toCanvasY(trajectory.y, radius), 2.6, 0, Math.PI * 2)
+			const head = transform.toCanvas(trajectory)
+			this.context.arc(head.x, head.y, 2.6, 0, Math.PI * 2)
 			this.context.fill()
 		}
 

@@ -1,4 +1,4 @@
-import { getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
+import { createPhaseSpaceTransform, getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
 import type { ParameterPatch, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
 import {
 	compileDiscreteMapPrograms,
@@ -138,8 +138,7 @@ export const createDiscreteMapSession = (options: {
 		snapshot: () => { assertActive(); return snapshotDiscreteMapState(simulation.state) },
 		inspectPoint: ({ x, y }) => {
 			assertActive()
-			const mathematicalX = (x / viewport.cssWidth * 2 - 1) * parameters.domainRadius
-			const mathematicalY = (1 - y / viewport.cssHeight * 2) * parameters.domainRadius
+			const { x: mathematicalX, y: mathematicalY } = createPhaseSpaceTransform(viewport, parameters.domainRadius).toMathematical({ x, y })
 			const scope = createDiscreteMapScope(parameters, mathematicalX, mathematicalY, simulation.state.iteration)
 			return {
 				kind: 'discrete-map-probe',

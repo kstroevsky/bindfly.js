@@ -42,8 +42,8 @@ test('click input creates a mathematical initial condition from canvas coordinat
 		viewport,
 		evaluate: (x, y, t) => evaluateVectorField(programs.value, createVectorFieldScope(normalized.value, x, y, t)),
 	})
-	simulation.applyInput({ type: 'add-initial-condition', x: 200, y: 150 })
+	simulation.applyInput({ type: 'add-initial-condition', x: 300, y: 75 })
 	assert.equal(simulation.state.trajectories.length, 2)
-	assert.equal(simulation.state.trajectories[1]?.x, 0)
-	assert.equal(simulation.state.trajectories[1]?.y, 0)
+	assert.equal(simulation.state.trajectories[1]?.x, 2)
+	assert.equal(simulation.state.trajectories[1]?.y, 1.5)
 })

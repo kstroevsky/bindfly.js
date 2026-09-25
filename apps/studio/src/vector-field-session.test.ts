@@ -72,10 +72,10 @@ test('formula Probe evaluates the vector field and returns canonical VM traces',
 	})
 	const probe = session.inspectPoint?.({ x: 300, y: 75, maxDistance: 18 }) as VectorFieldProbe
 	assert.equal(probe.kind, 'vector-field-probe')
-	assert.equal(probe.x, 1.5)
+	assert.equal(probe.x, 2)
 	assert.equal(probe.y, 1.5)
-	assert.equal(probe.dx.value, 0.75)
-	assert.equal(probe.dy.value, 3)
+	assert.equal(probe.dx.value, 1.5)
+	assert.equal(probe.dy.value, 3.5)
 	assert.ok(probe.dx.trace.some(({ expression }) => expression === 'mu*x'))
 	assert.ok(probe.dy.trace.some(({ expression }) => expression === 'x + y'))
 	session.dispose()
