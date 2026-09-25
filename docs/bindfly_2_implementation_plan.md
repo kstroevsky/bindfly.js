@@ -2836,6 +2836,10 @@ Add declared numeric formula parameters such as coefficients `k` and `b` only th
 
 Add a WebGL2 renderer for existing simulations and fair backend comparison before considering optional WebGPU/GPU compute. Preserve frozen workload, precision/tolerance, disposal and context-loss requirements.
 
+**Status (2026-09-25): complete.** Stage 15 keeps simulation/formula/derivation semantics on the existing CPU path and changes only rendering representation. The frozen Canvas2D baseline is recorded in `docs/v2/stage-15a-report.md`; the controlled same-state Canvas2D/WebGL2 comparison is recorded in `docs/v2/stage-15c-report.md`; and the measured typed-staging optimization plus post-optimization comparison is recorded in `docs/v2/stage-15d-report.md`.
+
+WebGL2 is currently a main-thread render backend for Flying Lines, Vector Field, Discrete Map and Scalar Field. Worker execution remains Canvas2D. GPU simulation, GLSL formula evaluation and Float32 simulation state remain outside this stage because they would introduce a second mathematical/numerical implementation rather than a renderer-only comparison.
+
 **Exit criterion:** one experiment/seed runs through multiple rendering backends with measured, workload-equivalent timing.
 
 ## Stage 16 — Shared experiments and multiplayer
