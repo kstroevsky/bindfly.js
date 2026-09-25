@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "phase": "SEMANTIC_VERIFIED",
+  "acceptance_status": "UNACCEPTED_CANDIDATE",
+  "base_sha256": "0444072c92bae2f3021ebb5521a556bcecab12fb56de53dba04368e605cf2988",
+  "base_ledger_sha256": "2febd007f3d12f66f4a46522eb9bed57692767e29872aad73d767cc89e8c9b19",
+  "delta_sha256": "b9c0cf749a744dafab78411a03638903a459725bdb605c0bc850cc12a9f34b4e",
+  "candidate_sha256": "965aff4fcd0cd3da4ed2b63a9fcf718fda5a7cede411844a2227b711a75cda33",
+  "target_ledger_sha256": "d96e9a2ea79aa92977e6bf73ac1268626cc3ef0be23864a4c5f6c35d47c3f65d",
+  "completed_feedback_ids": ["S13R-01", "S13R-01A", "S13R-02", "S13R-03", "S13R-03A", "S13R-04", "S13R-04A", "S13R-05", "S13R-06", "S13R-06A", "S13R-07", "S13R-07A"],
+  "validation_results": {"mechanical": "PASS", "semantic": "PASS", "independent": "PENDING_AFTER_REPAIR"},
+  "repair_attempts_by_finding": {"REV4-JSON-QUOTE-001": 1, "REV4-ANCHOR-PRESERVATION-001": 1, "REV4-DELTA-NEGATIVE-001": 1, "REV4-QUANTIFIED-REPETITION-001": 1, "IND-STEP-PROVENANCE-001": 1, "IND-SWEEP-BUDGET-001": 1, "IND-TRANSPORT-SOURCE-001": 1, "IND-VALIDITY-SEMANTICS-001": 1, "IND-COMPARISON-COUNT-001": 1, "IND-EPSILON-OWNERSHIP-001": 1, "IND-PINNED-WORKSPACE-001": 1, "IND-COEFFICIENT-B-SOURCE-001": 1},
+  "open_findings": []
+}

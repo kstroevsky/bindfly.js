@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "phase": "INDEPENDENT_VERIFIED",
-  "acceptance_status": "AWAITING_USER_ACCEPTANCE",
+  "phase": "COMPLETE",
+  "acceptance_status": "ACCEPTED_CANONICAL_AMENDMENT",
   "base_sha256": "a1e4d827fdf7fc351c3a651c83ec6fc7619e169c6298bc30d62f9c1f818c5ce0",
   "base_ledger_sha256": "ae16f362eecaa7e3cd25f35041f80dfba13005ed378c1192601e4e3ebeb49dbe",
   "delta_sha256": "107cf1f2a1e557ca11da8f881bd102719735263968cef3f02ed0a70778b3aece",

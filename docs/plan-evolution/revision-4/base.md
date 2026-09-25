@@ -1010,8 +1010,7 @@ connected components
 Then add:
 
 ```text
-running visual radius = connectionRadius
-analysis ε = independent scale on a pinned PointCloudSnapshot
+ε = connectionRadius
 ```
 
 At this point you already have the mathematical bridge to topology.
@@ -1063,7 +1062,7 @@ The relationship is mathematically legitimate: GUDHI describes Rips complexes as
 
 Now the user can visually understand why a graphical “hole” disappears after triangles fill it.
 
-Keep two quantities distinct: the undirected graph's cycle rank can be computed as `edges - vertices + components`, but that is not \(\beta_1\) of the filled Rips complex once triangles or higher simplices exist. Label graph-cycle diagnostics as such; publish \(\beta_1\) only from a validated complex/homology computation. Analysis \(\varepsilon\) is independent of the running visual `connectionRadius` and applies only to one pinned point snapshot with declared coordinate units and a valid metric.
+Keep two quantities distinct: the undirected graph's cycle rank can be computed as `edges - vertices + components`, but that is not \(\beta_1\) of the filled Rips complex once triangles or higher simplices exist. Label graph-cycle diagnostics as such; publish \(\beta_1\) only from a validated complex/homology computation. Interpret `connectionRadius` as \(\varepsilon\) only when rendering and analysis use the same frozen point snapshot, coordinate units and valid metric.
 
 ---
 
@@ -2152,7 +2151,7 @@ triangles
 optional higher-dimensional representation
 ```
 
-Use an independent analysis ε only when the graph and complex share the same pinned snapshot, coordinate units and validated metric; do not bind it to the running visual `connectionRadius`. Show triangles only as filled 2-simplices; do not infer higher-dimensional homology from line rendering alone.
+Make `connectionRadius` explicitly interpretable as ε only when the graph and complex share the same frozen snapshot, coordinate units and validated metric. Show triangles only as filled 2-simplices; do not infer higher-dimensional homology from line rendering alone.
 
 **Exit criterion:** users can visually understand components and holes.
 
@@ -2792,23 +2791,18 @@ Stage 13 must answer a visible user question, not deliver only hidden infrastruc
 
 > **How connected is this structure, and how does that change with scale?**
 
-Deliver Stage 13 as five dependency-ordered slices:
+Deliver Stage 13 in this order:
 
-1. **13A — Causality runtime.** Add Run, Freeze and explicit single fixed-step runtime semantics before building lenses. While frozen, simulation state must not advance, but due `hot-update` formula/morph patches must apply, geometry must rederive, Canvas must redraw and analysis may recompute at the same step. Parameters declared `reset-simulation` retain their reset semantics. Add a versioned `step` runtime command and `ExecutionBackend.step(): Promise<void>`; do not fake a step through a short Resume/Pause interval.
-2. **13B — Formula lenses.** Replace the current three derivation passes for morph/A/B with one formula-comparison derivation that evaluates A and B once per point and produces A, B, morph, displacement and validity together. Add the synchronized Difference lens:
+1. **Causality controls and formula lenses.** Add Run, Freeze and single fixed-step controls. Freeze holds one exact simulation state/snapshot while formulas or analysis scale change; Step advances exactly one recorded fixed step. Add a synchronized Difference lens using the already stable A/B point IDs and state:
 
    $$
    \Delta_i=\sqrt{(x_{B,i}-x_{A,i})^2+(y_{B,i}-y_{A,i})^2}
    $$
 
-   Show displacement vectors from A to B and robustly encoded magnitude so nearly invariant regions, large changes, outliers and domain discontinuities are inspectable. Extract shared formula-scope construction for normal derivation and Probe, then add canonical-IR trace metadata/execution without a second evaluator. Worker Probe returns one small inspected-point payload rather than streaming buffers.
-3. **13C — Snapshot analysis.** Separate **Freeze Simulation** from **Pin Analysis Snapshot / Analyze this frame**. Introduce provenance-tagged PointCloud snapshots and a separate analysis Worker/scheduler owning budgets, cancellation, sampling, supersession and stale-result rejection. Immediately consume it with visible point, edge, connected-component \(\beta_0\), mean-degree and isolated-point results. Analysis \(\varepsilon\) is independent of the running visual `connectionRadius` and always acts on one pinned point set, metric and coordinate system.
-4. **13D — Rips topology.** Add graph cycle rank, budgeted adjacency-intersection triangle enumeration and filled 2-simplices. Distinguish graph cycle rank from the actual \(H_1\) of the filled Vietoris–Rips complex; publish \(\beta_1\) only after fixture/reference validation.
-5. **13E — Analysis experience.** Perform the approved persistent-homology backend spike and add barcode/diagram UI only after validation. Persistence is computed once per pinned snapshot/filtration; moving \(\varepsilon\) filters existing births/intervals. Migrate `formulaView`, workspace, selected lens and analysis-panel state into versioned Studio presentation configuration, then organize Explore / Compare / Analyze over the same engine. Add a short local formula-perturbation trail after Difference, Probe and Freeze are stable.
-
-The concrete implementation order is: frozen-runtime hot-update semantics; explicit single-step protocol; one-pass comparison derivation and Difference; shared scope construction and Probe; canonical VM trace metadata/execution; PointCloud snapshots plus separate analysis scheduler/Worker; Structure panel and pinned analysis \(\varepsilon\); graph cycle rank; budgeted Rips triangles; validated \(H_1\)/\(\beta_1\); persistence backend/barcode/diagram; and finally presentation-state migration into Explore / Compare / Analyze.
-
-Add immutable snapshot-analysis scheduling, budgets, cancellation, sampling and stale-result rejection separately from real-time derivations.
+   Show displacement vectors from A to B and encode displacement magnitude so nearly invariant regions, large changes and discontinuities are inspectable rather than inferred by staring at two panes. Add a Probe mode that reports the selected point ID, current formula scope (`a`, `angle`, `distance`, `weight` where declared), A/B coordinates, \(\Delta_i\), and deterministic intermediate subexpression values from the same canonical IR evaluator.
+2. **Snapshot scheduler and first structure panel.** Add immutable snapshot-analysis scheduling, budgets, cancellation, sampling and stale-result rejection separately from real-time derivations. Immediately consume it with visible point, edge, connected-component \(\beta_0\), mean-degree and isolated-point results. Freeze the point cloud before sweeping \(\varepsilon\)/connection radius so every result refers to the same point set, metric, coordinate units and snapshot provenance.
+3. **Rips visualization.** Build the approved \(\beta_0\)/Rips view, including filled triangles for mutually connected triples. Distinguish graph cycle rank from the actual \(H_1\) of the filled Vietoris–Rips complex; publish \(\beta_1\) only from a validated simplicial-complex/homology computation.
+4. **Validated persistence.** Perform the approved persistent-homology backend spike and add barcode/diagram UI only after validation. Moving \(\varepsilon\) filters one result for the same snapshot rather than rerunning persistence on every pointer movement.
 
 The Stage 13 Studio begins the Explore / Compare / Analyze workspace model described in section 58. Runtime, renderer, export and provenance controls remain available under an Advanced/Inspector surface instead of competing with the primary mathematical question.
 
@@ -2818,15 +2812,7 @@ The Stage 13 Studio begins the Explore / Compare / Analyze workspace model descr
 
 Implement dimensional vector fields, discrete maps, trajectories, RK4 and scalar fields; later add equilibria, stability, Lyapunov, basins and bifurcations through optional analyzers.
 
-Preserve every Bindfly Original in an explicit **Original mode** with its exact historical accumulator semantics. Do not modify `parametric-originals/simulation.ts` to implement controlled exploration. Add a separate **Controlled mode** with the initial semantic
-
-$$
-a_i=a_{controlled}
-$$
-
-for every point and label it `Controlled phase · mathematical variant`, never Pulse 2023. Uniform/gradient/original-distribution-plus-offset semantics remain later extensions; a possible later mode is \(a_i=a_0+k i\).
-
-Add declared numeric formula parameters such as coefficients `k` and `b` only through the parameter schema and canonical formula scope; do not interpolate AST text. Each custom formula parameter declares stable ID, default, minimum, maximum and step. The compiler allowlist is system scope plus declared formula parameters and rejects collisions with allowlisted functions such as `sin`, system variables such as `angle`, and duplicate parameter IDs. Do not fall back to anonymous `p1`, `p2`, `p3`. Automated parameter sweeps remain Stage 17 product work after analyzer contracts can label what changed.
+Preserve every Bindfly Original in an explicit **Original mode** with its exact historical accumulator semantics. Add a separate **Controlled mode** only as a mathematical variant: the user can freeze or directly control the phase variable (for example `a`) without relabeling the result as exact 2023 behavior. Add declared numeric formula parameters such as a coefficient `k` only through the parameter schema and canonical formula scope; do not interpolate AST text. Automated small-multiple parameter sweeps remain Stage 17 product work after analyzer contracts can label what changed.
 
 **Exit criterion:** formula families are explicit mathematical experiment types rather than arbitrary expression strings.
 
@@ -2840,17 +2826,13 @@ Add a WebGL2 renderer for existing simulations and fair backend comparison befor
 
 Extend reproducibility from configuration to initial state plus ordered event log plus optional checkpoint. Implement authoritative WebSocket events, sequence numbers, snapshots/checksums, resynchronization and the separate privacy/security/operations review.
 
-Begin with the simplest shared interaction: two users add/move points in one deterministic experiment and recover from forced divergence. Collaborative formula editing remains out of the initial Stage 16 slice.
-
 **Exit criterion:** two clients can add/move points and deterministically observe the same mathematical system after forced divergence/recovery tests.
 
 ## Stage 17 — Educational and product layer
 
 Add guided lessons, parameter sweeps, saved experiments, explanations, topology/dynamics challenges and collaborative mathematical games only after their engine/analyzer contracts are validated.
 
-Parameter sweeps render reproducible small multiples and may plot validated derived quantities such as \(\beta_0\), \(\beta_1\), mean displacement or Lyapunov estimates. They must pin the frozen snapshot/initial conditions, formula and parameter range, seed, analyzer version and approximation metadata; a visual grid alone is not an analysis result.
-
-Keep two sweep modes distinct. A **formula sweep on a frozen state** reuses the same simulation step, point inputs and seed while varying a declared formula parameter. A later **dynamic simulation sweep** reruns from the same initial state and seed for the same step count at each parameter value; it has different cost and reproducibility semantics and must not be presented as the frozen-state sweep.
+Parameter sweeps render reproducible small multiples and may plot validated derived quantities such as \(\beta_0\) or Lyapunov estimates. They must pin the frozen snapshot/initial conditions, formula and parameter range, seed, analyzer version and approximation metadata; a visual grid alone is not an analysis result.
 
 **Exit criterion:** Bindfly is a coherent learning/research tool rather than only an engine demonstration.
 
@@ -2870,9 +2852,6 @@ StudioConfiguration
     active analyzers
     renderer/runtime choice
     camera/view
-    workspace
-    formula view / selected lens
-    analysis panel state
 
 SessionState
     current dynamic state
@@ -2925,81 +2904,21 @@ Do not use gradients, bloom, 3D, shaders, decorative particles or additional unr
 
 ## Difference lens
 
-The Difference lens is a synchronized derived view, never a second independent simulation. It is a data product, not a renderer that recomputes formulas. Replace Compare mode's three formula-derivation passes with one comparison derivation. Each point calls `evaluateFormulaTransformComparison2D()` once and writes a reusable structure equivalent to:
-
-```ts
-interface FormulaComparisonPointBuffer {
-  count: number
-  ids: Uint32Array
-  ax: Float64Array
-  ay: Float64Array
-  bx: Float64Array
-  by: Float64Array
-  mx: Float64Array
-  my: Float64Array
-  dx: Float64Array
-  dy: Float64Array
-  magnitude: Float64Array
-  validity: Uint8Array
-}
-```
-
-For stable point ID \(i\), compute:
+The Difference lens is a synchronized derived view, never a second independent simulation. For stable point ID \(i\), compute:
 
 $$
 \Delta_i=\sqrt{(x_{B,i}-x_{A,i})^2+(y_{B,i}-y_{A,i})^2}
 $$
 
-where \(dx=x_B-x_A\) and \(dy=y_B-y_A\). Morph, Formula A, Formula B and Difference views consume this same buffer. Support vector view (A point plus A→B vector and B endpoint) and magnitude view. Normalize magnitude using the 95th percentile rather than the global maximum and mark outliers separately so a `tan()` singularity cannot flatten the rest of the field. If A or B is invalid, expose which side failed/domain discontinuity and do not fabricate a displacement vector.
-
-Before implementation, freeze the `Uint8Array validity` encoding in an ADR with distinct `both-valid`, `A-invalid`, `B-invalid` and `both-invalid/domain-discontinuity` meanings. The same ADR freezes initialization/missing-value semantics for invalid coordinate, displacement and magnitude slots. Every renderer, Probe payload, snapshot and Worker consumer checks `validity` before reading those numeric slots and uses the one versioned encoding; invalid slots never enter proximity analysis or rendering and no displacement vector is valid unless both sides are valid. Do not invent numeric flag or sentinel values in the plan.
-
-The lens must make invariant regions, large displacement and structural discontinuities distinguishable without changing the formula scope, point IDs, state or clock.
+Render A position, B position, the A→B displacement vector and magnitude encoding. The lens must make small-displacement/invariant regions, large displacement and structural discontinuities distinguishable without changing the formula evaluation scope or clock.
 
 ## Probe and evaluation trace
 
-Extract one framework-free `createParametricFormulaScope(...)` owner for phase state, stable point index/ID, viewport and parameters. Normal point derivation and Probe both call it; do not duplicate angle/distance construction in React or an inspector.
-
-Selecting a point exposes the exact inputs and outputs used at one simulation step: stable point ID, declared scope values `a`, `angle`, `distance`, `positionX`, `positionY` and `weight`, Formula A coordinates, Formula B coordinates and \(\Delta_i\).
-
-Intermediate values such as `tan(distance)`, `exp(a)`, `angle * exp(a)`, `cos(angle * exp(a))` and `atan(a)` come from a bounded trace mode in the existing stack-machine evaluator. Extend execution conceptually as `executeFormula(program, scope, traceSink?)`: normal evaluation has no sink and near-zero tracing overhead; Probe supplies a sink only for the selected point. The compiler emits a separate debug table with instruction index, node ID and source start/end for selected IR sites. Reconstruct this table from source during compilation and never trust trace/debug metadata from imported serialized data. The probe must not execute a second parser/evaluator with different semantics, and unsupported/invalid subexpressions remain explicit failures.
-
-In Worker mode, selection crosses a narrow snapshot/request boundary: the runtime asks the session for one inspected-point payload. Do not continuously copy particle buffers to the main thread and do not introduce an arbitrary RPC framework; define only the concrete Stage 13 inspection query.
+Selecting a point exposes the exact inputs and outputs used at one simulation step: stable point ID, declared scope values such as `a`, `angle`, `distance` and `weight`, Formula A coordinates, Formula B coordinates and \(\Delta_i\). Intermediate values such as `tan(distance)`, `exp(a)`, `angle * exp(a)`, `cos(angle * exp(a))` and `atan(a)` come from a bounded trace mode over canonical IR. The probe must not execute a second parser/evaluator with different semantics, and unsupported/invalid subexpressions remain explicit failures.
 
 ## Freeze, Step and causal comparison
 
-Run advances normally. Freeze stops simulation-state evolution while hot formula/morph patches apply, derived geometry recomputes, Canvas redraws and Probe/analysis continue against the same named step. The runtime must therefore apply currently due hot events and render without executing `simulation.step(...)`; queued hot updates cannot wait forever for a paused clock. `reset-simulation` parameters retain reset behavior.
-
-Step advances exactly one fixed simulation step and refreshes derived/analysis views with new provenance. It is a versioned runtime protocol operation and `ExecutionBackend.step(): Promise<void>`, not a short wall-clock resume. It applies due events at current step \(N\), calls `simulation.step({ index: N, dtSeconds: fixedStep })` exactly once, increments the clock once, renders once and returns to frozen state. Main-thread and Worker runs must produce equal state within the experiment tolerance. Step refreshes live derived views and may supersede unpinned analysis requests, but it never mutates an explicitly pinned analysis snapshot; Analyze this frame is a separate user action. A later timeline may select checkpoints, but Stage 13 does not imply arbitrary historical replay unless the required session state/checkpoint exists.
-
-Use two distinct labels and ownership boundaries:
-
-- **Freeze Simulation:** holds time/phase/particle dynamics while formula changes, morphing, Probe and rendering remain live.
-- **Analyze this frame / Pin Analysis Snapshot:** freezes the derived point cloud itself so analysis \(\varepsilon\) changes never change coordinates.
-
-## Point-cloud snapshot and analysis scheduler
-
-Topology consumes derived geometry, not raw Pulse/Flying Lines simulation state. Introduce a `PointCloudSnapshot` contract containing:
-
-```ts
-interface PointCloudSnapshot {
-  snapshotId: string
-  experimentId: string
-  stateVersion: number
-  simulationStep: number
-  source: 'morph' | 'formula-a' | 'formula-b'
-  metric: 'euclidean'
-  coordinateUnits: 'css-px'
-  ids: Uint32Array
-  x: Float64Array
-  y: Float64Array
-  formulaConfigurationHash: string
-}
-```
-
-The ownership pipeline is simulation snapshot → geometry/PointCloud snapshot → analysis/topology. The scheduler owns request identity, budget, cancellation, supersession, snapshot identity, deterministic sampling and provenance. Every result records snapshot ID, analysis request ID, analyzer ID/version, parameters, duration, input/sample counts and warnings; the UI accepts it only while it is still the active request.
-
-Expensive analyzers run in a separate analysis Worker or worker pool, never in the simulation/derivation/Canvas Worker where a long computation would freeze rendering. Copying a bounded 500-point snapshot is acceptable initially; optimize transport only after measurement.
+Run advances normally. Freeze stops simulation-state evolution while formula edits, probes and snapshot analysis continue against one named step/snapshot. Step advances exactly one fixed simulation step and refreshes derived/analysis views with new provenance. A later timeline may select checkpoints, but Stage 13 does not imply arbitrary historical replay unless the required session state/checkpoint exists.
 
 ## First structure-at-scale lens
 
@@ -3011,40 +2930,9 @@ edges
 components β₀
 mean degree
 isolated points
-analysis ε
-metric: Euclidean
-snapshot step / provenance
 ```
 
-Compute mean degree as \(2E/N\). If sampling occurs, show the sampled and input counts; sampled \(\beta_0\) must not be presented as \(\beta_0\) of the full data set.
-
-Changing analysis \(\varepsilon\) over that same snapshot shows components merging. Analysis \(\varepsilon\) is separate from the running experiment's visual `connectionRadius`; it changes connectivity over the pinned snapshot without mutating or resetting the experiment. Filled triangles represent 2-simplices when all three vertices are mutually connected. Graph cycle rank is labeled separately from topological \(\beta_1\); loops disappearing after triangles fill them becomes the first topology teaching moment.
-
-## Rips budgets, graph cycles and persistence
-
-Enumerate each triangle exactly once by intersecting sorted neighbor sets for ordered edge `(u,v)` and accepting common neighbor `w > v`; do not use a cubic triple loop. At the current 500-point ceiling, a fully connected cloud contains exactly
-
-$$
-{500\choose3}=20,708,500
-$$
-
-triangles. Triangle visualization therefore needs explicit measured budgets, reduced/LOD behavior and visible refusal/warnings. Example bands such as 50k and 500k are illustrative only, not approved defaults; benchmark before freezing thresholds. Topology computation and rendering do not have to materialize identical huge triangle arrays.
-
-Expose graph cycle rank as
-
-$$
-E-V+\beta_0
-$$
-
-but never label it \(\beta_1\). For a finite simplicial complex over \(\mathbb F_2\), validate
-
-$$
-\beta_1=E-V+\beta_0-\operatorname{rank}\partial_2.
-$$
-
-Before the UI exposes \(\beta_1\), compare H₀/H₁ results against an established topology library for one point, two points, triangle boundary, filled triangle, square, circle sample and figure eight.
-
-Compute persistence once per pinned snapshot up to the chosen \(\varepsilon_{max}\). Edge birth is `distance(u,v)` and triangle birth is `max(d(u,v), d(v,w), d(u,w))`. Moving the \(\varepsilon\) cursor filters precomputed births/intervals and does not rerun persistent homology.
+Changing \(\varepsilon\)/connection radius over that same snapshot shows components merging. Filled triangles represent 2-simplices when all three vertices are mutually connected. Graph cycle rank is labeled separately from topological \(\beta_1\); loops disappearing after triangles fill them becomes the first topology teaching moment.
 
 ## Workspace information hierarchy
 
@@ -3060,19 +2948,14 @@ Compare
   synchronized probe and measurements
 
 Analyze
-  pinned geometry plus structure, β₀, later β₁ and persistence
+  frozen simulation/geometry plus structure, β₀, later β₁ and persistence
 ```
 
 Renderer/runtime selection, frame/dropped-step telemetry, import/export and Git provenance remain accessible under Advanced/Inspector. They remain important engineering and reproducibility features but are secondary to Formula, Phenomenon and Analysis in the primary hierarchy.
 
-This change reorganizes durable ownership, not only CSS. `formulaView`, active workspace, selected lens and analysis-panel state belong to `StudioConfiguration`; Formula Morph remains mathematical `ExperimentConfiguration`. Migrate existing URLs/configurations that stored `formulaView` in experiment parameters. Explore, Compare and Analyze remain views over one engine/session, not three engines.
-
-After Difference, Probe and Freeze are stable, add a bounded local formula-perturbation trail. Each node stores formula configuration, simulation snapshot ID and metrics so the user can return to and compare recent discoveries. This is not full Git history; Stage 17 saved experiments/lessons may later consume the proven trail contract.
-
 ## Explicitly deferred product extensions
 
-- **Controlled phase:** Stage 14 starts with \(a_i=a_{controlled}\) for every point and the label `Controlled phase · mathematical variant`. Original mode retains exact historical behavior and labeling. Uniform/gradient/original-distribution-plus-offset variants and \(a_i=a_0+k i\) are later extensions.
-- **Parameterized formulas:** Stage 14 may add declared coefficients such as `k` and `b` to canonical formula scope and schema-generated controls. Declarations include stable ID/default/minimum/maximum/step; reject function/system-variable collisions and duplicates; output morphing remains distinct and AST text is not interpolated.
-- **Parameter sweeps:** Stage 17 keeps frozen-state formula sweeps separate from later full dynamic-simulation sweeps; both require explicit reproducibility metadata and remain gated on formula/analyzer provenance and budgets.
-- **Sensitivity:** local finite-difference sensitivity \(S_k(i)\approx |F(k+\delta)_i-F(k-\delta)_i|/(2\delta)\) may reuse frozen state and the comparison buffer later, but is explicitly out of Stage 13.
+- **Controlled phase:** Stage 14 may expose `a` directly as a mathematical variant, while Original mode retains exact historical behavior and labeling.
+- **Parameterized formulas:** Stage 14 may add declared coefficients such as `k` to canonical formula scope and schema-generated controls; output morphing remains distinct and AST text is not interpolated.
+- **Parameter sweeps:** Stage 17 may render small multiples and validated derived plots only after formula/analyzer provenance and budgets are available.
 - **Cosmetic rendering:** WebGL/WebGPU and visual effects remain Stage 15 backend work, not the solution to mathematical legibility.
