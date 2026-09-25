@@ -5,7 +5,10 @@ import type { ParameterPatch, RenderFrame, Simulation, SimulationStep, Viewport 
 import type { ParametricOriginalDefinitionBundle } from '../../../src-v2/effects/parametric-originals/definition.ts'
 import { snapshotParametricOriginalState } from '../../../src-v2/effects/parametric-originals/definition.ts'
 import { compileParametricOriginalFormulaPair } from '../../../src-v2/effects/parametric-originals/formula.ts'
-import { MAXIMUM_PARAMETRIC_POINT_COUNT } from '../../../src-v2/effects/parametric-originals/parameters.ts'
+import {
+	MAXIMUM_PARAMETRIC_POINT_COUNT,
+	PARAMETRIC_ORIGINAL_FORMULA_PARAMETERS,
+} from '../../../src-v2/effects/parametric-originals/parameters.ts'
 import {
 	FORMULA_COMPARISON_VALIDITY,
 	createParametricComparisonPointViewDerivation,
@@ -13,6 +16,7 @@ import {
 	probeParametricFormulaPoint,
 } from '../../../src-v2/effects/parametric-originals/points.ts'
 import type { ParametricOriginalInput, ParametricOriginalParameters, ParametricOriginalState } from '../../../src-v2/effects/parametric-originals/types.ts'
+import { createFormulaParameterScope } from '../../../src-v2/formula/index.ts'
 import type { RuntimeFormulaView } from '../../../src-v2/runtime/protocol.ts'
 import {
 	DIFFERENCE_DISCONTINUITY_KIND,
@@ -103,6 +107,7 @@ export const createParametricOriginalSession = (
 		viewportWidth: viewport.cssWidth,
 		viewportHeight: viewport.cssHeight,
 		weight: parameters.weight,
+		formulaParameters: createFormulaParameterScope(PARAMETRIC_ORIGINAL_FORMULA_PARAMETERS, parameters),
 		formulaA: formulas.a,
 		formulaB: formulas.b,
 		formulaMorph: parameters.formulaMorph,
@@ -115,6 +120,10 @@ export const createParametricOriginalSession = (
 			parameters.formulaBY,
 			parameters.formulaMorph,
 			parameters.weight,
+			parameters.phaseMode,
+			parameters.controlledPhase,
+			parameters.k,
+			parameters.b,
 		])
 		let hash = 0x811c9dc5
 		for (let index = 0; index < source.length; index++) {

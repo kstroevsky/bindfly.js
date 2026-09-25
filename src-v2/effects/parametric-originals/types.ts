@@ -53,6 +53,7 @@ export interface ParametricPointDerivationInput {
 	readonly viewportWidth: number
 	readonly viewportHeight: number
 	readonly weight: number
+	readonly formulaParameters: Readonly<Record<string, number>>
 	readonly formulaA: FormulaTransform2D
 	readonly formulaB: FormulaTransform2D
 	readonly formulaMorph: number
@@ -67,6 +68,7 @@ export interface ParametricFormulaScopeInput {
 	readonly viewportWidth: number
 	readonly viewportHeight: number
 	readonly weight: number
+	readonly formulaParameters: Readonly<Record<string, number>>
 }
 
 export interface ParametricFormulaTraceEntry {
@@ -91,7 +93,7 @@ export interface ParametricPointProbe {
 	readonly kind: 'point-probe'
 	readonly pointId: number
 	readonly simulationStep: number
-	readonly scope: Readonly<Record<'a' | 'angle' | 'distance' | 'positionX' | 'positionY' | 'weight', number>>
+	readonly scope: Readonly<Record<string, number>>
 	readonly validity: number
 	readonly a: ParametricFormulaTransformProbe
 	readonly b: ParametricFormulaTransformProbe

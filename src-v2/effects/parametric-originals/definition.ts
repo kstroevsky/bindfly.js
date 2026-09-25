@@ -57,7 +57,7 @@ export const createParametricOriginalDefinition = (
 	const original = bindflyOriginals[spec.id]
 	const parameters = createParametricOriginalParameters(original)
 	const codec: ExperimentStateCodec<ParametricOriginalDurableState, string> = {
-		currentVersion: 2,
+		currentVersion: 3,
 		serialize: (state) => JSON.stringify(state),
 		parse: (serialized) => {
 			if (typeof serialized !== 'string') return { ok: false, error: `${original.title} state must be a string.` }
@@ -79,18 +79,19 @@ export const createParametricOriginalDefinition = (
 		},
 		migrate: (serialized, context) => {
 			if (context.fromVersion === context.toVersion) return { ok: true, value: serialized }
-			if (context.fromVersion !== 1 || context.toVersion !== 2 || typeof serialized !== 'string') {
+			if ((context.fromVersion !== 1 && context.fromVersion !== 2) || context.toVersion !== 3 || typeof serialized !== 'string') {
 				return { ok: false, error: `No ${original.title} migration from ${context.fromVersion} to ${context.toVersion}.` }
 			}
 			try {
 				const value = JSON.parse(serialized) as unknown
 				if (!isRecord(value) || !isRecord(value.parameters)) {
-					return { ok: false, error: `${original.title} v1 state must contain parameters.` }
+					return { ok: false, error: `${original.title} legacy state must contain parameters.` }
 				}
-				const { formulaView: _formulaView, ...parametersWithoutPresentation } = value.parameters
-				return { ok: true, value: JSON.stringify({ ...value, parameters: parametersWithoutPresentation }) }
+				const migratedParameters = { ...value.parameters }
+				if (context.fromVersion === 1) delete migratedParameters.formulaView
+				return { ok: true, value: JSON.stringify({ ...value, parameters: migratedParameters }) }
 			} catch {
-				return { ok: false, error: `${original.title} v1 state is not valid JSON.` }
+				return { ok: false, error: `${original.title} legacy state is not valid JSON.` }
 			}
 		},
 	}
@@ -98,7 +99,7 @@ export const createParametricOriginalDefinition = (
 	if (!defaults.ok) throw new Error(`${original.title} defaults are invalid.`)
 	const definition = defineExperiment({
 		id: spec.id,
-		stateVersion: 2,
+		stateVersion: 3,
 		timing: { fixedStepSeconds: 1 / 120, deterministicTier: 'same-build-cpu', stateTolerance: 1e-9 },
 		parameters,
 		stateCodec: codec,

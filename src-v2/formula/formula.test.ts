@@ -23,6 +23,8 @@ import {
 	serializeFormulaExperiment,
 	serializeFormulaTransform2D,
 	bindflyOriginals,
+	createFormulaParameterSchema,
+	defineFormulaParameterDeclarations,
 } from './index.ts'
 
 const expectCompiled = (source: string, variables: readonly string[] = []) => {
@@ -63,6 +65,24 @@ test('validates variables, functions, arity and the closed grammar', () => {
 	assert.equal(compileFormula('x', { variables: ['x', 'x'] }).ok, false)
 	assert.equal(compileFormula('x', { variables: ['not-valid!'] }).ok, false)
 	assert.equal(compileFormula('x', { variables: ['x'], limits: { maxOperations: 4_097 } }).ok, false)
+})
+
+test('declared formula parameters extend scope without colliding with system symbols or functions', () => {
+	const declarations = defineFormulaParameterDeclarations([
+		{ id: 'k', default: 1, min: -2, max: 2, step: 0.1 },
+		{ id: 'b', default: 0, min: -10, max: 10, step: 0.5 },
+	] as const, ['x', 'y', 'angle'])
+	assert.deepEqual(Object.keys(createFormulaParameterSchema(declarations)), ['k', 'b'])
+	assert.throws(() => defineFormulaParameterDeclarations([
+		{ id: 'sin', default: 1, min: 0, max: 2, step: 0.1 },
+	], ['x']), /collides/)
+	assert.throws(() => defineFormulaParameterDeclarations([
+		{ id: 'angle', default: 1, min: 0, max: 2, step: 0.1 },
+	], ['angle']), /collides/)
+	assert.throws(() => defineFormulaParameterDeclarations([
+		{ id: 'k', default: 1, min: 0, max: 2, step: 0.1 },
+		{ id: 'k', default: 1, min: 0, max: 2, step: 0.1 },
+	], ['x']), /Duplicate/)
 })
 
 test('rejects non-finite variables and invalid numeric domains atomically', () => {

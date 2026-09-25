@@ -65,6 +65,28 @@ test('keeps Pulse two-operation accumulator semantics distinct from Spiral', () 
 	assert.notEqual(expected, spiralEquivalent)
 })
 
+test('Controlled phase holds one declared phase for every point without changing Original mode', () => {
+	const bundle = createParametricOriginalDefinition({ id: 'spiral-1', kind: 'spiral', legacyRouteName: 'Spiral' })
+	const preset = bundle.definition.presets?.[0]
+	assert.ok(preset)
+	const controlled = bundle.definition.createSimulation(
+		{ random: createSeededRandom('controlled-phase'), viewport },
+		{ ...preset.parameters, particleCount: 3, phaseMode: 'Controlled phase · mathematical variant', controlledPhase: 1.25 },
+	)
+	assert.deepEqual([...controlled.state.phases.values], [1.25, 1.25, 1.25])
+	controlled.step(step)
+	assert.deepEqual([...controlled.state.phases.values], [1.25, 1.25, 1.25])
+	assert.equal(controlled.state.accumulator, 1.25)
+
+	const original = bundle.definition.createSimulation(
+		{ random: createSeededRandom('controlled-phase'), viewport },
+		{ ...preset.parameters, particleCount: 3, phaseMode: 'Original', controlledPhase: 1.25 },
+	)
+	original.step(step)
+	let expectedAccumulator = 2.6
+	assert.deepEqual([...original.state.phases.values], Array.from({ length: 3 }, () => (expectedAccumulator -= 0.999995)))
+})
+
 test('derives exact Spiral II coordinates through formula IR', () => {
 	const original = bindflyOriginals['spiral-2']
 	const schema = createParametricOriginalParameters(original)
@@ -86,6 +108,7 @@ test('derives exact Spiral II coordinates through formula IR', () => {
 		viewportWidth: 320,
 		viewportHeight: 200,
 		weight: 10,
+		formulaParameters: { k: 1, b: 0 },
 		formulaA: formulas.value.a,
 		formulaB: formulas.value.b,
 		formulaMorph: 0,
@@ -120,6 +143,7 @@ test('derives A, B, morph and displacement once with side-specific validity', ()
 		viewportWidth: 320,
 		viewportHeight: 200,
 		weight: 10,
+		formulaParameters: { k: 1, b: 0 },
 		formulaA: a.value.a,
 		formulaB: a.value.b,
 		formulaMorph: 0.25,
@@ -161,6 +185,7 @@ test('probes one point with the canonical scope and VM trace', () => {
 	}
 	const probe = probeParametricFormulaPoint({
 		state, kind: 'spiral', viewportWidth: 320, viewportHeight: 200, weight: 2,
+		formulaParameters: { k: 1, b: 0 },
 		formulaA: formulas.value.a, formulaB: formulas.value.b, formulaMorph: 0.25,
 	}, 0, 17)
 	assert.equal(probe.pointId, 0)
@@ -170,4 +195,27 @@ test('probes one point with the canonical scope and VM trace', () => {
 	assert.ok(probe.a.x.trace.some(({ expression }) => expression === 'distance * cos(a)'))
 	assert.equal(probe.validity, FORMULA_COMPARISON_VALIDITY.bothValid)
 	assert.ok(probe.displacement)
+})
+
+test('declared k and b coefficients are canonical formula variables', () => {
+	const formulas = compileParametricOriginalFormulaPair({
+		formulaAX: 'positionX + k * distance + b',
+		formulaAY: 'positionY',
+		formulaBX: 'positionX',
+		formulaBY: 'positionY',
+	} as never)
+	assert.equal(formulas.ok, true)
+	if (!formulas.ok) return
+	const state = {
+		phases: { count: 1, capacity: 1, values: new Float64Array([0.5]) },
+		accumulator: 0.5, reverse: false, centerX: 100, centerY: 80,
+	}
+	const probe = probeParametricFormulaPoint({
+		state, kind: 'spiral', viewportWidth: 320, viewportHeight: 200, weight: 2,
+		formulaParameters: { k: 2, b: 3 },
+		formulaA: formulas.value.a, formulaB: formulas.value.b, formulaMorph: 0,
+	}, 0, 1)
+	assert.equal(probe.scope.k, 2)
+	assert.equal(probe.scope.b, 3)
+	assert.equal(probe.a.x.value, 103)
 })

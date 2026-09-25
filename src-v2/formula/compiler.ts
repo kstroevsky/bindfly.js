@@ -28,7 +28,9 @@ const functionArities: Readonly<Record<FormulaFunctionName, number>> = Object.fr
 	max: 2,
 })
 
-const isFunctionName = (name: string): name is FormulaFunctionName =>
+export const FORMULA_FUNCTION_NAMES = Object.freeze(Object.keys(functionArities) as FormulaFunctionName[])
+
+export const isFormulaFunctionName = (name: string): name is FormulaFunctionName =>
 	Object.hasOwn(functionArities, name)
 
 const parseWithLimits = (source: string, limits: FormulaLimits): Result<FormulaAst, FormulaIssue> => {
@@ -110,7 +112,7 @@ export const compileFormula = (
 				return undefined
 			}
 			case 'call': {
-				if (!isFunctionName(node.name)) return issue('unknown-function', `Unknown function '${node.name}'.`, node.at)
+				if (!isFormulaFunctionName(node.name)) return issue('unknown-function', `Unknown function '${node.name}'.`, node.at)
 				const expected = functionArities[node.name]
 				if (node.arguments.length !== expected) {
 					return issue('invalid-arity', `Function '${node.name}' expects ${expected} argument${expected === 1 ? '' : 's'}, received ${node.arguments.length}.`, node.at)

@@ -32,7 +32,8 @@ export const createParametricFormulaScope = ({
 	viewportWidth,
 	viewportHeight,
 	weight,
-}: ParametricFormulaScopeInput): Readonly<Record<'a' | 'angle' | 'distance' | 'positionX' | 'positionY' | 'weight', number>> => {
+	formulaParameters,
+}: ParametricFormulaScopeInput): Readonly<Record<string, number>> => {
 	if (!Number.isInteger(pointIndex) || pointIndex < 0 || pointIndex >= state.phases.count) {
 		throw new RangeError(`Parametric point index ${pointIndex} is outside the active point range.`)
 	}
@@ -50,6 +51,7 @@ export const createParametricFormulaScope = ({
 		positionX: state.centerX,
 		positionY: state.centerY,
 		weight,
+		...formulaParameters,
 	}
 }
 
@@ -79,6 +81,7 @@ export const probeParametricFormulaPoint = (
 		viewportWidth: input.viewportWidth,
 		viewportHeight: input.viewportHeight,
 		weight: input.weight,
+		formulaParameters: input.formulaParameters,
 	})
 	const a = { x: probeFormulaAxis(input.formulaA.x, scope), y: probeFormulaAxis(input.formulaA.y, scope) }
 	const b = { x: probeFormulaAxis(input.formulaB.x, scope), y: probeFormulaAxis(input.formulaB.y, scope) }
@@ -169,6 +172,7 @@ export const createParametricFormulaComparisonDerivation = (
 					viewportWidth: input.viewportWidth,
 					viewportHeight: input.viewportHeight,
 					weight: input.weight,
+					formulaParameters: input.formulaParameters,
 				}))
 				if (!evaluated.ok) {
 					result.invalidFormulaPointCount++

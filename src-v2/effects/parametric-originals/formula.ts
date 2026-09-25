@@ -1,12 +1,17 @@
 import type { Result } from '../../core/index.ts'
-import { compileFormulaTransform2D } from '../../formula/index.ts'
+import { compileFormulaTransform2D, formulaParameterIds } from '../../formula/index.ts'
 import type { FormulaTransform2D } from '../../formula/index.ts'
 
+import {
+	PARAMETRIC_ORIGINAL_FORMULA_PARAMETERS,
+	PARAMETRIC_ORIGINAL_SYSTEM_VARIABLES,
+} from './parameters.ts'
 import type { ParametricOriginalParameters } from './types.ts'
 
 export const PARAMETRIC_ORIGINAL_VARIABLES = Object.freeze([
-	'a', 'angle', 'distance', 'positionX', 'positionY', 'weight',
-] as const)
+	...PARAMETRIC_ORIGINAL_SYSTEM_VARIABLES,
+	...formulaParameterIds(PARAMETRIC_ORIGINAL_FORMULA_PARAMETERS),
+])
 
 export interface ParametricOriginalFormulaPair {
 	readonly a: FormulaTransform2D

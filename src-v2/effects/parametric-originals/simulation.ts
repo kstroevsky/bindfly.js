@@ -10,6 +10,7 @@ export interface CreateParametricOriginalSimulationInput {
 
 const INITIAL_ACCUMULATOR = 2.6
 const LEGACY_ACCUMULATOR_DELTA = 0.999995
+const CONTROLLED_PHASE_MODE = 'Controlled phase · mathematical variant'
 
 export const createParametricOriginalSimulation = ({
 	parameters,
@@ -34,11 +35,11 @@ export const createParametricOriginalSimulation = ({
 		if (disposed) throw new Error('Cannot use a disposed parametric-original simulation.')
 	}
 	const reset = () => {
-		state.accumulator = INITIAL_ACCUMULATOR
+		state.accumulator = parameters.phaseMode === CONTROLLED_PHASE_MODE ? parameters.controlledPhase : INITIAL_ACCUMULATOR
 		state.reverse = false
 		state.centerX = viewport.cssWidth / 2
 		state.centerY = viewport.cssHeight / 2
-		phases.values.fill(INITIAL_ACCUMULATOR)
+		phases.values.fill(parameters.phaseMode === CONTROLLED_PHASE_MODE ? parameters.controlledPhase : INITIAL_ACCUMULATOR)
 	}
 	reset()
 
@@ -46,6 +47,11 @@ export const createParametricOriginalSimulation = ({
 		state,
 		step: (_step: SimulationStep) => {
 			assertActive()
+			if (parameters.phaseMode === CONTROLLED_PHASE_MODE) {
+				state.accumulator = parameters.controlledPhase
+				phases.values.fill(parameters.controlledPhase)
+				return
+			}
 			if (state.accumulator > 2.9) state.reverse = true
 			else if (state.accumulator < 2.65) state.reverse = false
 			for (let index = 0; index < phases.count; index++) {
