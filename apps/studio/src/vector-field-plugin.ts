@@ -6,6 +6,7 @@ import { createVectorFieldSession } from './vector-field-session.ts'
 import type { VectorFieldProbe } from './vector-field-session.ts'
 import { defineStudioExperiment } from './studio-experiment-plugin.ts'
 import type { StudioInteractionController } from './studio-experiment-plugin.ts'
+import { STAGE_15_PERFORMANCE_METRICS } from './stage-15-performance.ts'
 
 const parseInput = (value: unknown): Result<VectorFieldInput, string> => {
 	if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -37,6 +38,7 @@ export const vectorFieldPlugin = defineStudioExperiment({
 		{ id: 'edges', label: 'Field samples' },
 		{ id: 'step', label: 'Step' },
 		{ id: 'frameMs', label: 'Frame', format: (value) => `${Number(value).toFixed(1)} ms` },
+		...STAGE_15_PERFORMANCE_METRICS,
 	],
 	createSession: createVectorFieldSession,
 	createInteractionController,

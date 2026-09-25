@@ -22,6 +22,7 @@ import type {
 	PhasePortraitRenderView,
 	VectorFieldSample,
 } from '../../../src-v2/rendering/canvas2d/phase-portrait-renderer.ts'
+import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 
 export interface VectorFieldProbeAxis {
@@ -70,6 +71,7 @@ export const createVectorFieldSession = (options: {
 	let simulation = createSimulation()
 	const renderer = createPhasePortraitCanvasRenderer(options.canvas)
 	renderer.resize(viewport)
+	const frameTimer = createStage15FrameTimer()
 	const referencedVariables = (compiled: VectorFieldPrograms): ReadonlySet<string> => new Set([
 		...referencedFormulaVariables(compiled.dx),
 		...referencedFormulaVariables(compiled.dy),
@@ -134,18 +136,21 @@ export const createVectorFieldSession = (options: {
 	return {
 		get parameters() { return parameters },
 		get telemetry() { return telemetry },
-		step: (step: SimulationStep) => { assertActive(); simulation.step(step) },
+		step: (step: SimulationStep) => { assertActive(); frameTimer.measureSimulation(() => simulation.step(step)) },
 		render: (frame: RenderFrame) => {
 			assertActive()
 			const startedAt = performance.now()
-			const view = renderView()
-			renderer.render(view, frame)
+			const derived = frameTimer.measure(renderView)
+			const view = derived.value
+			const rendered = frameTimer.measure(() => renderer.render(view, frame))
+			const stage15Timing = frameTimer.finish(derived.durationMs, rendered.durationMs)
 			telemetry = {
 				points: simulation.state.trajectories.length,
 				edges: view.field?.length ?? 0,
 				components: simulation.state.trajectories.filter(({ status }) => status === 'active').length,
 				step: frame.simulationStepIndex,
 				frameMs: performance.now() - startedAt,
+				...stage15Timing,
 				droppedSteps,
 				searchBackend: 'brute',
 			}
@@ -189,7 +194,7 @@ export const createVectorFieldSession = (options: {
 			renderer.resize(viewport)
 			simulation.resize(viewport)
 		},
-		reset: () => { assertActive(); droppedSteps = 0; simulation.reset() },
+		reset: () => { assertActive(); droppedSteps = 0; frameTimer.reset(); simulation.reset() },
 		recordDroppedSteps: (count) => {
 			assertActive()
 			if (!Number.isInteger(count) || count < 0) throw new RangeError('Dropped step count must be a non-negative integer.')

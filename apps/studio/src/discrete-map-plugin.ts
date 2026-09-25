@@ -6,6 +6,7 @@ import { createDiscreteMapSession } from './discrete-map-session.ts'
 import type { DiscreteMapProbe } from './discrete-map-session.ts'
 import { defineStudioExperiment } from './studio-experiment-plugin.ts'
 import type { StudioInteractionController } from './studio-experiment-plugin.ts'
+import { STAGE_15_PERFORMANCE_METRICS } from './stage-15-performance.ts'
 
 const parseInput = (value: unknown): Result<DiscreteMapInput, string> => {
 	if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -37,6 +38,7 @@ export const discreteMapPlugin = defineStudioExperiment({
 		{ id: 'edges', label: 'Iteration' },
 		{ id: 'step', label: 'Step' },
 		{ id: 'frameMs', label: 'Frame', format: (value) => `${Number(value).toFixed(1)} ms` },
+		...STAGE_15_PERFORMANCE_METRICS,
 	],
 	createSession: createDiscreteMapSession,
 	createInteractionController,

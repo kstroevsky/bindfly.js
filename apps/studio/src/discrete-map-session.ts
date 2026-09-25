@@ -17,6 +17,7 @@ import { evaluateFormula, isFormulaConfigurationParameter } from '../../../src-v
 import type { FormulaProgram } from '../../../src-v2/formula/index.ts'
 import { createPhasePortraitCanvasRenderer } from '../../../src-v2/rendering/canvas2d/phase-portrait-renderer.ts'
 import type { PhasePortraitRenderView } from '../../../src-v2/rendering/canvas2d/phase-portrait-renderer.ts'
+import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 
 export interface DiscreteMapProbeAxis {
@@ -64,6 +65,7 @@ export const createDiscreteMapSession = (options: {
 	let simulation = createSimulation()
 	const renderer = createPhasePortraitCanvasRenderer(options.canvas)
 	renderer.resize(viewport)
+	const frameTimer = createStage15FrameTimer()
 	let droppedSteps = 0
 	let telemetry: ExperimentTelemetry = {
 		points: simulation.state.orbits.length,
@@ -93,17 +95,20 @@ export const createDiscreteMapSession = (options: {
 	return {
 		get parameters() { return parameters },
 		get telemetry() { return telemetry },
-		step: (step: SimulationStep) => { assertActive(); simulation.step(step) },
+		step: (step: SimulationStep) => { assertActive(); frameTimer.measureSimulation(() => simulation.step(step)) },
 		render: (frame: RenderFrame) => {
 			assertActive()
 			const startedAt = performance.now()
-			renderer.render(renderView(), frame)
+			const derived = frameTimer.measure(renderView)
+			const rendered = frameTimer.measure(() => renderer.render(derived.value, frame))
+			const stage15Timing = frameTimer.finish(derived.durationMs, rendered.durationMs)
 			telemetry = {
 				points: simulation.state.orbits.length,
 				edges: simulation.state.iteration,
 				components: simulation.state.orbits.filter(({ status }) => status === 'active').length,
 				step: frame.simulationStepIndex,
 				frameMs: performance.now() - startedAt,
+				...stage15Timing,
 				droppedSteps,
 				searchBackend: 'brute',
 			}
@@ -134,7 +139,7 @@ export const createDiscreteMapSession = (options: {
 			renderer.resize(viewport)
 			simulation.resize(viewport)
 		},
-		reset: () => { assertActive(); droppedSteps = 0; simulation.reset() },
+		reset: () => { assertActive(); droppedSteps = 0; frameTimer.reset(); simulation.reset() },
 		recordDroppedSteps: (count) => {
 			assertActive()
 			if (!Number.isInteger(count) || count < 0) throw new RangeError('Dropped step count must be a non-negative integer.')

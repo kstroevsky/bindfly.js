@@ -14,8 +14,51 @@ export interface ExperimentTelemetry {
 	readonly components: number
 	readonly step: number
 	readonly frameMs: number
+	readonly simulationMs?: number
+	readonly derivationMs?: number
+	readonly uploadMs?: number
+	readonly renderMs?: number
+	readonly totalFrameMs?: number
 	readonly droppedSteps: number
 	readonly searchBackend: 'brute' | 'grid'
+}
+
+export interface Stage15FrameTiming {
+	readonly simulationMs: number
+	readonly derivationMs: number
+	readonly uploadMs: number
+	readonly renderMs: number
+	readonly totalFrameMs: number
+}
+
+export const createStage15FrameTimer = (now: () => number = () => performance.now()) => {
+	let simulationMs = 0
+	return {
+		measureSimulation(run: () => void): void {
+			const startedAt = now()
+			run()
+			simulationMs += now() - startedAt
+		},
+		measure<T>(run: () => T): { readonly value: T; readonly durationMs: number } {
+			const startedAt = now()
+			const value = run()
+			return { value, durationMs: now() - startedAt }
+		},
+		finish(derivationMs: number, renderMs: number, uploadMs = 0): Stage15FrameTiming {
+			const timing = {
+				simulationMs,
+				derivationMs,
+				uploadMs,
+				renderMs,
+				totalFrameMs: simulationMs + derivationMs + uploadMs + renderMs,
+			}
+			simulationMs = 0
+			return timing
+		},
+		reset(): void {
+			simulationMs = 0
+		},
+	}
 }
 
 export interface ExperimentSession<Schema extends ParameterSchema, Input, Snapshot, Telemetry> {

@@ -117,6 +117,11 @@ export const createWorkerStudioController = async (options: CreateStudioControll
 				components: Number(value.components ?? 0),
 				step: Number(value.step ?? 0),
 				frameMs: Number(value.frameMs ?? 0),
+				simulationMs: Number(value.simulationMs ?? 0),
+				derivationMs: Number(value.derivationMs ?? 0),
+				uploadMs: Number(value.uploadMs ?? 0),
+				renderMs: Number(value.renderMs ?? 0),
+				totalFrameMs: Number(value.totalFrameMs ?? value.frameMs ?? 0),
 				droppedSteps: Number(value.droppedSteps ?? 0),
 				searchBackend: value.searchBackend === 'grid' ? 'grid' : 'brute',
 			})

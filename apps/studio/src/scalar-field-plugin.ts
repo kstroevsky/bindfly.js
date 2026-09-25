@@ -5,6 +5,7 @@ import type { ScalarFieldInput } from '../../../src-v2/effects/scalar-field/type
 import { createScalarFieldSession } from './scalar-field-session.ts'
 import type { ScalarFieldProbe } from './scalar-field-session.ts'
 import { defineStudioExperiment } from './studio-experiment-plugin.ts'
+import { STAGE_15_PERFORMANCE_METRICS } from './stage-15-performance.ts'
 
 const parseInput = (_value: unknown): Result<ScalarFieldInput, string> => ({
 	ok: false,
@@ -20,6 +21,7 @@ export const scalarFieldPlugin = defineStudioExperiment({
 		{ id: 'points', label: 'Samples' },
 		{ id: 'edges', label: 'Invalid samples' },
 		{ id: 'frameMs', label: 'Frame', format: (value) => `${Number(value).toFixed(1)} ms` },
+		...STAGE_15_PERFORMANCE_METRICS,
 	],
 	createSession: createScalarFieldSession,
 	createInteractionController: () => ({ handle: () => [] as ScalarFieldInput[] }),

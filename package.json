@@ -30,7 +30,8 @@
     "v2:check": "pnpm run v2:boundaries && pnpm run v2:typecheck && pnpm run v2:lint && pnpm run v2:test",
     "v2:build": "webpack --config webpack.v2.config.js --mode production",
     "v2:start": "webpack serve --config webpack.v2.config.js --mode development",
-    "v2:e2e": "playwright test"
+    "v2:e2e": "playwright test",
+    "v2:benchmark:stage15:canvas": "playwright test --config playwright.stage15.config.ts"
   },
   "dependencies": {
     "classnames": "^2.5.1",

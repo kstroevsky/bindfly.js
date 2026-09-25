@@ -17,6 +17,7 @@ import type {
 import { evaluateFormula, isFormulaConfigurationParameter } from '../../../src-v2/formula/index.ts'
 import type { FormulaProgram } from '../../../src-v2/formula/index.ts'
 import { createScalarFieldCanvasRenderer } from '../../../src-v2/rendering/canvas2d/scalar-field-renderer.ts'
+import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 
 export interface ScalarFieldProbe {
@@ -54,6 +55,7 @@ export const createScalarFieldSession = (options: {
 	const simulation = createSimulation()
 	const renderer = createScalarFieldCanvasRenderer(options.canvas)
 	renderer.resize(viewport)
+	const frameTimer = createStage15FrameTimer()
 	let sampled: ScalarFieldSampleGrid | undefined
 	let sampleDirty = true
 	let droppedSteps = 0
@@ -90,21 +92,24 @@ export const createScalarFieldSession = (options: {
 		render: (frame: RenderFrame) => {
 			assertActive()
 			const startedAt = performance.now()
-			const currentGrid = grid()
-			renderer.render({
+			const derived = frameTimer.measure(grid)
+			const currentGrid = derived.value
+			const rendered = frameTimer.measure(() => renderer.render({
 				background: parameters.background,
 				domainRadius: parameters.domainRadius,
 				title: 'Scalar field · sampled z = f(x,y) · piecewise-linear level set',
 				grid: currentGrid,
 				contourLevel: parameters.contourLevel,
 				valueScale: parameters.valueScale,
-			}, frame)
+			}, frame))
+			const stage15Timing = frameTimer.finish(derived.durationMs, rendered.durationMs)
 			telemetry = {
 				points: currentGrid.validCount,
 				edges: currentGrid.invalidCount,
 				components: 0,
 				step: frame.simulationStepIndex,
 				frameMs: performance.now() - startedAt,
+				...stage15Timing,
 				droppedSteps,
 				searchBackend: 'brute',
 			}
@@ -135,7 +140,7 @@ export const createScalarFieldSession = (options: {
 			renderer.resize(viewport)
 			simulation.resize(viewport)
 		},
-		reset: () => { assertActive(); droppedSteps = 0; simulation.reset() },
+		reset: () => { assertActive(); droppedSteps = 0; frameTimer.reset(); simulation.reset() },
 		recordDroppedSteps: (count) => {
 			assertActive()
 			if (!Number.isInteger(count) || count < 0) throw new RangeError('Dropped step count must be a non-negative integer.')

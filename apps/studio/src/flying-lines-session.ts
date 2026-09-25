@@ -7,6 +7,7 @@ import type { FlyingLinesInput, FlyingLinesState } from '../../../src-v2/effects
 import { MAXIMUM_MOVING_POINT_COUNT } from '../../../src-v2/effects/moving-points/parameters.ts'
 import { createFlyingLinesCanvasRenderer } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
 import type { FlyingLinesRenderView } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
+import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 
 export interface CreateFlyingLinesSessionOptions {
@@ -32,6 +33,7 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 	}, parameters)
 	const renderer = createFlyingLinesCanvasRenderer(options.canvas)
 	const proximity = createAdaptiveProximityDerivation(MAXIMUM_MOVING_POINT_COUNT)
+	const frameTimer = createStage15FrameTimer()
 	let view: FlyingLinesRenderView = {
 		background: parameters.background,
 		particles: simulation.state.particles,
@@ -70,23 +72,26 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 		get telemetry() { return telemetry },
 		step: (step: SimulationStep) => {
 			assertActive()
-			simulation.step(step)
+			frameTimer.measureSimulation(() => simulation.step(step))
 		},
 		render: (frame: RenderFrame) => {
 			assertActive()
 			const startedAt = performance.now()
-			const edges = proximity.update({
+			const derived = frameTimer.measure(() => proximity.update({
 				points: simulation.state.particles,
 				connectionRadius: parameters.connectionRadius,
-			})
+			}))
+			const edges = derived.value
 			if (view.edges !== edges) view = { ...view, edges }
-			renderer.render(view, frame)
+			const rendered = frameTimer.measure(() => renderer.render(view, frame))
+			const stage15Timing = frameTimer.finish(derived.durationMs, rendered.durationMs)
 			telemetry = {
 				points: simulation.state.particles.count,
 				edges: edges.edgeCount,
 				components: edges.componentCount,
 				step: frame.simulationStepIndex,
 				frameMs: performance.now() - startedAt,
+				...stage15Timing,
 				droppedSteps,
 				searchBackend: proximity.backend,
 			}
@@ -119,6 +124,7 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 		reset: () => {
 			assertActive()
 			droppedSteps = 0
+			frameTimer.reset()
 			simulation.reset()
 		},
 		recordDroppedSteps: (count: number) => {

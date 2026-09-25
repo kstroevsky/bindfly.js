@@ -5,6 +5,7 @@ import { createFlyingLinesSession } from './flying-lines-session.ts'
 import { parseMovingPointInput } from './moving-point-input.ts'
 import { createMovingPointInteractionController } from './moving-point-interaction.ts'
 import { defineStudioExperiment } from './studio-experiment-plugin.ts'
+import { STAGE_15_PERFORMANCE_METRICS } from './stage-15-performance.ts'
 
 const parseInput = (value: unknown): Result<FlyingLinesInput, string> => {
 	try {
@@ -32,6 +33,7 @@ export const flyingLinesPlugin = defineStudioExperiment({
 		{ id: 'components', label: 'β₀' },
 		{ id: 'step', label: 'Step' },
 		{ id: 'frameMs', label: 'Frame', format: (value) => `${Number(value).toFixed(1)} ms` },
+		...STAGE_15_PERFORMANCE_METRICS,
 		{ id: 'droppedSteps', label: 'Dropped' },
 	],
 	createSession: createFlyingLinesSession,

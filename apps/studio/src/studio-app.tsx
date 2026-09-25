@@ -679,8 +679,8 @@ export const StudioApp = () => {
 			{error ? <p className="error-message" role="alert">{error}</p> : null}
 			<section aria-labelledby="performance-heading"><h2 id="performance-heading">Performance</h2><dl className="metrics">
 				{plugin.metrics.map((descriptor) => {
-					const value = metrics[descriptor.id as keyof StudioMetrics]
-					return <div className="metric" key={descriptor.id}><dt>{descriptor.label}</dt><dd>{descriptor.format ? descriptor.format(value) : String(value)}</dd></div>
+					const value = metrics[descriptor.id as keyof StudioMetrics] ?? 0
+					return <div className="metric" data-metric-id={descriptor.id} data-metric-value={String(value)} key={descriptor.id}><dt>{descriptor.label}</dt><dd>{descriptor.format ? descriptor.format(value) : String(value)}</dd></div>
 				})}
 			</dl></section>
 			<details className="inspector"><summary>Inspector</summary><dl><div><dt>Experiment</dt><dd>{plugin.id} v{plugin.stateVersion}</dd></div><div><dt>Timing</dt><dd>{plugin.temporalSemantics.kind === 'static' ? 'Static field' : `${Math.round(1 / plugin.timing.fixedStepSeconds)} Hz · ${plugin.timing.deterministicTier}`}</dd></div><div><dt>Derivation</dt><dd>{plugin.temporalSemantics.kind === 'static' ? `${metrics.searchBackend} · ${metrics.points} samples` : `${metrics.searchBackend} · step ${metrics.step} · ${metrics.points} samples`}</dd></div><div><dt>Worker capability</dt><dd>{workerCapability.supported && supportsWorker(plugin) ? 'Supported by this experiment and browser.' : workerCapability.reason ?? 'Unavailable for this experiment.'}</dd></div></dl>{plugin.provenance.length > 0 ? <section className="provenance" aria-labelledby="provenance-heading"><h2 id="provenance-heading">Formula provenance</h2>{plugin.provenance.map((entry) => <article key={entry.id}><strong>{entry.id} · v{entry.version}</strong><span>{entry.capturedBehavior}</span><code>{entry.legacyPath}</code><code>{entry.legacyGitBlob}</code></article>)}</section> : null}</details>
