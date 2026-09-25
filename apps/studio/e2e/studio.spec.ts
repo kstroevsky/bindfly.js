@@ -178,6 +178,36 @@ test('Pulse and the Spiral family execute from frozen formulas through the gener
 	await expect(metric(page, 'Points')).toHaveText('100')
 })
 
+test('Vector Field and Discrete Map run through main and worker Studio paths', async ({ page }) => {
+	const experiments = [
+		{ id: 'vector-field-2d', title: 'Vector Field Lab', metric: 'Trajectories' },
+		{ id: 'discrete-map-2d', title: 'Discrete Map Lab', metric: 'Orbits' },
+	] as const
+
+	for (const experiment of experiments) {
+		await page.goto(`/#/lab/${experiment.id}`)
+		await expect(page.getByRole('heading', { name: experiment.title })).toBeVisible()
+		await expect(metric(page, experiment.metric)).toHaveText('1')
+		const runtime = page.getByLabel('Runtime')
+		await expect(runtime.locator('option[value="worker"]')).toBeEnabled()
+		const canvas = page.getByLabel(`Interactive ${experiment.title} simulation`)
+		await canvas.click({ position: { x: 260, y: 180 } })
+		await expect(metric(page, experiment.metric)).toHaveText('2')
+
+		await runtime.selectOption('worker')
+		await expect(page.locator('.badge')).toContainText('worker')
+		await expect(metric(page, experiment.metric)).toHaveText('1')
+		await canvas.click({ position: { x: 280, y: 160 } })
+		await expect(metric(page, experiment.metric)).toHaveText('2')
+
+		await page.getByRole('button', { name: 'Freeze' }).click()
+		await expect(page.getByRole('button', { name: 'Run' })).toBeEnabled()
+		const frozenStep = Number(await metric(page, 'Step').textContent())
+		await page.getByRole('button', { name: 'Step', exact: true }).click()
+		await expect(metric(page, 'Step')).toHaveText(String(frozenStep + 1))
+	}
+})
+
 test('Freeze keeps simulation state fixed while formula perturbations remain inspectable', async ({ page }) => {
 	await page.goto('/#/lab/pulse-2023')
 	await expect.poll(async () => Number(await metric(page, 'Step').textContent())).toBeGreaterThan(0)

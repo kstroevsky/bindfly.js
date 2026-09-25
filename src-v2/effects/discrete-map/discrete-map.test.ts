@@ -4,10 +4,18 @@ import test from 'node:test'
 import { normalizeParameters } from '../../core/index.ts'
 import { createViewport } from '../../core/viewport.ts'
 import { compileDiscreteMapPrograms, createDiscreteMapScope, evaluateDiscreteMap } from './formula.ts'
+import { discreteMapDefinition } from './definition.ts'
 import { discreteMapParameters } from './parameters.ts'
 import { createDiscreteMapSimulation } from './simulation.ts'
 
 const viewport = createViewport({ cssWidth: 400, cssHeight: 300, devicePixelRatio: 1 })
+
+test('discrete map declares main-thread and Worker Canvas2D execution', () => {
+	assert.deepEqual(discreteMapDefinition.capabilities.executionProfiles, [
+		{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
+		{ rendererId: 'canvas2d', runtimeId: 'worker' },
+	])
+})
 
 const createSimulation = (overrides: Record<string, unknown>) => {
 	const normalized = normalizeParameters(discreteMapParameters, overrides)

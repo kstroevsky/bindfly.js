@@ -6,8 +6,16 @@ import { createViewport } from '../../core/viewport.ts'
 import { compileVectorFieldPrograms, createVectorFieldScope, evaluateVectorField } from './formula.ts'
 import { vectorFieldParameters } from './parameters.ts'
 import { createVectorFieldSimulation } from './simulation.ts'
+import { vectorFieldDefinition } from './definition.ts'
 
 const viewport = createViewport({ cssWidth: 400, cssHeight: 300, devicePixelRatio: 1 })
+
+test('vector field declares main-thread and Worker Canvas2D execution', () => {
+	assert.deepEqual(vectorFieldDefinition.capabilities.executionProfiles, [
+		{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
+		{ rendererId: 'canvas2d', runtimeId: 'worker' },
+	])
+})
 
 test('RK4 advances a continuous vector field with fourth-order accuracy', () => {
 	const normalized = normalizeParameters(vectorFieldParameters, {

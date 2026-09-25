@@ -55,7 +55,10 @@ export const discreteMapDefinition = defineExperiment<
 	parameters: discreteMapParameters,
 	stateCodec: codec,
 	capabilities: {
-		executionProfiles: [{ rendererId: 'canvas2d', runtimeId: 'main-thread' }],
+		executionProfiles: [
+			{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
+			{ rendererId: 'canvas2d', runtimeId: 'worker' },
+		],
 		snapshotState: snapshotDiscreteMapState,
 	},
 	presets: [{
