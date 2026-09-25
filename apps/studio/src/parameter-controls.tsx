@@ -8,6 +8,7 @@ import type { StudioParameterValues } from './studio-experiment-plugin.ts'
 interface ParameterControlsProps {
 	readonly schema: ParameterSchema
 	readonly values: StudioParameterValues
+	readonly hiddenIds?: readonly string[]
 	readonly onChange: (parameterId: string, value: unknown) => void
 }
 
@@ -59,9 +60,9 @@ const FormulaControl = ({ definition, id, inputId, descriptionId, label, value, 
 	</>
 }
 
-const ParameterControlsInner = ({ schema, values, onChange }: ParameterControlsProps) => (
+const ParameterControlsInner = ({ schema, values, hiddenIds = [], onChange }: ParameterControlsProps) => (
 	<section className="controls" aria-label="Parameters">
-		{createParameterControlModels(schema, values as ParameterValues<ParameterSchema>).map((model) => {
+		{createParameterControlModels(schema, values as ParameterValues<ParameterSchema>).filter((model) => !hiddenIds.includes(model.id)).map((model) => {
 			const inputId = `parameter-${model.id}`
 			const descriptionId = `${inputId}-description`
 			const definition = model.definition

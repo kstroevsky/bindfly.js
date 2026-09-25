@@ -6,6 +6,7 @@ import { createDroopingGeometry } from '../../../src-v2/effects/drooping-lines/g
 import { droopingLinesParameters } from '../../../src-v2/effects/drooping-lines/parameters.ts'
 import type { DroopingLinesInput, DroopingLinesState } from '../../../src-v2/effects/drooping-lines/types.ts'
 import { MAXIMUM_MOVING_POINT_COUNT } from '../../../src-v2/effects/moving-points/parameters.ts'
+import type { RuntimeFormulaView } from '../../../src-v2/runtime/protocol.ts'
 import { createDroopingLinesCanvasRenderer } from '../../../src-v2/rendering/canvas2d/drooping-lines-renderer.ts'
 import type { DroopingLinesRenderView } from '../../../src-v2/rendering/canvas2d/drooping-lines-renderer.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
@@ -13,6 +14,7 @@ import type { ExperimentSession, ExperimentTelemetry } from './experiment-sessio
 export interface CreateDroopingLinesSessionOptions {
 	readonly canvas: HTMLCanvasElement | OffscreenCanvas
 	readonly parameters: ParameterValues<typeof droopingLinesParameters>
+	readonly formulaView: RuntimeFormulaView
 	readonly seed: string
 	readonly viewport: Viewport
 }
@@ -26,6 +28,7 @@ export type DroopingLinesSession = ExperimentSession<
 
 export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOptions): DroopingLinesSession => {
 	let parameters = options.parameters
+	let formulaView = options.formulaView
 	const initialFormulas = compileDroopingFormulaPair(parameters)
 	if (!initialFormulas.ok) throw new Error(initialFormulas.error)
 	let formulas = initialFormulas.value
@@ -75,7 +78,7 @@ export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOp
 				formulaB: formulas.b,
 				formulaMorph: parameters.formulaMorph,
 			})
-			if (parameters.formulaView === 'compare') {
+			if (formulaView === 'compare') {
 				const linesA = geometryA.update({
 					particles: simulation.state.particles,
 					connectionRadius: parameters.connectionRadius,
@@ -142,6 +145,10 @@ export const createDroopingLinesSession = (options: CreateDroopingLinesSessionOp
 			telemetry = { ...telemetry, droppedSteps }
 		},
 		snapshot: () => { assertActive(); return snapshotDroopingLinesState(simulation.state) },
+		updateFormulaView: (nextView) => {
+			assertActive()
+			formulaView = nextView
+		},
 		dispose: () => {
 			if (disposed) return
 			disposed = true

@@ -15,7 +15,7 @@ test('defines Drooping Lines with editable formula sources and its two original 
 		['simple', 0],
 		['add-by-click', 1],
 	])
-	assert.equal(definition.stateVersion, 2)
+	assert.equal(definition.stateVersion, 3)
 	assert.equal(definition.parameters.formulaAX.default, 'tan(x)')
 	assert.equal(definition.parameters.formulaBY.default, 'atan(y)')
 	const preset = definition.presets?.[0]
@@ -40,7 +40,7 @@ test('migrates v1 deformation state to the formula-backed state without changing
 		const migrated = droopingLinesDefinition.stateCodec.migrate(JSON.stringify({
 			seed: 'migration-seed',
 			parameters: { ...base, deformation },
-		}), { experimentId: 'drooping-lines', fromVersion: 1, toVersion: 2 })
+		}), { experimentId: 'drooping-lines', fromVersion: 1, toVersion: 3 })
 		assert.equal(migrated.ok, true)
 		if (!migrated.ok) continue
 		const parsed = droopingLinesDefinition.stateCodec.parse(migrated.value)

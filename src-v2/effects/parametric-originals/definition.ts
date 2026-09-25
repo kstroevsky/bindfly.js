@@ -57,7 +57,7 @@ export const createParametricOriginalDefinition = (
 	const original = bindflyOriginals[spec.id]
 	const parameters = createParametricOriginalParameters(original)
 	const codec: ExperimentStateCodec<ParametricOriginalDurableState, string> = {
-		currentVersion: 1,
+		currentVersion: 2,
 		serialize: (state) => JSON.stringify(state),
 		parse: (serialized) => {
 			if (typeof serialized !== 'string') return { ok: false, error: `${original.title} state must be a string.` }
@@ -77,15 +77,28 @@ export const createParametricOriginalDefinition = (
 				return { ok: false, error: `${original.title} state is not valid JSON.` }
 			}
 		},
-		migrate: (serialized, context) => context.fromVersion === context.toVersion
-			? { ok: true, value: serialized }
-			: { ok: false, error: `No ${original.title} migration from ${context.fromVersion} to ${context.toVersion}.` },
+		migrate: (serialized, context) => {
+			if (context.fromVersion === context.toVersion) return { ok: true, value: serialized }
+			if (context.fromVersion !== 1 || context.toVersion !== 2 || typeof serialized !== 'string') {
+				return { ok: false, error: `No ${original.title} migration from ${context.fromVersion} to ${context.toVersion}.` }
+			}
+			try {
+				const value = JSON.parse(serialized) as unknown
+				if (!isRecord(value) || !isRecord(value.parameters)) {
+					return { ok: false, error: `${original.title} v1 state must contain parameters.` }
+				}
+				const { formulaView: _formulaView, ...parametersWithoutPresentation } = value.parameters
+				return { ok: true, value: JSON.stringify({ ...value, parameters: parametersWithoutPresentation }) }
+			} catch {
+				return { ok: false, error: `${original.title} v1 state is not valid JSON.` }
+			}
+		},
 	}
 	const defaults = normalizeParameters(parameters, {})
 	if (!defaults.ok) throw new Error(`${original.title} defaults are invalid.`)
 	const definition = defineExperiment({
 		id: spec.id,
-		stateVersion: 1,
+		stateVersion: 2,
 		timing: { fixedStepSeconds: 1 / 120, deterministicTier: 'same-build-cpu', stateTolerance: 1e-9 },
 		parameters,
 		stateCodec: codec,

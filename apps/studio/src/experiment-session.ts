@@ -6,6 +6,7 @@ import type {
 	SimulationStep,
 	Viewport,
 } from '../../../src-v2/core/index.ts'
+import type { RuntimeFormulaView, RuntimePointCloudCaptureRequest, RuntimePointInspectionRequest } from '../../../src-v2/runtime/protocol.ts'
 
 export interface ExperimentTelemetry {
 	readonly points: number
@@ -28,5 +29,8 @@ export interface ExperimentSession<Schema extends ParameterSchema, Input, Snapsh
 	reset(): void
 	recordDroppedSteps(count: number): void
 	snapshot(): Snapshot
+	updateFormulaView?(view: RuntimeFormulaView): void
+	inspectPoint?(request: RuntimePointInspectionRequest): unknown
+	capturePointCloud?(request: RuntimePointCloudCaptureRequest): unknown
 	dispose(): void
 }

@@ -33,6 +33,7 @@ export const droopingLinesPlugin = defineStudioExperiment({
 	definition: droopingLinesDefinition,
 	title: 'Drooping Lines',
 	defaultSeed: 'bindfly-drooping-lines-simple-v1',
+	formulaViews: ['morph', 'compare'],
 	provenance: ['drooping-tan-x', 'drooping-atan-y'].map((id) => {
 		const original = bindflyOriginals[id as 'drooping-tan-x' | 'drooping-atan-y']
 		return {

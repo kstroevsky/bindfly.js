@@ -2,7 +2,7 @@ import type { ParameterSchema } from '../../../src-v2/core/parameters.ts'
 import { FixedStepClock } from '../../../src-v2/runtime/fixed-step-clock.ts'
 import { FixedStepLoop } from '../../../src-v2/runtime/fixed-step-loop.ts'
 import type { AnimationFrameScheduler } from '../../../src-v2/runtime/fixed-step-loop.ts'
-import { isRuntimeCommand } from '../../../src-v2/runtime/protocol.ts'
+import { isRuntimeCommand, isRuntimeFormulaView, isRuntimePointCloudCaptureRequest, isRuntimePointInspectionRequest } from '../../../src-v2/runtime/protocol.ts'
 import type { RuntimeCommand } from '../../../src-v2/runtime/protocol.ts'
 import { runtimeEvent } from '../../../src-v2/runtime/worker-runtime.ts'
 import type { ErasedExperimentSession, StudioExperimentPlugin, StudioParameterPatch } from './studio-experiment-plugin.ts'
@@ -49,6 +49,15 @@ const initialize = async (value: unknown) => {
 			},
 			applyInput: (input) => session?.applyInput(input),
 			applyParameterPatch: (patch) => session?.updateParameters(patch),
+			updateFormulaView: (view) => session?.updateFormulaView?.(view),
+			inspectPoint: (request) => {
+				if (!session?.inspectPoint) throw new Error(`Experiment '${plugin?.id ?? 'unknown'}' does not support point inspection.`)
+				return session.inspectPoint(request)
+			},
+			capturePointCloud: (request) => {
+				if (!session?.capturePointCloud) throw new Error(`Experiment '${plugin?.id ?? 'unknown'}' does not support point-cloud capture.`)
+				return session.capturePointCloud(request)
+			},
 			reset: () => session?.reset(),
 			resize: (viewport) => session?.resize(viewport),
 			dispose: () => session?.dispose(),
@@ -97,6 +106,7 @@ const handleCommand = async (command: RuntimeCommand): Promise<void> => {
 			const parsed = ready.plugin.parseParameterPatch(command.payload)
 			if (!parsed.ok) throw new Error(parsed.error)
 			ready.loop.scheduleParameterPatch(parsed.value)
+			if (ready.loop.state === 'paused') ready.loop.applyCurrentParameterEventsAndRender()
 			acknowledge(command.requestId)
 			break
 		}
@@ -104,14 +114,40 @@ const handleCommand = async (command: RuntimeCommand): Promise<void> => {
 			requireReady().loop.reset()
 			acknowledge(command.requestId)
 			break
-		case 'pause':
+		case 'pause': {
 			requireReady().loop.pause()
+			if (session) scope.postMessage(runtimeEvent({ type: 'telemetry', payload: session.telemetry }))
 			acknowledge(command.requestId)
 			break
+		}
 		case 'resume':
 			requireReady().loop.resume()
 			acknowledge(command.requestId)
 			break
+		case 'step':
+			requireReady().loop.stepOnce()
+			acknowledge(command.requestId)
+			break
+		case 'formula-view': {
+			if (!isRuntimeFormulaView(command.payload)) throw new Error('Formula-view presentation update is invalid.')
+			const ready = requireReady()
+			if (!ready.plugin.formulaViews.includes(command.payload)) throw new Error(`Formula view '${command.payload}' is unsupported by '${ready.plugin.id}'.`)
+			ready.loop.updateFormulaView(command.payload)
+			acknowledge(command.requestId)
+			break
+		}
+		case 'inspect-point': {
+			if (!isRuntimePointInspectionRequest(command.payload)) throw new Error('Point inspection request is invalid.')
+			const payload = requireReady().loop.inspectPoint(command.payload)
+			scope.postMessage(runtimeEvent({ type: 'inspection-result', requestId: command.requestId, payload }))
+			break
+		}
+		case 'capture-point-cloud': {
+			if (!isRuntimePointCloudCaptureRequest(command.payload)) throw new Error('Point-cloud capture request is invalid.')
+			const payload = requireReady().loop.capturePointCloud(command.payload)
+			scope.postMessage(runtimeEvent({ type: 'point-cloud-snapshot', requestId: command.requestId, payload }))
+			break
+		}
 		case 'dispose':
 			requireReady().loop.dispose()
 			acknowledge(command.requestId)

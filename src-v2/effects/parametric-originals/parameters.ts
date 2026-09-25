@@ -31,7 +31,4 @@ export const createParametricOriginalParameters = (original: BindflyOriginalForm
 	formulaMorph: {
 		kind: 'number', default: 0, min: 0, max: 1, step: 0.01, invalidation: 'hot-update',
 	},
-	formulaView: {
-		kind: 'enum', default: 'morph', values: ['morph', 'compare'], invalidation: 'hot-update',
-	},
 })

@@ -16,7 +16,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value)
 
 const codec: ExperimentStateCodec<DroopingLinesDurableState, string> = {
-	currentVersion: 2,
+	currentVersion: 3,
 	serialize: (state) => JSON.stringify(state),
 	parse: (serialized) => {
 		if (typeof serialized !== 'string') return { ok: false, error: 'Drooping Lines state must be a string.' }
@@ -42,16 +42,19 @@ const codec: ExperimentStateCodec<DroopingLinesDurableState, string> = {
 	},
 	migrate: (serialized, context) => {
 		if (context.fromVersion === context.toVersion) return { ok: true, value: serialized }
-		if (context.fromVersion !== 1 || context.toVersion !== 2) {
+		if ((context.fromVersion !== 1 && context.fromVersion !== 2) || context.toVersion !== 3) {
 			return { ok: false, error: `No Drooping Lines migration from ${context.fromVersion} to ${context.toVersion}.` }
 		}
-		if (typeof serialized !== 'string') return { ok: false, error: 'Drooping Lines v1 state must be a string.' }
+		if (typeof serialized !== 'string') return { ok: false, error: `Drooping Lines v${context.fromVersion} state must be a string.` }
 		try {
 			const value = JSON.parse(serialized) as unknown
 			if (!isRecord(value) || !isRecord(value.parameters)) {
-				return { ok: false, error: 'Drooping Lines v1 state must contain parameters.' }
+				return { ok: false, error: `Drooping Lines v${context.fromVersion} state must contain parameters.` }
 			}
-			const { deformation, ...parameters } = value.parameters
+			const { deformation, formulaView: _formulaView, ...parameters } = value.parameters
+			if (context.fromVersion === 2) {
+				return { ok: true, value: JSON.stringify({ ...value, parameters }) }
+			}
 			if (deformation !== 'tan-x' && deformation !== 'atan-y') {
 				return { ok: false, error: 'Drooping Lines v1 deformation is invalid.' }
 			}
@@ -70,7 +73,7 @@ const codec: ExperimentStateCodec<DroopingLinesDurableState, string> = {
 				}),
 			}
 		} catch {
-			return { ok: false, error: 'Drooping Lines v1 state is not valid JSON.' }
+			return { ok: false, error: `Drooping Lines v${context.fromVersion} state is not valid JSON.` }
 		}
 	},
 }
@@ -88,7 +91,7 @@ export const droopingLinesDefinition = defineExperiment<
 	string
 >({
 	id: 'drooping-lines',
-	stateVersion: 2,
+	stateVersion: 3,
 	timing: { fixedStepSeconds: 1 / 120, deterministicTier: 'same-build-cpu', stateTolerance: 1e-9 },
 	parameters: droopingLinesParameters,
 	stateCodec: codec,

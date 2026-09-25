@@ -5,11 +5,13 @@ import type { ExperimentTiming } from '../../../src-v2/core/clock.ts'
 import type { ExperimentDefinition } from '../../../src-v2/core/experiment.ts'
 import type { Result } from '../../../src-v2/core/result.ts'
 import type { RenderFrame, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
+import type { RuntimeFormulaView, RuntimePointCloudCaptureRequest, RuntimePointInspectionRequest } from '../../../src-v2/runtime/protocol.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 
 export type StudioParameterValue = boolean | number | string
 export type StudioParameterValues = Readonly<Record<string, StudioParameterValue>>
 export type StudioParameterPatch = Readonly<Record<string, StudioParameterValue>>
+export type StudioFormulaView = RuntimeFormulaView
 
 export interface StudioPointerEvent {
 	readonly phase: 'down' | 'move' | 'up' | 'cancel'
@@ -42,6 +44,21 @@ export interface StudioProvenanceEntry {
 	readonly capturedBehavior: string
 }
 
+export interface StudioInspectionRow {
+	readonly label: string
+	readonly value: string
+}
+
+export interface StudioInspectionSection {
+	readonly title: string
+	readonly rows: readonly StudioInspectionRow[]
+}
+
+export interface StudioPointInspectionView {
+	readonly title: string
+	readonly sections: readonly StudioInspectionSection[]
+}
+
 export interface ErasedExperimentSession {
 	readonly parameters: StudioParameterValues
 	readonly telemetry: Readonly<ExperimentTelemetry>
@@ -53,6 +70,9 @@ export interface ErasedExperimentSession {
 	reset(): void
 	recordDroppedSteps(count: number): void
 	snapshot(): unknown
+	updateFormulaView?(view: StudioFormulaView): void
+	inspectPoint?(request: RuntimePointInspectionRequest): unknown
+	capturePointCloud?(request: RuntimePointCloudCaptureRequest): unknown
 	dispose(): void
 }
 
@@ -67,12 +87,16 @@ export interface StudioExperimentPlugin {
 	readonly executionProfiles: readonly ExecutionProfile[]
 	readonly metrics: readonly MetricDescriptor[]
 	readonly provenance: readonly StudioProvenanceEntry[]
+	readonly pointCloudSources: readonly RuntimePointCloudCaptureRequest['source'][]
+	readonly formulaViews: readonly StudioFormulaView[]
+	readonly formatPointInspection?: (value: unknown) => StudioPointInspectionView | undefined
 	normalizeParameters(value: unknown): Result<StudioParameterValues, string>
 	parseInput(value: unknown): Result<unknown, string>
 	parseParameterPatch(value: unknown): Result<StudioParameterPatch, string>
 	createSession(options: {
 		readonly canvas: HTMLCanvasElement | OffscreenCanvas
 		readonly parameters: unknown
+		readonly formulaView: StudioFormulaView
 		readonly seed: string
 		readonly viewport: Viewport
 	}): ErasedExperimentSession
@@ -100,6 +124,9 @@ export interface DefineStudioExperimentOptions<
 	readonly title: string
 	readonly defaultSeed: string
 	readonly provenance?: readonly StudioProvenanceEntry[]
+	readonly pointCloudSources?: readonly RuntimePointCloudCaptureRequest['source'][]
+	readonly formulaViews?: readonly StudioFormulaView[]
+	readonly formatPointInspection?: (value: unknown) => StudioPointInspectionView | undefined
 	readonly metrics: readonly {
 		readonly id: keyof Telemetry & string
 		readonly label: string
@@ -108,6 +135,7 @@ export interface DefineStudioExperimentOptions<
 	createSession(options: {
 		readonly canvas: HTMLCanvasElement | OffscreenCanvas
 		readonly parameters: ParameterValues<Schema>
+		readonly formulaView: StudioFormulaView
 		readonly seed: string
 		readonly viewport: Viewport
 	}): ExperimentSession<Schema, Input, SnapshotState, Telemetry>
@@ -157,6 +185,9 @@ export const defineStudioExperiment = <
 		executionProfiles: definition.capabilities.executionProfiles,
 		metrics: options.metrics,
 		provenance: Object.freeze((options.provenance ?? []).map((entry) => Object.freeze({ ...entry }))),
+		pointCloudSources: Object.freeze([...(options.pointCloudSources ?? [])]),
+		formulaViews: Object.freeze([...(options.formulaViews ?? ['morph'])]),
+		...(options.formatPointInspection ? { formatPointInspection: options.formatPointInspection } : {}),
 		normalizeParameters: (value) => {
 			const result = normalize(value)
 			return result.ok
@@ -203,6 +234,9 @@ export const defineStudioExperiment = <
 				reset: () => session.reset(),
 				recordDroppedSteps: (count) => session.recordDroppedSteps(count),
 				snapshot: () => session.snapshot(),
+				...(session.updateFormulaView ? { updateFormulaView: (view: StudioFormulaView) => session.updateFormulaView?.(view) } : {}),
+				...(session.inspectPoint ? { inspectPoint: (request: RuntimePointInspectionRequest) => session.inspectPoint?.(request) } : {}),
+				...(session.capturePointCloud ? { capturePointCloud: (request: RuntimePointCloudCaptureRequest) => session.capturePointCloud?.(request) } : {}),
 				dispose: () => session.dispose(),
 			}
 		},

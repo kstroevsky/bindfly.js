@@ -3,9 +3,11 @@ import test from 'node:test'
 
 import { droopingLinesPlugin } from './drooping-lines-plugin.ts'
 import { flyingLinesPlugin } from './flying-lines-plugin.ts'
+import { parametricOriginalPlugins } from './parametric-original-plugin.ts'
 import {
 	canonicalStringify,
 	createShareArtifact,
+	createStudioConfiguration,
 	createStudioDurableState,
 	createStudioExportDocument,
 	decodeStudioState,
@@ -28,18 +30,38 @@ test('canonical state round-trips deterministically through JSON and base64url',
 	assert.equal(encodeStudioState(state), encoded)
 })
 
+test('current v2 Studio state migrates missing persistence epsilonMax to the durable default', () => {
+	const state = createStudioDurableState(flyingLinesPlugin, parameters, 'fixture', 'main')
+	const legacyV2 = JSON.parse(canonicalStringify(state)) as {
+		studio: { analysis: { epsilonMax?: number } }
+	}
+	delete legacyV2.studio.analysis.epsilonMax
+	const parsed = parseStudioDurableState(legacyV2)
+	assert.equal(parsed.ok, true)
+	if (!parsed.ok) return
+	assert.equal(parsed.value.studio.analysis.epsilonMax, 1000)
+})
+
 test('URL state includes only durable choices and reproduces them', () => {
-	const state = createStudioDurableState(flyingLinesPlugin, { ...parameters, particleCount: 42 }, 'url-fixture', 'main')
-	const artifact = createShareArtifact(new URL('https://example.test/?runtime=worker#/lab/flying-lines'), state)
+	const plugin = parametricOriginalPlugins[0]
+	assert.ok(plugin)
+	const state = createStudioDurableState(plugin, { ...plugin.defaultParameters, particleCount: 42 }, 'url-fixture', 'main', {
+		workspace: 'analyze',
+		analysis: { epsilon: 123, epsilonMax: 2000 },
+	})
+	const artifact = createShareArtifact(new URL(`https://example.test/?runtime=worker#/lab/${plugin.id}`), state)
 	assert.equal(artifact.kind, 'url')
 	if (artifact.kind !== 'url') return
 	const resolved = readStudioStateFromUrl(new URL(artifact.url))
 	assert.equal(resolved.ok, true)
 	if (!resolved.ok || !resolved.value) return
 	assert.equal(resolved.value.parameters.particleCount, 42)
-	assert.equal(resolved.value.experimentId, 'flying-lines')
+	assert.equal(resolved.value.experimentId, plugin.id)
 	assert.equal(resolved.value.seed, 'url-fixture')
 	assert.equal(resolved.value.runtime, 'main')
+	assert.equal(resolved.value.studio.workspace, 'analyze')
+	assert.equal(resolved.value.studio.analysis.epsilon, 123)
+	assert.equal(resolved.value.studio.analysis.epsilonMax, 2000)
 	assert.equal(new URL(artifact.url).searchParams.has('runtime'), false)
 	assert.doesNotMatch(artifact.url, /telemetry|paused|drag|ready/)
 })
@@ -92,7 +114,44 @@ test('migrates the version-zero studio document', () => {
 	assert.equal(migrated.ok, true)
 	if (!migrated.ok) return
 	const resolved = resolveStudioDurableState(migrated.value)
-	assert.deepEqual(resolved, { ok: true, value: { experimentId: 'flying-lines', parameters, seed: 'v0-seed', runtime: 'worker' } })
+	assert.deepEqual(resolved, {
+		ok: true,
+		value: {
+			experimentId: 'flying-lines', parameters, seed: 'v0-seed', runtime: 'worker',
+			studio: createStudioConfiguration(flyingLinesPlugin, 'worker'),
+		},
+	})
+})
+
+test('migrates v1 formula presentation into Studio configuration and scrubs it from experiment state', () => {
+	const oldParameters = { ...droopingLinesPlugin.defaultParameters, formulaView: 'compare' }
+	const migrated = parseStudioDurableState({
+		format: 'bindfly-studio',
+		formatVersion: 1,
+		experiment: {
+			experimentId: droopingLinesPlugin.id,
+			stateVersion: 2,
+			payload: JSON.stringify({ parameters: oldParameters, seed: 'v1-formula-view' }),
+		},
+		renderer: 'canvas2d',
+		runtime: 'main',
+	})
+	assert.equal(migrated.ok, true)
+	if (!migrated.ok) return
+	assert.equal(migrated.value.studio.workspace, 'compare')
+	assert.equal(migrated.value.studio.formulaView, 'compare')
+	const experimentOnly = droopingLinesPlugin.parseConfiguration(
+		migrated.value.experiment.payload,
+		migrated.value.experiment.stateVersion,
+	)
+	assert.equal(experimentOnly.ok, true)
+	if (experimentOnly.ok) assert.equal(Object.hasOwn(experimentOnly.value.parameters, 'formulaView'), false)
+	const resolved = resolveStudioDurableState(migrated.value)
+	assert.equal(resolved.ok, true)
+	if (resolved.ok) {
+		assert.equal(Object.hasOwn(resolved.value.parameters, 'formulaView'), false)
+		assert.equal(resolved.value.studio.formulaView, 'compare')
+	}
 })
 
 test('migrates every recorded legacy Flying Lines preset URL and recognizes formula originals', () => {

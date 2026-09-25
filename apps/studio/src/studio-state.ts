@@ -1,15 +1,31 @@
 import type { Result } from '../../../src-v2/core/result.ts'
 import { createVersionedStateEnvelope, parseVersionedStateEnvelope } from '../../../src-v2/core/state-codec.ts'
+import type { PointCloudSnapshotSource } from '../../../src-v2/analysis/point-cloud-snapshot.ts'
 import { getStudioExperimentPlugin, listStudioExperimentPlugins } from './studio-experiment-registry.ts'
-import type { StudioExperimentPlugin, StudioParameterValues, StudioProvenanceEntry } from './studio-experiment-plugin.ts'
+import type { StudioExperimentPlugin, StudioFormulaView, StudioParameterValues, StudioProvenanceEntry } from './studio-experiment-plugin.ts'
 import type { StudioRuntimeKind } from './studio-controller.ts'
 
 export const STUDIO_STATE_FORMAT = 'bindfly-studio'
-export const STUDIO_STATE_FORMAT_VERSION = 1
+export const STUDIO_STATE_FORMAT_VERSION = 2
 export const STUDIO_STATE_QUERY_KEY = 's'
 export const DEFAULT_URL_BUDGET = 1800
 export const STUDIO_EXPORT_FORMAT = 'bindfly-studio-export'
 export const STUDIO_EXPORT_VERSION = 1
+export const DEFAULT_ANALYSIS_EPSILON_MAX = 1000
+
+export type StudioWorkspace = 'explore' | 'compare' | 'analyze'
+
+export interface StudioConfiguration {
+	readonly renderer: 'canvas2d'
+	readonly runtime: StudioRuntimeKind
+	readonly workspace: StudioWorkspace
+	readonly formulaView: StudioFormulaView
+	readonly analysis: {
+		readonly source: PointCloudSnapshotSource
+		readonly epsilon: number
+		readonly epsilonMax: number
+	}
+}
 
 export interface StudioDurableState {
 	readonly format: typeof STUDIO_STATE_FORMAT
@@ -19,8 +35,7 @@ export interface StudioDurableState {
 		readonly stateVersion: number
 		readonly payload: string
 	}
-	readonly renderer: 'canvas2d'
-	readonly runtime: StudioRuntimeKind
+	readonly studio: StudioConfiguration
 }
 
 export interface StudioExportDocument {
@@ -35,6 +50,7 @@ export interface ResolvedStudioState {
 	readonly parameters: StudioParameterValues
 	readonly seed: string
 	readonly runtime: StudioRuntimeKind
+	readonly studio: StudioConfiguration
 	readonly migratedFrom?: string
 }
 
@@ -114,25 +130,132 @@ const decodeBase64Url = (value: string): Result<string, string> => {
 	}
 }
 
+const runtimeFrom = (value: unknown): StudioRuntimeKind | undefined =>
+	value === 'worker' ? 'worker' : value === 'main' ? 'main' : undefined
+
+const isWorkspace = (value: unknown): value is StudioWorkspace =>
+	value === 'explore' || value === 'compare' || value === 'analyze'
+
+const isFormulaView = (value: unknown): value is StudioFormulaView =>
+	value === 'morph' || value === 'formula-a' || value === 'compare'
+	|| value === 'difference-vector' || value === 'difference-magnitude' || value === 'formula-b'
+
+const isPointCloudSource = (value: unknown): value is PointCloudSnapshotSource =>
+	value === 'morph' || value === 'formula-a' || value === 'formula-b'
+
+const formulaViewFromLegacyParameters = (plugin: StudioExperimentPlugin, parameters: unknown): StudioFormulaView => {
+	const candidate = isRecord(parameters) ? parameters.formulaView : undefined
+	return isFormulaView(candidate) && plugin.formulaViews.includes(candidate)
+		? candidate
+		: plugin.formulaViews[0] ?? 'morph'
+}
+
+const withoutLegacyFormulaView = (parameters: unknown): unknown => {
+	if (!isRecord(parameters) || !Object.hasOwn(parameters, 'formulaView')) return parameters
+	const { formulaView: _formulaView, ...experimentParameters } = parameters
+	return experimentParameters
+}
+
+const formulaViewFromLegacyPayload = (plugin: StudioExperimentPlugin, payload: string): StudioFormulaView => {
+	try {
+		const decoded = JSON.parse(payload) as unknown
+		return isRecord(decoded)
+			? formulaViewFromLegacyParameters(plugin, decoded.parameters)
+			: plugin.formulaViews[0] ?? 'morph'
+	} catch {
+		return plugin.formulaViews[0] ?? 'morph'
+	}
+}
+
+export const createStudioConfiguration = (
+	plugin: StudioExperimentPlugin,
+	runtime: StudioRuntimeKind,
+	overrides: Partial<Omit<StudioConfiguration, 'analysis' | 'renderer' | 'runtime'>> & {
+		readonly analysis?: Partial<StudioConfiguration['analysis']>
+	} = {},
+): StudioConfiguration => {
+	const formulaView = overrides.formulaView && plugin.formulaViews.includes(overrides.formulaView)
+		? overrides.formulaView
+		: plugin.formulaViews[0] ?? 'morph'
+	const preferredSource = overrides.analysis?.source
+	const source = preferredSource && (plugin.pointCloudSources.length === 0 || plugin.pointCloudSources.includes(preferredSource))
+		? preferredSource
+		: plugin.pointCloudSources[0] ?? 'morph'
+	const epsilon = overrides.analysis?.epsilon ?? 73
+	if (!Number.isFinite(epsilon) || epsilon <= 0) throw new RangeError('Studio analysis epsilon must be positive and finite.')
+	const epsilonMax = overrides.analysis?.epsilonMax ?? DEFAULT_ANALYSIS_EPSILON_MAX
+	if (!Number.isFinite(epsilonMax) || epsilonMax <= 0) throw new RangeError('Studio analysis epsilonMax must be positive and finite.')
+	if (epsilon > epsilonMax) throw new RangeError('Studio analysis epsilon must not exceed epsilonMax.')
+	const workspace = overrides.workspace ?? 'explore'
+	if (workspace === 'compare' && plugin.formulaViews.length <= 1) {
+		return { renderer: 'canvas2d', runtime, workspace: 'explore', formulaView, analysis: { source, epsilon, epsilonMax } }
+	}
+	if (workspace === 'analyze' && plugin.pointCloudSources.length === 0) {
+		return { renderer: 'canvas2d', runtime, workspace: 'explore', formulaView, analysis: { source, epsilon, epsilonMax } }
+	}
+	return { renderer: 'canvas2d', runtime, workspace, formulaView, analysis: { source, epsilon, epsilonMax } }
+}
+
 export const createStudioDurableState = (
 	plugin: StudioExperimentPlugin,
 	parameters: unknown,
 	seed: string,
 	runtime: StudioRuntimeKind,
-): StudioDurableState => ({
-	format: STUDIO_STATE_FORMAT,
-	formatVersion: STUDIO_STATE_FORMAT_VERSION,
-	experiment: createVersionedStateEnvelope({
-		experimentId: plugin.id,
-		stateVersion: plugin.stateVersion,
-		payload: plugin.serializeConfiguration(parameters, seed),
-	}),
-	renderer: 'canvas2d',
-	runtime,
-})
+	studioOverrides: Partial<Omit<StudioConfiguration, 'analysis' | 'renderer' | 'runtime'>> & {
+		readonly analysis?: Partial<StudioConfiguration['analysis']>
+	} = {},
+): StudioDurableState => {
+	const studio = createStudioConfiguration(plugin, runtime, {
+		formulaView: studioOverrides.formulaView ?? plugin.formulaViews[0] ?? 'morph',
+		...(studioOverrides.workspace ? { workspace: studioOverrides.workspace } : {}),
+		...(studioOverrides.analysis ? { analysis: studioOverrides.analysis } : {}),
+	})
+	return {
+		format: STUDIO_STATE_FORMAT,
+		formatVersion: STUDIO_STATE_FORMAT_VERSION,
+		experiment: createVersionedStateEnvelope({
+			experimentId: plugin.id,
+			stateVersion: plugin.stateVersion,
+			payload: plugin.serializeConfiguration(parameters, seed),
+		}),
+		studio,
+	}
+}
 
-const runtimeFrom = (value: unknown): StudioRuntimeKind | undefined =>
-	value === 'worker' ? 'worker' : value === 'main' ? 'main' : undefined
+const parseStudioConfiguration = (
+	plugin: StudioExperimentPlugin,
+	value: unknown,
+): Result<StudioConfiguration, string> => {
+	if (!isRecord(value) || value.renderer !== 'canvas2d') return { ok: false, error: 'Studio configuration renderer is unsupported.' }
+	const runtime = runtimeFrom(value.runtime)
+	if (!runtime) return { ok: false, error: 'Studio configuration runtime is unsupported.' }
+	if (!isWorkspace(value.workspace)) return { ok: false, error: 'Studio workspace is unsupported.' }
+	if (!isFormulaView(value.formulaView) || !plugin.formulaViews.includes(value.formulaView)) {
+		return { ok: false, error: 'Studio formula view is unsupported by this experiment.' }
+	}
+	if (!isRecord(value.analysis) || !isPointCloudSource(value.analysis.source)) {
+		return { ok: false, error: 'Studio analysis source is malformed.' }
+	}
+	if (plugin.pointCloudSources.length > 0 && !plugin.pointCloudSources.includes(value.analysis.source)) {
+		return { ok: false, error: 'Studio analysis source is unsupported by this experiment.' }
+	}
+	if (typeof value.analysis.epsilon !== 'number' || !Number.isFinite(value.analysis.epsilon) || value.analysis.epsilon <= 0) {
+		return { ok: false, error: 'Studio analysis epsilon must be positive and finite.' }
+	}
+	const epsilonMax = value.analysis.epsilonMax === undefined ? DEFAULT_ANALYSIS_EPSILON_MAX : value.analysis.epsilonMax
+	if (typeof epsilonMax !== 'number' || !Number.isFinite(epsilonMax) || epsilonMax <= 0) {
+		return { ok: false, error: 'Studio analysis epsilonMax must be positive and finite.' }
+	}
+	if (value.analysis.epsilon > epsilonMax) return { ok: false, error: 'Studio analysis epsilon must not exceed epsilonMax.' }
+	return {
+		ok: true,
+		value: createStudioConfiguration(plugin, runtime, {
+			workspace: value.workspace,
+			formulaView: value.formulaView,
+			analysis: { source: value.analysis.source, epsilon: value.analysis.epsilon, epsilonMax },
+		}),
+	}
+}
 
 const migrateFormatZero = (value: Record<string, unknown>): Result<StudioDurableState, string> => {
 	if (typeof value.experimentId !== 'string' || typeof value.seed !== 'string' || !isRecord(value.parameters)) {
@@ -143,9 +266,31 @@ const migrateFormatZero = (value: Record<string, unknown>): Result<StudioDurable
 	const plugin = getStudioExperimentPlugin(value.experimentId)
 	if (!plugin) return { ok: false, error: `Experiment '${value.experimentId}' is unsupported.` }
 	try {
-		return { ok: true, value: createStudioDurableState(plugin, value.parameters, value.seed, runtime) }
+		return { ok: true, value: createStudioDurableState(plugin, withoutLegacyFormulaView(value.parameters), value.seed, runtime, {
+			formulaView: formulaViewFromLegacyParameters(plugin, value.parameters),
+		}) }
 	} catch (error) {
 		return { ok: false, error: error instanceof Error ? error.message : 'Studio state version 0 is invalid.' }
+	}
+}
+
+const migrateFormatOne = (value: Record<string, unknown>): Result<StudioDurableState, string> => {
+	const runtime = runtimeFrom(value.runtime)
+	if (value.renderer !== 'canvas2d' || !runtime) return { ok: false, error: 'Studio state version 1 renderer or runtime is unsupported.' }
+	const envelope = parseVersionedStateEnvelope(value.experiment)
+	if (!envelope.ok) return envelope
+	if (typeof envelope.value.payload !== 'string') return { ok: false, error: 'Experiment state payload must be a string.' }
+	const plugin = getStudioExperimentPlugin(envelope.value.experimentId)
+	if (!plugin) return { ok: false, error: `Experiment '${envelope.value.experimentId}' is unsupported.` }
+	const formulaView = formulaViewFromLegacyPayload(plugin, envelope.value.payload)
+	const configuration = plugin.parseConfiguration(envelope.value.payload, envelope.value.stateVersion)
+	if (!configuration.ok) return configuration
+	return {
+		ok: true,
+		value: createStudioDurableState(plugin, configuration.value.parameters, configuration.value.seed, runtime, {
+			workspace: formulaView === 'morph' ? 'explore' : 'compare',
+			formulaView,
+		}),
 	}
 }
 
@@ -157,9 +302,8 @@ export const parseStudioDurableState = (serialized: unknown): Result<StudioDurab
 	if (!isRecord(value)) return { ok: false, error: 'Studio state must be an object.' }
 	if (value.format !== STUDIO_STATE_FORMAT) return { ok: false, error: 'Studio state format is unknown.' }
 	if (value.formatVersion === 0) return migrateFormatZero(value)
+	if (value.formatVersion === 1) return migrateFormatOne(value)
 	if (value.formatVersion !== STUDIO_STATE_FORMAT_VERSION) return { ok: false, error: `Studio state version '${String(value.formatVersion)}' is unsupported.` }
-	const runtime = runtimeFrom(value.runtime)
-	if (value.renderer !== 'canvas2d' || !runtime) return { ok: false, error: 'Studio renderer or runtime is unsupported.' }
 	const envelope = parseVersionedStateEnvelope(value.experiment)
 	if (!envelope.ok) return envelope
 	if (typeof envelope.value.payload !== 'string') return { ok: false, error: 'Experiment state payload must be a string.' }
@@ -167,9 +311,11 @@ export const parseStudioDurableState = (serialized: unknown): Result<StudioDurab
 	if (!plugin) return { ok: false, error: `Experiment '${envelope.value.experimentId}' is unsupported.` }
 	const configuration = plugin.parseConfiguration(envelope.value.payload, envelope.value.stateVersion)
 	if (!configuration.ok) return configuration
+	const studio = parseStudioConfiguration(plugin, value.studio)
+	if (!studio.ok) return studio
 	return {
 		ok: true,
-		value: createStudioDurableState(plugin, configuration.value.parameters, configuration.value.seed, runtime),
+		value: createStudioDurableState(plugin, configuration.value.parameters, configuration.value.seed, studio.value.runtime, studio.value),
 	}
 }
 
@@ -200,9 +346,17 @@ export const resolveStudioDurableState = (state: StudioDurableState): Result<Res
 	const plugin = getStudioExperimentPlugin(state.experiment.experimentId)
 	if (!plugin) return { ok: false, error: `Experiment '${state.experiment.experimentId}' is unsupported.` }
 	const parsed = plugin.parseConfiguration(state.experiment.payload, state.experiment.stateVersion)
-	return parsed.ok
-		? { ok: true, value: { experimentId: plugin.id, parameters: parsed.value.parameters, seed: parsed.value.seed, runtime: state.runtime } }
-		: parsed
+	if (!parsed.ok) return parsed
+	return {
+		ok: true,
+		value: {
+			experimentId: plugin.id,
+			parameters: parsed.value.parameters,
+			seed: parsed.value.seed,
+			runtime: state.studio.runtime,
+			studio: state.studio,
+		},
+	}
 }
 
 export const migrateLegacyUrl = (url: URL): Result<ResolvedStudioState | undefined, string> => {
@@ -210,6 +364,7 @@ export const migrateLegacyUrl = (url: URL): Result<ResolvedStudioState | undefin
 		const migrated = plugin.migrateLegacyUrl?.(url)
 		if (!migrated) continue
 		if (!migrated.ok) return migrated
+		const studio = createStudioConfiguration(plugin, 'main')
 		return {
 			ok: true,
 			value: {
@@ -217,6 +372,7 @@ export const migrateLegacyUrl = (url: URL): Result<ResolvedStudioState | undefin
 				parameters: migrated.value.parameters,
 				seed: migrated.value.seed,
 				runtime: 'main',
+				studio,
 				migratedFrom: url.hash,
 			},
 		}

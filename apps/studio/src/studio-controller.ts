@@ -5,13 +5,14 @@ import { FixedStepClock } from '../../../src-v2/runtime/fixed-step-clock.ts'
 import { browserAnimationFrameScheduler, FixedStepLoop } from '../../../src-v2/runtime/fixed-step-loop.ts'
 import type { RuntimeState } from '../../../src-v2/runtime/lifecycle.ts'
 import { MainThreadRuntime } from '../../../src-v2/runtime/main-thread-runtime.ts'
-import type { RuntimeEvent } from '../../../src-v2/runtime/protocol.ts'
+import type { RuntimeEvent, RuntimePointCloudCaptureRequest, RuntimePointInspectionRequest } from '../../../src-v2/runtime/protocol.ts'
 import { WorkerRuntime } from '../../../src-v2/runtime/worker-runtime.ts'
 import type {
 	ExperimentTelemetry,
 } from './experiment-session.ts'
 import type {
 	StudioExperimentPlugin,
+	StudioFormulaView,
 	StudioParameterPatch,
 	StudioParameterValues,
 } from './studio-experiment-plugin.ts'
@@ -24,6 +25,10 @@ export interface StudioController {
 	readonly state: RuntimeState
 	pause(): Promise<void>
 	resume(): Promise<void>
+	step(): Promise<void>
+	updateFormulaView(view: StudioFormulaView): Promise<void>
+	inspectPoint(request: RuntimePointInspectionRequest): Promise<unknown>
+	capturePointCloud(request: RuntimePointCloudCaptureRequest): Promise<unknown>
 	reset(): Promise<void>
 	resize(viewport: Viewport): Promise<void>
 	applyInput(input: unknown): Promise<void>
@@ -36,6 +41,7 @@ export interface CreateStudioControllerOptions {
 	readonly viewport: Viewport
 	readonly plugin: StudioExperimentPlugin
 	readonly parameters: StudioParameterValues
+	readonly formulaView: StudioFormulaView
 	readonly seed: string
 	readonly onMetrics: (metrics: StudioMetrics) => void
 	readonly onFailure: (error: unknown) => void
@@ -54,6 +60,15 @@ export const createMainStudioController = async (options: CreateStudioController
 			},
 			applyInput: (input) => session.applyInput(input),
 			applyParameterPatch: (patch) => session.updateParameters(patch),
+			updateFormulaView: (view) => session.updateFormulaView?.(view),
+			inspectPoint: (request) => {
+				if (!session.inspectPoint) throw new Error(`Experiment '${options.plugin.id}' does not support point inspection.`)
+				return session.inspectPoint(request)
+			},
+			capturePointCloud: (request) => {
+				if (!session.capturePointCloud) throw new Error(`Experiment '${options.plugin.id}' does not support point-cloud capture.`)
+				return session.capturePointCloud(request)
+			},
 			reset: () => session.reset(),
 			resize: (viewport) => session.resize(viewport),
 			dispose: () => session.dispose(),
@@ -65,7 +80,7 @@ export const createMainStudioController = async (options: CreateStudioController
 	await backend.initialize()
 	await backend.resize(options.viewport)
 	await backend.start()
-	return wrapBackend('main', backend)
+	return wrapBackend('main', backend, () => options.onMetrics(session.telemetry))
 }
 
 export const createWorkerStudioController = async (options: CreateStudioControllerOptions): Promise<StudioController> => {
@@ -78,6 +93,7 @@ export const createWorkerStudioController = async (options: CreateStudioControll
 		experimentId: string
 		viewport: Viewport
 		parameters: StudioParameterValues
+		formulaView: StudioFormulaView
 		seed: string
 	}>({
 		createWorker: () => new Worker(new URL('./studio.worker.ts', import.meta.url), { type: 'module' }),
@@ -86,6 +102,7 @@ export const createWorkerStudioController = async (options: CreateStudioControll
 			experimentId: options.plugin.id,
 			viewport: options.viewport,
 			parameters: options.parameters,
+			formulaView: options.formulaView,
 			seed: options.seed,
 		},
 		initializeTransfer: [offscreenCanvas],
@@ -112,11 +129,19 @@ export const createWorkerStudioController = async (options: CreateStudioControll
 const wrapBackend = (
 	kind: StudioRuntimeKind,
 	backend: ExecutionBackend<ParameterSchema, unknown>,
+	afterPause?: () => void,
 ): StudioController => ({
 	kind,
 	get state() { return backend.state },
-	pause: () => backend.pause(),
+	pause: async () => {
+		await backend.pause()
+		afterPause?.()
+	},
 	resume: () => backend.resume(),
+	step: () => backend.step(),
+	updateFormulaView: (view) => backend.updateFormulaView(view),
+	inspectPoint: (request) => backend.inspectPoint(request),
+	capturePointCloud: (request) => backend.capturePointCloud(request),
 	reset: () => backend.reset(),
 	resize: (viewport) => backend.resize(viewport),
 	applyInput: (input) => backend.applyInput(input),
