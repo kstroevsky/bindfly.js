@@ -61,7 +61,7 @@ const hslToRgb = (hueDegrees: number, saturation: number, lightness: number): re
 	]
 }
 
-const scalarFieldColorRgba = (value: number, scale: number): readonly [number, number, number, number] => {
+export const scalarFieldColorRgba = (value: number, scale: number): readonly [number, number, number, number] => {
 	const normalized = clamp(value / scale, -1, 1)
 	const magnitude = Math.abs(normalized)
 	const hue = normalized < 0 ? 218 : 18
@@ -126,23 +126,21 @@ const ambiguousSegments = (input: {
 	readonly bottomLeft: ScalarFieldContourPoint
 	readonly crossings: ReadonlyMap<Edge, ScalarFieldContourPoint>
 }): readonly ScalarFieldContourSegment[] => {
-	const g00 = input.topLeftValue - input.level
-	const g10 = input.topRightValue - input.level
-	const g01 = input.bottomLeftValue - input.level
-	const g11 = input.bottomRightValue - input.level
+	const rawG00 = input.topLeftValue - input.level
+	const rawG10 = input.topRightValue - input.level
+	const rawG01 = input.bottomLeftValue - input.level
+	const rawG11 = input.bottomRightValue - input.level
+	const scale = Math.max(Number.MIN_VALUE, Math.abs(rawG00), Math.abs(rawG10), Math.abs(rawG01), Math.abs(rawG11))
+	const g00 = rawG00 / scale
+	const g10 = rawG10 / scale
+	const g01 = rawG01 / scale
+	const g11 = rawG11 / scale
 	const b = g10 - g00
 	const c = g01 - g00
 	const d = g00 - g10 - g01 + g11
-	const scale = Math.max(Number.MIN_VALUE, Math.abs(g00), Math.abs(g10), Math.abs(g01), Math.abs(g11))
-	const tolerance = 64 * Number.EPSILON * scale
-
-	if (Math.abs(d) <= tolerance) {
-		const center = {
-			x: (input.topLeft.x + input.bottomRight.x) / 2,
-			y: (input.topLeft.y + input.bottomRight.y) / 2,
-		}
-		return [...input.crossings.values()].map((start) => ({ start, end: center }))
-	}
+	const tolerance = 64 * Number.EPSILON
+	// Four crossings imply strict alternating signs (Marching Squares cases 5/10),
+	// so d is respectively positive/negative and cannot be the degenerate bilinear case.
 
 	const saddleUnitX = clamp(-c / d, 0, 1)
 	const saddleUnitY = clamp(-b / d, 0, 1)

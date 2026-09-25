@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import { createViewport } from '../../core/index.ts'
-import { extractScalarFieldContourSegments } from '../scalar-field.ts'
+import { extractScalarFieldContourSegments, scalarFieldColorRgba } from '../scalar-field.ts'
 import { createScalarFieldCanvasRenderer } from './scalar-field-renderer.ts'
 
 const grid = ([topLeft, topRight, bottomRight, bottomLeft]: readonly [number, number, number, number]) => ({
@@ -106,9 +106,13 @@ test('caches the scalar raster independently from background and contour changes
 
 test('renders sampled scalar cells and an interpolated contour', () => {
 	const calls: string[] = []
+	const fieldFillStyles: string[] = []
 	const context = {
 		setTransform: () => {},
-		fillRect: () => calls.push('fillRect'),
+		fillRect: () => {
+			calls.push('fillRect')
+			fieldFillStyles.push(context.fillStyle)
+		},
 		beginPath: () => {},
 		moveTo: () => calls.push('moveTo'),
 		lineTo: () => calls.push('lineTo'),
@@ -147,6 +151,8 @@ test('renders sampled scalar cells and an interpolated contour', () => {
 	}, { frameIndex: 0, simulationStepIndex: 0, interpolationAlpha: 0 })
 
 	assert.equal(calls.filter((call) => call === 'fillRect').length, 2)
+	const [red, green, blue, alpha] = scalarFieldColorRgba(0, 2)
+	assert.equal(fieldFillStyles[1], `rgba(${red}, ${green}, ${blue}, ${alpha / 255})`)
 	assert.ok(calls.filter((call) => call === 'lineTo').length >= 3)
 	assert.ok(calls.includes('text:scalar field test'))
 	assert.ok(calls.includes('text:contour z=0.00 · color scale ±2.0'))

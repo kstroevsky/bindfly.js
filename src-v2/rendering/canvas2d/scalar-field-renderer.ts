@@ -1,21 +1,11 @@
 import { createPhaseSpaceTransform } from '../../core/index.ts'
 import type { RenderFrame, Renderer, Viewport } from '../../core/index.ts'
-import { createScalarFieldRaster, extractScalarFieldContourSegments } from '../scalar-field.ts'
+import { createScalarFieldRaster, extractScalarFieldContourSegments, scalarFieldColorRgba } from '../scalar-field.ts'
 import type { ScalarFieldContourSegment, ScalarFieldRenderGrid, ScalarFieldRenderView } from '../scalar-field.ts'
 
 interface Point {
 	readonly x: number
 	readonly y: number
-}
-
-const clamp = (value: number, minimum: number, maximum: number) => Math.min(maximum, Math.max(minimum, value))
-
-const fieldColor = (value: number, scale: number): string => {
-	const normalized = clamp(value / scale, -1, 1)
-	const magnitude = Math.abs(normalized)
-	const hue = normalized < 0 ? 218 : 18
-	const lightness = 13 + magnitude * 42
-	return `hsl(${hue}, 72%, ${lightness}%)`
 }
 
 const drawSegment = (
@@ -136,9 +126,10 @@ class ScalarFieldCanvasRenderer implements Renderer<ScalarFieldRenderView> {
 					]
 					if (!values.every(Number.isFinite)) continue
 					const average = values.reduce((sum, value) => sum + value, 0) / values.length
+					const [red, green, blue, alpha] = scalarFieldColorRgba(average, view.valueScale)
 					const topLeft = transform.toCanvas({ x: xAt(column), y: yAt(row) })
 					const bottomRight = transform.toCanvas({ x: xAt(column + 1), y: yAt(row + 1) })
-					this.context.fillStyle = fieldColor(average, view.valueScale)
+					this.context.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha / 255})`
 					this.context.fillRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x + 0.5, bottomRight.y - topLeft.y + 0.5)
 				}
 			}
