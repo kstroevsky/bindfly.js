@@ -2816,6 +2816,8 @@ The Stage 13 Studio begins the Explore / Compare / Analyze workspace model descr
 
 ## Stage 14 — Dynamical-systems laboratory
 
+**Status (2026-09-25): complete.** See `docs/v2/stage-14-report.md` for the implemented experiment families, architecture hardening and verification record.
+
 Implement dimensional vector fields, discrete maps, trajectories, RK4 and scalar fields; later add equilibria, stability, Lyapunov, basins and bifurcations through optional analyzers.
 
 Preserve every Bindfly Original in an explicit **Original mode** with its exact historical accumulator semantics. Do not modify exact Original simulation semantics. Add a separate **Controlled mode** with the initial semantic
