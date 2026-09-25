@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
 	testDir: './tooling/stage-15',
-	testMatch: 'canvas-baseline.spec.ts',
+	testMatch: 'renderer-comparison.spec.ts',
 	fullyParallel: false,
 	retries: 0,
 	reporter: 'list',

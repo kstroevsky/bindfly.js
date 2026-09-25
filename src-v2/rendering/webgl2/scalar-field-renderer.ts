@@ -10,6 +10,7 @@ import {
 	installWebGL2ContextLifecycle,
 	parseCssColorRgba,
 	resizeWebGLCanvas,
+	WebGL2GpuTimer,
 } from './common.ts'
 
 const TEXTURE_VERTEX_SHADER = `#version 300 es
@@ -37,6 +38,7 @@ class ScalarFieldWebGL2Renderer implements Renderer<ScalarFieldRenderView> {
 	private primitives: ColoredPrimitiveProgram | undefined
 	private contourBuffer: WebGLBuffer | undefined
 	private axisBuffer: WebGLBuffer | undefined
+	private gpuTimer: WebGL2GpuTimer | undefined
 	private rasterGrid: ScalarFieldRenderGrid | undefined
 	private rasterScale: number | undefined
 	private contourGrid: ScalarFieldRenderGrid | undefined
@@ -66,6 +68,8 @@ class ScalarFieldWebGL2Renderer implements Renderer<ScalarFieldRenderView> {
 	}
 
 	private initializeResources(): void {
+		this.gpuTimer?.dispose()
+		this.gpuTimer = new WebGL2GpuTimer(this.gl)
 		this.textureProgram = createWebGL2Program(this.gl, TEXTURE_VERTEX_SHADER, TEXTURE_FRAGMENT_SHADER)
 		this.texture = this.gl.createTexture() ?? undefined
 		if (!this.texture) throw new Error('Unable to allocate a scalar-field WebGL2 texture.')
@@ -166,7 +170,9 @@ class ScalarFieldWebGL2Renderer implements Renderer<ScalarFieldRenderView> {
 		this.uploadAxes(view)
 		const uploadMs = performance.now() - uploadStarted
 
+		const gpuRenderMs = this.gpuTimer?.poll()
 		const renderStarted = performance.now()
+		this.gpuTimer?.begin()
 		const background = parseCssColorRgba(view.background)
 		this.gl.clearColor(background[0], background[1], background[2], background[3])
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT)
@@ -178,7 +184,12 @@ class ScalarFieldWebGL2Renderer implements Renderer<ScalarFieldRenderView> {
 		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4)
 		this.primitives.draw(this.contourBuffer, this.gl.LINES, this.contourVertexCount, this.viewport)
 		this.primitives.draw(this.axisBuffer, this.gl.LINES, 4, this.viewport)
-		return { uploadMs, renderMs: performance.now() - renderStarted }
+		this.gpuTimer?.end()
+		return {
+			uploadMs,
+			renderMs: performance.now() - renderStarted,
+			...(gpuRenderMs === undefined ? {} : { gpuRenderMs }),
+		}
 	}
 
 	dispose(): void {
@@ -188,9 +199,11 @@ class ScalarFieldWebGL2Renderer implements Renderer<ScalarFieldRenderView> {
 		this.primitives?.disposeBuffer(this.contourBuffer)
 		this.primitives?.disposeBuffer(this.axisBuffer)
 		this.primitives?.dispose()
+		this.gpuTimer?.dispose()
 		if (this.texture) this.gl.deleteTexture(this.texture)
 		if (this.textureProgram) this.gl.deleteProgram(this.textureProgram)
 		this.primitives = undefined
+		this.gpuTimer = undefined
 		this.contourBuffer = undefined
 		this.axisBuffer = undefined
 		this.texture = undefined

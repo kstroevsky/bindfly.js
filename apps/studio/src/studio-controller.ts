@@ -45,6 +45,7 @@ export interface CreateStudioControllerOptions {
 	readonly parameters: StudioParameterValues
 	readonly formulaView: StudioFormulaView
 	readonly seed: string
+	readonly startPaused?: boolean
 	readonly onMetrics: (metrics: StudioMetrics) => void
 	readonly onFailure: (error: unknown) => void
 }
@@ -85,6 +86,7 @@ export const createMainStudioController = async (options: CreateStudioController
 	await backend.initialize()
 	await backend.resize(options.viewport)
 	await backend.start()
+	if (options.startPaused) await backend.pause()
 	const publishAuthoritativeTelemetry = () => options.onMetrics(session.telemetry)
 	return wrapBackend('main', backend, publishAuthoritativeTelemetry, publishAuthoritativeTelemetry)
 }
@@ -127,6 +129,7 @@ export const createWorkerStudioController = async (options: CreateStudioControll
 				derivationMs: Number(value.derivationMs ?? 0),
 				uploadMs: Number(value.uploadMs ?? 0),
 				renderMs: Number(value.renderMs ?? 0),
+				gpuRenderMs: Number(value.gpuRenderMs ?? 0),
 				totalFrameMs: Number(value.totalFrameMs ?? value.frameMs ?? 0),
 				droppedSteps: Number(value.droppedSteps ?? 0),
 				searchBackend: value.searchBackend === 'grid' ? 'grid' : 'brute',
@@ -135,6 +138,7 @@ export const createWorkerStudioController = async (options: CreateStudioControll
 	})
 	await backend.initialize()
 	await backend.start()
+	if (options.startPaused) await backend.pause()
 	return wrapBackend('worker', backend)
 }
 

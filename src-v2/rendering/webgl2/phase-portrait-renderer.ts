@@ -9,6 +9,7 @@ import {
 	installWebGL2ContextLifecycle,
 	parseCssColorRgba,
 	resizeWebGLCanvas,
+	WebGL2GpuTimer,
 } from './common.ts'
 
 interface PrimitiveBuffers {
@@ -23,6 +24,7 @@ class PhasePortraitWebGL2Renderer implements Renderer<PhasePortraitRenderView> {
 	private viewport: Viewport | undefined
 	private primitives: ColoredPrimitiveProgram | undefined
 	private buffers: PrimitiveBuffers | undefined
+	private gpuTimer: WebGL2GpuTimer | undefined
 	private contextLost = false
 	private disposed = false
 	private readonly removeLifecycle: () => void
@@ -43,6 +45,8 @@ class PhasePortraitWebGL2Renderer implements Renderer<PhasePortraitRenderView> {
 	}
 
 	private initializeResources(): void {
+		this.gpuTimer?.dispose()
+		this.gpuTimer = new WebGL2GpuTimer(this.gl)
 		this.primitives?.dispose()
 		const primitives = new ColoredPrimitiveProgram(this.gl)
 		this.primitives = primitives
@@ -128,14 +132,21 @@ class PhasePortraitWebGL2Renderer implements Renderer<PhasePortraitRenderView> {
 		primitives.upload(buffers.heads, headVertices)
 		const uploadMs = performance.now() - uploadStarted
 
+		const gpuRenderMs = this.gpuTimer?.poll()
 		const renderStarted = performance.now()
+		this.gpuTimer?.begin()
 		const background = parseCssColorRgba(view.background)
 		this.gl.clearColor(background[0], background[1], background[2], background[3])
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT)
 		primitives.draw(buffers.lines, this.gl.LINES, lineVertices.length / 6, this.viewport)
 		primitives.draw(buffers.trailPoints, this.gl.POINTS, trailPointVertices.length / 6, this.viewport, 2.7, true)
 		primitives.draw(buffers.heads, this.gl.POINTS, headVertices.length / 6, this.viewport, 5.2, true)
-		return { uploadMs, renderMs: performance.now() - renderStarted }
+		this.gpuTimer?.end()
+		return {
+			uploadMs,
+			renderMs: performance.now() - renderStarted,
+			...(gpuRenderMs === undefined ? {} : { gpuRenderMs }),
+		}
 	}
 
 	dispose(): void {
@@ -148,8 +159,10 @@ class PhasePortraitWebGL2Renderer implements Renderer<PhasePortraitRenderView> {
 			this.primitives.disposeBuffer(this.buffers.heads)
 		}
 		this.primitives?.dispose()
+		this.gpuTimer?.dispose()
 		this.primitives = undefined
 		this.buffers = undefined
+		this.gpuTimer = undefined
 		this.viewport = undefined
 		this.canvas.width = 0
 		this.canvas.height = 0

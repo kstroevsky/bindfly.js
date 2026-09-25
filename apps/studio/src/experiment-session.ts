@@ -18,6 +18,7 @@ export interface ExperimentTelemetry {
 	readonly derivationMs?: number
 	readonly uploadMs?: number
 	readonly renderMs?: number
+	readonly gpuRenderMs?: number
 	readonly totalFrameMs?: number
 	readonly droppedSteps: number
 	readonly searchBackend: 'brute' | 'grid'
@@ -28,6 +29,7 @@ export interface Stage15FrameTiming {
 	readonly derivationMs: number
 	readonly uploadMs: number
 	readonly renderMs: number
+	readonly gpuRenderMs?: number
 	readonly totalFrameMs: number
 }
 
@@ -44,12 +46,13 @@ export const createStage15FrameTimer = (now: () => number = () => performance.no
 			const value = run()
 			return { value, durationMs: now() - startedAt }
 		},
-		finish(derivationMs: number, renderMs: number, uploadMs = 0): Stage15FrameTiming {
+		finish(derivationMs: number, renderMs: number, uploadMs = 0, gpuRenderMs?: number): Stage15FrameTiming {
 			const timing = {
 				simulationMs,
 				derivationMs,
 				uploadMs,
 				renderMs,
+				...(gpuRenderMs === undefined ? {} : { gpuRenderMs }),
 				totalFrameMs: simulationMs + derivationMs + uploadMs + renderMs,
 			}
 			simulationMs = 0

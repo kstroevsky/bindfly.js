@@ -9,6 +9,7 @@ export interface RenderFrame {
 export interface RendererFrameTiming {
 	readonly uploadMs: number
 	readonly renderMs: number
+	readonly gpuRenderMs?: number
 }
 
 export interface Renderer<State> {

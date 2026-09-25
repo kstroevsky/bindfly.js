@@ -7,6 +7,7 @@ export const STAGE_15_PERFORMANCE_METRICS = [
 	{ id: 'derivationMs', label: 'Derivation', format: milliseconds },
 	{ id: 'uploadMs', label: 'Upload', format: milliseconds },
 	{ id: 'renderMs', label: 'Render', format: milliseconds },
+	{ id: 'gpuRenderMs', label: 'GPU render', format: milliseconds },
 	{ id: 'totalFrameMs', label: 'Total frame', format: milliseconds },
 ] as const satisfies readonly {
 	readonly id: keyof ExperimentTelemetry

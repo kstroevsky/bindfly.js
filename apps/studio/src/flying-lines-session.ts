@@ -93,6 +93,7 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 				derived.durationMs,
 				rendered.value?.renderMs ?? rendered.durationMs,
 				rendered.value?.uploadMs ?? 0,
+				rendered.value?.gpuRenderMs,
 			)
 			telemetry = {
 				points: simulation.state.particles.count,

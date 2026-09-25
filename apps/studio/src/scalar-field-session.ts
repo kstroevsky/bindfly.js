@@ -111,6 +111,7 @@ export const createScalarFieldSession = (options: {
 				derived.durationMs,
 				rendered.value?.renderMs ?? rendered.durationMs,
 				rendered.value?.uploadMs ?? 0,
+				rendered.value?.gpuRenderMs,
 			)
 			telemetry = {
 				points: currentGrid.validCount,

@@ -8,6 +8,7 @@ import {
 	installWebGL2ContextLifecycle,
 	parseCssColorRgba,
 	resizeWebGLCanvas,
+	WebGL2GpuTimer,
 } from './common.ts'
 
 class FlyingLinesWebGL2Renderer implements Renderer<FlyingLinesRenderView> {
@@ -17,6 +18,7 @@ class FlyingLinesWebGL2Renderer implements Renderer<FlyingLinesRenderView> {
 	private primitives: ColoredPrimitiveProgram | undefined
 	private edgeBuffer: WebGLBuffer | undefined
 	private pointBuffer: WebGLBuffer | undefined
+	private gpuTimer: WebGL2GpuTimer | undefined
 	private contextLost = false
 	private disposed = false
 	private readonly removeLifecycle: () => void
@@ -37,6 +39,8 @@ class FlyingLinesWebGL2Renderer implements Renderer<FlyingLinesRenderView> {
 	}
 
 	private initializeResources(): void {
+		this.gpuTimer?.dispose()
+		this.gpuTimer = new WebGL2GpuTimer(this.gl)
 		this.primitives?.dispose()
 		this.primitives = new ColoredPrimitiveProgram(this.gl)
 		this.edgeBuffer = this.primitives.createBuffer()
@@ -78,13 +82,20 @@ class FlyingLinesWebGL2Renderer implements Renderer<FlyingLinesRenderView> {
 		primitives.upload(pointBuffer, new Float32Array(pointVertices))
 		const uploadMs = performance.now() - uploadStarted
 
+		const gpuRenderMs = this.gpuTimer?.poll()
 		const renderStarted = performance.now()
+		this.gpuTimer?.begin()
 		const background = parseCssColorRgba(view.background)
 		this.gl.clearColor(background[0], background[1], background[2], background[3])
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT)
 		primitives.draw(edgeBuffer, this.gl.LINES, edgeVertices.length / 6, this.viewport)
 		primitives.draw(pointBuffer, this.gl.POINTS, pointVertices.length / 6, this.viewport, 2.7, true)
-		return { uploadMs, renderMs: performance.now() - renderStarted }
+		this.gpuTimer?.end()
+		return {
+			uploadMs,
+			renderMs: performance.now() - renderStarted,
+			...(gpuRenderMs === undefined ? {} : { gpuRenderMs }),
+		}
 	}
 
 	dispose(): void {
@@ -94,9 +105,11 @@ class FlyingLinesWebGL2Renderer implements Renderer<FlyingLinesRenderView> {
 		this.primitives?.disposeBuffer(this.edgeBuffer)
 		this.primitives?.disposeBuffer(this.pointBuffer)
 		this.primitives?.dispose()
+		this.gpuTimer?.dispose()
 		this.edgeBuffer = undefined
 		this.pointBuffer = undefined
 		this.primitives = undefined
+		this.gpuTimer = undefined
 		this.viewport = undefined
 		this.canvas.width = 0
 		this.canvas.height = 0

@@ -38,6 +38,7 @@ const INITIAL_PLUGIN = getStudioExperimentPlugin(initialExperimentId) ?? getStud
 if (!INITIAL_PLUGIN) throw new Error('The default Studio experiment is not registered.')
 const INITIAL_RUNTIME: StudioRuntimeKind = INITIAL_RESOLVED_STATE?.runtime
 	?? (new URL(window.location.href).searchParams.get('runtime') === 'worker' ? 'worker' : 'main')
+const STAGE_15_BENCHMARK_MODE = new URL(window.location.href).searchParams.get('stage15Benchmark') === '1'
 const INITIAL_PARAMETERS = INITIAL_RESOLVED_STATE?.parameters ?? INITIAL_PLUGIN.defaultParameters
 const INITIAL_SEED = INITIAL_RESOLVED_STATE?.seed ?? INITIAL_PLUGIN.defaultSeed
 const INITIAL_STUDIO = INITIAL_RESOLVED_STATE?.studio ?? createStudioConfiguration(INITIAL_PLUGIN, INITIAL_RUNTIME)
@@ -82,7 +83,7 @@ export const StudioApp = () => {
 	const [runtimeKind, setRuntimeKind] = useState<StudioRuntimeKind>(INITIAL_RUNTIME)
 	const [workerCapability, setWorkerCapability] = useState<WorkerCanvasCapability>({ supported: false, reason: 'Checking browser capability.' })
 	const [metrics, setMetrics] = useState<StudioMetrics>(EMPTY_METRICS)
-	const [paused, setPaused] = useState(false)
+	const [paused, setPaused] = useState(STAGE_15_BENCHMARK_MODE && INITIAL_PLUGIN.temporalSemantics.kind !== 'static')
 	const [workspace, setWorkspace] = useState<StudioWorkspace>(INITIAL_STUDIO.workspace)
 	const [formulaView, setFormulaView] = useState<StudioFormulaView>(INITIAL_STUDIO.formulaView)
 	const [probeEnabled, setProbeEnabled] = useState(false)
@@ -177,7 +178,7 @@ export const StudioApp = () => {
 			return
 		}
 		resetFormulaHistory()
-		setPaused(false)
+		setPaused(STAGE_15_BENCHMARK_MODE && plugin.temporalSemantics.kind !== 'static')
 		metricsRef.current = EMPTY_METRICS
 		setMetrics(EMPTY_METRICS)
 		setInspection(undefined)
@@ -306,6 +307,7 @@ export const StudioApp = () => {
 				parameters: runtimeConfiguration.parameters,
 				formulaView: runtimeConfiguration.formulaView,
 				seed: runtimeConfiguration.seed,
+				startPaused: STAGE_15_BENCHMARK_MODE && runtimeConfiguration.plugin.temporalSemantics.kind !== 'static',
 				onMetrics: (nextMetrics: StudioMetrics) => {
 					metricsRef.current = nextMetrics
 					setMetrics(nextMetrics)

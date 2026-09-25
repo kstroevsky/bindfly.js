@@ -2,6 +2,11 @@ import type { Viewport } from '../../core/index.ts'
 
 export type NormalizedRgba = readonly [number, number, number, number]
 
+interface DisjointTimerQueryWebGL2Extension {
+	readonly TIME_ELAPSED_EXT: number
+	readonly GPU_DISJOINT_EXT: number
+}
+
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 
 export const hslToNormalizedRgba = (
@@ -73,6 +78,61 @@ export const createWebGL2Context = (canvas: HTMLCanvasElement): WebGL2RenderingC
 	context.enable(context.BLEND)
 	context.blendFunc(context.SRC_ALPHA, context.ONE_MINUS_SRC_ALPHA)
 	return context
+}
+
+export class WebGL2GpuTimer {
+	private readonly gl: WebGL2RenderingContext
+	private readonly extension: DisjointTimerQueryWebGL2Extension | null
+	private readonly pending: WebGLQuery[] = []
+	private active: WebGLQuery | undefined
+
+	constructor(gl: WebGL2RenderingContext) {
+		this.gl = gl
+		this.extension = gl.getExtension('EXT_disjoint_timer_query_webgl2') as DisjointTimerQueryWebGL2Extension | null
+	}
+
+	get supported(): boolean {
+		return this.extension !== null
+	}
+
+	poll(): number | undefined {
+		const extension = this.extension
+		const query = this.pending[0]
+		if (!extension || !query) return undefined
+		if (!this.gl.getQueryParameter(query, this.gl.QUERY_RESULT_AVAILABLE)) return undefined
+		this.pending.shift()
+		const disjoint = Boolean(this.gl.getParameter(extension.GPU_DISJOINT_EXT))
+		const elapsedNanoseconds = Number(this.gl.getQueryParameter(query, this.gl.QUERY_RESULT))
+		this.gl.deleteQuery(query)
+		return disjoint || !Number.isFinite(elapsedNanoseconds) ? undefined : elapsedNanoseconds / 1_000_000
+	}
+
+	begin(): void {
+		const extension = this.extension
+		if (!extension || this.active) return
+		const query = this.gl.createQuery()
+		if (!query) return
+		this.gl.beginQuery(extension.TIME_ELAPSED_EXT, query)
+		this.active = query
+	}
+
+	end(): void {
+		const extension = this.extension
+		const query = this.active
+		if (!extension || !query) return
+		this.gl.endQuery(extension.TIME_ELAPSED_EXT)
+		this.pending.push(query)
+		this.active = undefined
+	}
+
+	dispose(): void {
+		if (this.active) {
+			this.gl.deleteQuery(this.active)
+			this.active = undefined
+		}
+		for (const query of this.pending) this.gl.deleteQuery(query)
+		this.pending.length = 0
+	}
 }
 
 const compileShader = (gl: WebGL2RenderingContext, type: number, source: string): WebGLShader => {
