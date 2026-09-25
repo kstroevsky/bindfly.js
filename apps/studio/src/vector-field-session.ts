@@ -1,5 +1,5 @@
 import { createPhaseSpaceTransform, getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
-import type { ParameterPatch, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
+import type { ParameterPatch, ParameterSchema, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
 import {
 	compileVectorFieldPrograms,
 	createVectorFieldScope,
@@ -7,13 +7,13 @@ import {
 } from '../../../src-v2/effects/vector-field/formula.ts'
 import type { VectorFieldPrograms } from '../../../src-v2/effects/vector-field/formula.ts'
 import { vectorFieldParameters } from '../../../src-v2/effects/vector-field/parameters.ts'
-import { createVectorFieldSimulation, snapshotVectorFieldState } from '../../../src-v2/effects/vector-field/simulation.ts'
+import { beginVectorFieldConfigurationEpoch, createVectorFieldSimulation, snapshotVectorFieldState } from '../../../src-v2/effects/vector-field/simulation.ts'
 import type {
 	VectorFieldInput,
 	VectorFieldParameters,
 	VectorFieldState,
 } from '../../../src-v2/effects/vector-field/types.ts'
-import { evaluateFormula } from '../../../src-v2/formula/index.ts'
+import { evaluateFormula, isFormulaConfigurationParameter } from '../../../src-v2/formula/index.ts'
 import type { FormulaProgram } from '../../../src-v2/formula/index.ts'
 import {
 	createPhasePortraitCanvasRenderer,
@@ -141,10 +141,16 @@ export const createVectorFieldSession = (options: {
 			if (!normalized.ok) throw new Error(normalized.issues[0]?.message ?? 'Invalid vector-field parameter patch.')
 			const nextPrograms = compileVectorFieldPrograms(normalized.value)
 			if (!nextPrograms.ok) throw new Error(nextPrograms.error)
+			const previous = parameters as unknown as Readonly<Record<string, unknown>>
+			const schema: ParameterSchema = vectorFieldParameters
+			const formulaChanged = Object.entries(patch).some(([parameterId, value]) =>
+				isFormulaConfigurationParameter(schema[parameterId]) && value !== previous[parameterId])
 			parameters = normalized.value
 			programs = nextPrograms.value
 			if (invalidation === 'reset-simulation') rebuild()
-			else if (invalidation !== 'hot-update') throw new Error('Vector field requires a runtime rebuild for this patch.')
+			else if (invalidation === 'hot-update') {
+				if (formulaChanged) beginVectorFieldConfigurationEpoch(simulation.state, parameters.trailLength)
+			} else throw new Error('Vector field requires a runtime rebuild for this patch.')
 		},
 		resize: (nextViewport) => {
 			assertActive()

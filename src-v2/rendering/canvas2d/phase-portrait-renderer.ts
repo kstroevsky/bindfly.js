@@ -8,6 +8,7 @@ export interface PhasePortraitTrajectory {
 	readonly status: 'active' | 'escaped' | 'invalid'
 	readonly trailX: readonly number[]
 	readonly trailY: readonly number[]
+	readonly trailEpochs?: readonly number[]
 }
 
 export interface VectorFieldSample {
@@ -108,7 +109,8 @@ class PhasePortraitCanvasRenderer implements Renderer<PhasePortraitRenderView> {
 				for (let index = 0; index < trajectory.trailX.length; index++) {
 					const point = transform.toCanvas({ x: trajectory.trailX[index] ?? 0, y: trajectory.trailY[index] ?? 0 })
 					const { x, y } = point
-					if (index === 0) this.context.moveTo(x, y)
+					const startsEpoch = index === 0 || trajectory.trailEpochs?.[index] !== trajectory.trailEpochs?.[index - 1]
+					if (startsEpoch) this.context.moveTo(x, y)
 					else this.context.lineTo(x, y)
 				}
 				this.context.stroke()

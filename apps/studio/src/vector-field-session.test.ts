@@ -44,15 +44,24 @@ test('hot coefficient updates preserve trajectory state and affect the next RK4 
 	})
 
 	session.step({ index: 1, dtSeconds: 0.1, elapsedSeconds: 0.1 })
-	const before = session.snapshot().trajectories[0]?.x
+	const beforeSnapshot = session.snapshot()
+	const before = beforeSnapshot.trajectories[0]?.x
 	assert.ok(before !== undefined)
+	assert.equal(beforeSnapshot.configurationEpoch, 0)
 	session.updateParameters({ mu: 2 })
-	assert.equal(session.snapshot().trajectories[0]?.x, before)
+	const changed = session.snapshot()
+	assert.equal(changed.trajectories[0]?.x, before)
+	assert.equal(changed.configurationEpoch, 1)
+	assert.deepEqual(changed.trajectories[0]?.trailEpochs.slice(-2), [0, 1])
 	session.step({ index: 2, dtSeconds: 0.1, elapsedSeconds: 0.2 })
-	const after = session.snapshot().trajectories[0]?.x
+	const afterSnapshot = session.snapshot()
+	const after = afterSnapshot.trajectories[0]?.x
 	assert.ok(after !== undefined)
+	assert.equal(afterSnapshot.trajectories[0]?.trailEpochs.at(-1), 1)
 	const rk4Factor = 1 + 0.2 + 0.2 ** 2 / 2 + 0.2 ** 3 / 6 + 0.2 ** 4 / 24
 	assert.ok(Math.abs(after - before * rk4Factor) < 1e-12)
+	session.updateParameters({ background: '#111' })
+	assert.equal(session.snapshot().configurationEpoch, 1)
 	session.dispose()
 })
 

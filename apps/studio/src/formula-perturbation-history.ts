@@ -1,4 +1,5 @@
 import type { ParameterSchema } from '../../../src-v2/core/parameters.ts'
+import { isFormulaConfigurationParameter } from '../../../src-v2/formula/index.ts'
 import type { StudioParameterValues } from './studio-experiment-plugin.ts'
 
 export interface FormulaPerturbationMetrics {
@@ -24,10 +25,9 @@ export const extractFormulaConfiguration = (
 ): Readonly<Record<string, unknown>> => {
 	const configuration: Record<string, unknown> = {}
 	for (const [parameterId, definition] of Object.entries(schema)) {
-		const isFormulaSource = definition.kind === 'string' && definition.control === 'formula'
-		const isFormulaControl = parameterId === 'formulaMorph'
-			|| definition.kind === 'number' && definition.semantic === 'formula-parameter'
-		if (isFormulaSource || isFormulaControl) configuration[parameterId] = values[parameterId]
+		if (isFormulaConfigurationParameter(definition) || parameterId === 'formulaMorph') {
+			configuration[parameterId] = values[parameterId]
+		}
 	}
 	return Object.freeze(configuration)
 }

@@ -48,7 +48,7 @@ test('the same map family expresses a logistic recurrence with delay embedding',
 		nextYFormula: 'x',
 		a: 3.5,
 	})
-	simulation.state.orbits[0] = { id: 0, x: 0.2, y: 0, status: 'active', trailX: [0.2], trailY: [0] }
+	simulation.state.orbits[0] = { id: 0, x: 0.2, y: 0, status: 'active', trailX: [0.2], trailY: [0], trailEpochs: [0] }
 	simulation.step({ index: 1, dtSeconds: 1 / 12, elapsedSeconds: 1 / 12 })
 	assert.ok(Math.abs((simulation.state.orbits[0]?.x ?? 0) - 0.56) < 1e-12)
 	assert.ok(Math.abs((simulation.state.orbits[0]?.y ?? 0) - 0.2) < 1e-12)

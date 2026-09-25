@@ -13,10 +13,12 @@ export interface DiscreteMapOrbit {
 	status: DiscreteMapOrbitStatus
 	trailX: number[]
 	trailY: number[]
+	trailEpochs: number[]
 }
 
 export interface DiscreteMapState {
 	iteration: number
+	configurationEpoch: number
 	nextOrbitId: number
 	orbits: DiscreteMapOrbit[]
 }

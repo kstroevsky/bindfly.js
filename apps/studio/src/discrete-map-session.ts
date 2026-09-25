@@ -1,5 +1,5 @@
 import { createPhaseSpaceTransform, getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
-import type { ParameterPatch, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
+import type { ParameterPatch, ParameterSchema, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
 import {
 	compileDiscreteMapPrograms,
 	createDiscreteMapScope,
@@ -7,13 +7,13 @@ import {
 } from '../../../src-v2/effects/discrete-map/formula.ts'
 import type { DiscreteMapPrograms } from '../../../src-v2/effects/discrete-map/formula.ts'
 import { discreteMapParameters } from '../../../src-v2/effects/discrete-map/parameters.ts'
-import { createDiscreteMapSimulation, snapshotDiscreteMapState } from '../../../src-v2/effects/discrete-map/simulation.ts'
+import { beginDiscreteMapConfigurationEpoch, createDiscreteMapSimulation, snapshotDiscreteMapState } from '../../../src-v2/effects/discrete-map/simulation.ts'
 import type {
 	DiscreteMapInput,
 	DiscreteMapParameters,
 	DiscreteMapState,
 } from '../../../src-v2/effects/discrete-map/types.ts'
-import { evaluateFormula } from '../../../src-v2/formula/index.ts'
+import { evaluateFormula, isFormulaConfigurationParameter } from '../../../src-v2/formula/index.ts'
 import type { FormulaProgram } from '../../../src-v2/formula/index.ts'
 import { createPhasePortraitCanvasRenderer } from '../../../src-v2/rendering/canvas2d/phase-portrait-renderer.ts'
 import type { PhasePortraitRenderView } from '../../../src-v2/rendering/canvas2d/phase-portrait-renderer.ts'
@@ -117,10 +117,16 @@ export const createDiscreteMapSession = (options: {
 			if (!normalized.ok) throw new Error(normalized.issues[0]?.message ?? 'Invalid discrete-map parameter patch.')
 			const nextPrograms = compileDiscreteMapPrograms(normalized.value)
 			if (!nextPrograms.ok) throw new Error(nextPrograms.error)
+			const previous = parameters as unknown as Readonly<Record<string, unknown>>
+			const schema: ParameterSchema = discreteMapParameters
+			const formulaChanged = Object.entries(patch).some(([parameterId, value]) =>
+				isFormulaConfigurationParameter(schema[parameterId]) && value !== previous[parameterId])
 			parameters = normalized.value
 			programs = nextPrograms.value
 			if (invalidation === 'reset-simulation') rebuild()
-			else if (invalidation !== 'hot-update') throw new Error('Discrete map requires a runtime rebuild for this patch.')
+			else if (invalidation === 'hot-update') {
+				if (formulaChanged) beginDiscreteMapConfigurationEpoch(simulation.state, parameters.trailLength)
+			} else throw new Error('Discrete map requires a runtime rebuild for this patch.')
 		},
 		resize: (nextViewport) => {
 			assertActive()

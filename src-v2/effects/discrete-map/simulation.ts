@@ -17,31 +17,43 @@ export type DiscreteMapEvaluator = (
 	n: number,
 ) => Result<{ readonly x: number; readonly y: number }, FormulaIssue>
 
-const createOrbit = (id: number, x: number, y: number): DiscreteMapOrbit => ({
+const createOrbit = (id: number, x: number, y: number, configurationEpoch: number): DiscreteMapOrbit => ({
 	id,
 	x,
 	y,
 	status: 'active',
 	trailX: [x],
 	trailY: [y],
+	trailEpochs: [configurationEpoch],
 })
 
-const appendTrail = (orbit: DiscreteMapOrbit, trailLength: number) => {
+const appendTrail = (orbit: DiscreteMapOrbit, trailLength: number, configurationEpoch: number) => {
 	orbit.trailX.push(orbit.x)
 	orbit.trailY.push(orbit.y)
+	orbit.trailEpochs.push(configurationEpoch)
 	if (orbit.trailX.length > trailLength) {
 		orbit.trailX.shift()
 		orbit.trailY.shift()
+		orbit.trailEpochs.shift()
+	}
+}
+
+export const beginDiscreteMapConfigurationEpoch = (state: DiscreteMapState, trailLength: number): void => {
+	state.configurationEpoch++
+	for (const orbit of state.orbits) {
+		if (orbit.status === 'active') appendTrail(orbit, trailLength, state.configurationEpoch)
 	}
 }
 
 export const snapshotDiscreteMapState = (state: Readonly<DiscreteMapState>): DiscreteMapState => ({
 	iteration: state.iteration,
+	configurationEpoch: state.configurationEpoch,
 	nextOrbitId: state.nextOrbitId,
 	orbits: state.orbits.map((orbit) => ({
 		...orbit,
 		trailX: [...orbit.trailX],
 		trailY: [...orbit.trailY],
+		trailEpochs: [...orbit.trailEpochs],
 	})),
 })
 
@@ -53,14 +65,15 @@ export const createDiscreteMapSimulation = (input: {
 	const { parameters, evaluate } = input
 	let viewport = input.viewport
 	let disposed = false
-	const state: DiscreteMapState = { iteration: 0, nextOrbitId: 1, orbits: [] }
+	const state: DiscreteMapState = { iteration: 0, configurationEpoch: 0, nextOrbitId: 1, orbits: [] }
 	const assertActive = () => {
 		if (disposed) throw new Error('Cannot use a disposed discrete-map simulation.')
 	}
 	const reset = () => {
 		state.iteration = 0
+		state.configurationEpoch = 0
 		state.nextOrbitId = 1
-		state.orbits = [createOrbit(0, 0, 0)]
+		state.orbits = [createOrbit(0, 0, 0, state.configurationEpoch)]
 	}
 	reset()
 
@@ -86,7 +99,7 @@ export const createDiscreteMapSimulation = (input: {
 					orbit.status = 'escaped'
 					continue
 				}
-				appendTrail(orbit, parameters.trailLength)
+				appendTrail(orbit, parameters.trailLength, state.configurationEpoch)
 			}
 			state.iteration++
 		},
@@ -96,7 +109,7 @@ export const createDiscreteMapSimulation = (input: {
 			if (![event.x, event.y].every(Number.isFinite)) throw new TypeError('Map initial-condition coordinates must be finite.')
 			if (state.orbits.length >= MAXIMUM_DISCRETE_MAP_ORBITS) return
 			const { x, y } = createPhaseSpaceTransform(viewport, parameters.domainRadius).toMathematical(event)
-			state.orbits.push(createOrbit(state.nextOrbitId++, x, y))
+			state.orbits.push(createOrbit(state.nextOrbitId++, x, y, state.configurationEpoch))
 		},
 		resize: (nextViewport) => { assertActive(); viewport = nextViewport },
 		reset: () => { assertActive(); reset() },

@@ -32,7 +32,7 @@ test('RK4 advances a continuous vector field with fourth-order accuracy', () => 
 		viewport,
 		evaluate: (x, y, t) => evaluateVectorField(programs.value, createVectorFieldScope(normalized.value, x, y, t)),
 	})
-	simulation.state.trajectories[0] = { id: 0, x: 1, y: 1, status: 'active', trailX: [1], trailY: [1] }
+	simulation.state.trajectories[0] = { id: 0, x: 1, y: 1, status: 'active', trailX: [1], trailY: [1], trailEpochs: [0] }
 	simulation.step({ index: 1, dtSeconds: 0.1, elapsedSeconds: 0.1 })
 	assert.ok(Math.abs((simulation.state.trajectories[0]?.x ?? 0) - Math.exp(0.1)) < 1e-6)
 	assert.ok(Math.abs((simulation.state.trajectories[0]?.y ?? 0) - Math.exp(-0.1)) < 1e-6)

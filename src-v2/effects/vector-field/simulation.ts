@@ -16,31 +16,43 @@ export type VectorFieldEvaluator = (
 	t: number,
 ) => Result<{ readonly dx: number; readonly dy: number }, FormulaIssue>
 
-const appendTrail = (trajectory: VectorFieldTrajectory, trailLength: number) => {
+const appendTrail = (trajectory: VectorFieldTrajectory, trailLength: number, configurationEpoch: number) => {
 	trajectory.trailX.push(trajectory.x)
 	trajectory.trailY.push(trajectory.y)
+	trajectory.trailEpochs.push(configurationEpoch)
 	if (trajectory.trailX.length > trailLength) {
 		trajectory.trailX.shift()
 		trajectory.trailY.shift()
+		trajectory.trailEpochs.shift()
 	}
 }
 
-const createTrajectory = (id: number, x: number, y: number): VectorFieldTrajectory => ({
+const createTrajectory = (id: number, x: number, y: number, configurationEpoch: number): VectorFieldTrajectory => ({
 	id,
 	x,
 	y,
 	status: 'active',
 	trailX: [x],
 	trailY: [y],
+	trailEpochs: [configurationEpoch],
 })
+
+export const beginVectorFieldConfigurationEpoch = (state: VectorFieldState, trailLength: number): void => {
+	state.configurationEpoch++
+	for (const trajectory of state.trajectories) {
+		if (trajectory.status === 'active') appendTrail(trajectory, trailLength, state.configurationEpoch)
+	}
+}
 
 export const snapshotVectorFieldState = (state: Readonly<VectorFieldState>): VectorFieldState => ({
 	time: state.time,
+	configurationEpoch: state.configurationEpoch,
 	nextTrajectoryId: state.nextTrajectoryId,
 	trajectories: state.trajectories.map((trajectory) => ({
 		...trajectory,
 		trailX: [...trajectory.trailX],
 		trailY: [...trajectory.trailY],
+		trailEpochs: [...trajectory.trailEpochs],
 	})),
 })
 
@@ -52,14 +64,15 @@ export const createVectorFieldSimulation = (input: {
 	const { parameters, evaluate } = input
 	let viewport = input.viewport
 	let disposed = false
-	const state: VectorFieldState = { time: 0, nextTrajectoryId: 1, trajectories: [] }
+	const state: VectorFieldState = { time: 0, configurationEpoch: 0, nextTrajectoryId: 1, trajectories: [] }
 	const assertActive = () => {
 		if (disposed) throw new Error('Cannot use a disposed vector-field simulation.')
 	}
 	const reset = () => {
 		state.time = 0
+		state.configurationEpoch = 0
 		state.nextTrajectoryId = 1
-		state.trajectories = [createTrajectory(0, 1.5, 0)]
+		state.trajectories = [createTrajectory(0, 1.5, 0, state.configurationEpoch)]
 	}
 	reset()
 
@@ -100,7 +113,7 @@ export const createVectorFieldSimulation = (input: {
 					trajectory.status = 'escaped'
 					continue
 				}
-				appendTrail(trajectory, parameters.trailLength)
+				appendTrail(trajectory, parameters.trailLength, state.configurationEpoch)
 			}
 			state.time += dt
 		},
@@ -110,7 +123,7 @@ export const createVectorFieldSimulation = (input: {
 			if (![event.x, event.y].every(Number.isFinite)) throw new TypeError('Initial-condition coordinates must be finite.')
 			if (state.trajectories.length >= MAXIMUM_VECTOR_FIELD_TRAJECTORIES) return
 			const { x, y } = createPhaseSpaceTransform(viewport, parameters.domainRadius).toMathematical(event)
-			state.trajectories.push(createTrajectory(state.nextTrajectoryId++, x, y))
+			state.trajectories.push(createTrajectory(state.nextTrajectoryId++, x, y, state.configurationEpoch))
 		},
 		resize: (nextViewport) => { assertActive(); viewport = nextViewport },
 		reset: () => { assertActive(); reset() },

@@ -1,4 +1,4 @@
-import type { NumberParameterDefinition } from '../core/index.ts'
+import type { NumberParameterDefinition, ParameterDefinition } from '../core/index.ts'
 
 import { FORMULA_FUNCTION_NAMES } from './compiler.ts'
 import { identifierPattern } from './internal.ts'
@@ -77,3 +77,7 @@ export const createFormulaParameterScope = (
 	}
 	return [id, value]
 })))
+
+export const isFormulaConfigurationParameter = (definition: ParameterDefinition | undefined): boolean =>
+	definition?.kind === 'string' && definition.control === 'formula'
+		|| definition?.kind === 'number' && definition.semantic === 'formula-parameter'

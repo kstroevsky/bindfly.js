@@ -13,10 +13,12 @@ export interface VectorFieldTrajectory {
 	status: VectorFieldTrajectoryStatus
 	trailX: number[]
 	trailY: number[]
+	trailEpochs: number[]
 }
 
 export interface VectorFieldState {
 	time: number
+	configurationEpoch: number
 	nextTrajectoryId: number
 	trajectories: VectorFieldTrajectory[]
 }
