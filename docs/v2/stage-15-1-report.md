@@ -4,7 +4,7 @@ Stage 15.1 strengthens the evidence behind Stage 15 without changing renderer ar
 
 ## Mathematical/render-input parity
 
-The benchmark now computes canonical checksums before and after every renderer call. Numeric state is encoded canonically as Float64 values; only active semantic ranges are included for capacity-backed buffers.
+The benchmark now computes deterministic regression checksums before and after every renderer call. Numeric state is encoded consistently as Float64 values; only active semantic ranges are included for capacity-backed buffers. These checksums are non-cryptographic verification sentinels local to the Stage 15 harness. They are not protocol state identifiers and must not be reused as the authoritative snapshot checksum for collaboration.
 
 - Flying Lines simulation checksum includes active particle IDs, positions, velocities and lifetimes. Its render-input checksum also includes active proximity edge indices, distances and opacities.
 - Vector Field includes time, configuration epoch, trajectory identity/status/head/trails/epochs and every CPU-sampled vector-field glyph.
@@ -49,6 +49,8 @@ The archived headless benchmark is therefore a **SwiftShader software-renderer m
 ## Current backend comparison
 
 The table reports run medians for CPU `totalFrameMs`; intervals are the bootstrap 95% interval of those four run medians.
+
+These are **verification-instrumented CPU timings**. The harness walks the complete simulation/render-input data to compute parity checksums immediately before rendering, which can warm CPU caches for the following Canvas iteration or WebGL staging pass. The absolute values therefore should not be presented as pristine production-profile timings. The Stage 15D before/after comparison remains useful because both historical and current implementations were measured through the same verification harness; mathematical/render-input parity is unaffected by this timing caveat.
 
 | Workload | Canvas run medians | Canvas median CI | WebGL run medians | WebGL median CI | WebGL upload run medians |
 | --- | --- | ---: | --- | ---: | --- |

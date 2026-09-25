@@ -2302,7 +2302,7 @@ resync
 
 Don't rely solely on lockstep.
 
-Define canonical snapshot bytes and checksum algorithm per state version; never hash incidental JavaScript object serialization. The server periodically compares or supplies authoritative state, and clients atomically replace divergent state. Cross-browser/GPU backends use this reconciliation contract rather than claiming bitwise lockstep.
+Define canonical snapshot bytes and checksum algorithm per state version; never hash incidental JavaScript object serialization. For protocol v1, define **snapshot checksum v1 = SHA-256 over canonical snapshot encoding v1**. The encoding version and digest algorithm are protocol-level domain contracts and are independent of the non-cryptographic Stage 15 benchmark/regression checksums. The server periodically compares or supplies authoritative state, and clients atomically replace divergent state. Cross-browser/GPU backends use this reconciliation contract rather than claiming bitwise lockstep.
 
 ---
 
@@ -2845,6 +2845,8 @@ WebGL2 is currently a main-thread render backend for Flying Lines, Vector Field,
 ## Stage 16 — Shared experiments and multiplayer
 
 Extend reproducibility from configuration to initial state plus ordered event log plus optional checkpoint. Implement authoritative WebSocket events, sequence numbers, snapshots/checksums, resynchronization and the separate privacy/security/operations review.
+
+Use semantic domain/API names for collaboration concepts (`AuthoritativeEvent`, `SequenceNumber`, `CanonicalSnapshotEncoding`, `SnapshotChecksum`, `Checkpoint`, `DivergenceEvidence`). Roadmap stage numbers are planning metadata and must not become durable runtime or protocol names; do not extend the existing Stage 15 benchmark naming pattern into Stage 16/17 APIs.
 
 Begin with the simplest shared interaction: two users add/move points in one deterministic experiment and recover from forced divergence. Collaborative formula editing remains out of the initial Stage 16 slice.
 

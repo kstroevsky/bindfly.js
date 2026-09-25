@@ -13,7 +13,9 @@ export interface Stage15ParityEvidence {
 	readonly postRenderViewChecksum: string
 }
 
-class CanonicalChecksum {
+// Non-cryptographic regression sentinel for Stage 15 renderer verification only.
+// Protocol/state identity must use the versioned cryptographic snapshot checksum defined for collaboration.
+class BenchmarkChecksum {
 	private first = 0x811c9dc5
 	private second = 0x9e3779b9
 	private readonly numberBuffer = new ArrayBuffer(8)
@@ -65,13 +67,13 @@ class CanonicalChecksum {
 	}
 }
 
-const checksum = (write: (target: CanonicalChecksum) => void) => {
-	const target = new CanonicalChecksum()
+const checksum = (write: (target: BenchmarkChecksum) => void) => {
+	const target = new BenchmarkChecksum()
 	write(target)
 	return target.digest()
 }
 
-const writeTrajectories = (target: CanonicalChecksum, trajectories: readonly PhasePortraitTrajectory[]) => {
+const writeTrajectories = (target: BenchmarkChecksum, trajectories: readonly PhasePortraitTrajectory[]) => {
 	target.number(trajectories.length)
 	for (const trajectory of trajectories) {
 		target.number(trajectory.id)
