@@ -102,11 +102,11 @@ export class FixedStepLoop<Input, ParameterPatch> {
 		this.queue = remaining
 	}
 
-	private render(advance: ClockAdvance): void {
+	private render(advance: ClockAdvance, interpolationAlpha = advance.interpolationAlpha): void {
 		this.callbacks.render({
 			frameIndex: this.frameIndex++,
 			simulationStepIndex: this.clock.stepIndex,
-			interpolationAlpha: advance.interpolationAlpha,
+			interpolationAlpha,
 		}, advance)
 	}
 
@@ -146,6 +146,7 @@ export class FixedStepLoop<Input, ParameterPatch> {
 		this.clock.pause()
 		this.previousTimestampMs = undefined
 		this.cancelFrame()
+		this.render(this.clock.advance(0), 0)
 	}
 
 	resume(): void {
@@ -160,7 +161,7 @@ export class FixedStepLoop<Input, ParameterPatch> {
 			throw new Error(`Cannot apply frozen parameter events in '${this.lifecycleState}' state.`)
 		}
 		this.applyEvents(this.clock.stepIndex, 'parameters')
-		this.render(this.clock.advance(0))
+		this.render(this.clock.advance(0), 0)
 	}
 
 	stepOnce(): void {
@@ -170,14 +171,14 @@ export class FixedStepLoop<Input, ParameterPatch> {
 		this.applyEvents(this.clock.stepIndex)
 		const step = this.clock.stepOnce()
 		this.callbacks.step(step)
-		this.render(this.clock.advance(0))
+		this.render(this.clock.advance(0), 0)
 	}
 
 	updateFormulaView(view: RuntimeFormulaView): void {
 		this.assertOperational('update formula view on')
 		if (!this.callbacks.updateFormulaView) throw new Error('This session does not support formula-view presentation updates.')
 		this.callbacks.updateFormulaView(view)
-		if (this.lifecycleState === 'paused') this.render(this.clock.advance(0))
+		if (this.lifecycleState === 'paused') this.render(this.clock.advance(0), 0)
 	}
 
 	inspectPoint(request: RuntimePointInspectionRequest): unknown {

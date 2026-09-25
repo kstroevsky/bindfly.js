@@ -48,5 +48,5 @@ test('adapts the fixed-step loop to frozen hot updates and explicit stepping', a
 	await runtime.reset()
 	await runtime.dispose()
 	assert.equal(runtime.state, 'disposed')
-	assert.deepEqual(actions, ['resize', 'parameters', 'render:0', 'formula-view:compare', 'render:0', 'input', 'step:0', 'render:1', 'render:0', 'dispose'])
+	assert.deepEqual(actions, ['resize', 'render:0', 'parameters', 'render:0', 'formula-view:compare', 'render:0', 'input', 'step:0', 'render:1', 'render:0', 'dispose'])
 })

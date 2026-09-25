@@ -126,6 +126,7 @@ const handleCommand = async (command: RuntimeCommand): Promise<void> => {
 			break
 		case 'step':
 			requireReady().loop.stepOnce()
+			if (session) scope.postMessage(runtimeEvent({ type: 'telemetry', payload: session.telemetry }))
 			acknowledge(command.requestId)
 			break
 		case 'formula-view': {

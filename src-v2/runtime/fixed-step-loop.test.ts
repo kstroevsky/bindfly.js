@@ -119,12 +119,16 @@ test('surfaces clock saturation through loop telemetry', () => {
 test('applies frozen parameter patches and redraws without advancing simulation', () => {
 	const scheduler = new ManualAnimationFrameScheduler()
 	const actions: string[] = []
+	const interpolationAlphas: number[] = []
 	const loop = new FixedStepLoop<string, { readonly speed: number }>({
 		clock: new FixedStepClock({ stepSeconds: 0.01, maxCatchUpSteps: 2 }),
 		scheduler,
 		callbacks: {
 			step: ({ index }) => actions.push(`step:${index}`),
-			render: ({ simulationStepIndex }) => actions.push(`render:${simulationStepIndex}`),
+			render: ({ simulationStepIndex, interpolationAlpha }) => {
+				actions.push(`render:${simulationStepIndex}`)
+				interpolationAlphas.push(interpolationAlpha)
+			},
 			applyInput: (input) => actions.push(`input:${input}`),
 			applyParameterPatch: ({ speed }) => actions.push(`speed:${speed}`),
 			reset: () => {},
@@ -141,13 +145,15 @@ test('applies frozen parameter patches and redraws without advancing simulation'
 	loop.applyCurrentParameterEventsAndRender()
 
 	assert.equal(loop.clock.stepIndex, 0)
-	assert.deepEqual(actions, ['render:0', 'speed:2', 'render:0'])
+	assert.deepEqual(actions, ['render:0', 'render:0', 'speed:2', 'render:0'])
+	assert.deepEqual(interpolationAlphas, [0, 0, 0])
 	assert.deepEqual(loop.eventLog, [patch])
 
 	loop.stepOnce()
 	assert.equal(loop.clock.stepIndex, 1)
 	assert.equal(loop.state, 'paused')
-	assert.deepEqual(actions, ['render:0', 'speed:2', 'render:0', 'input:nudge', 'step:0', 'render:1'])
+	assert.deepEqual(actions, ['render:0', 'render:0', 'speed:2', 'render:0', 'input:nudge', 'step:0', 'render:1'])
+	assert.deepEqual(interpolationAlphas, [0, 0, 0, 0])
 	loop.dispose()
 })
 

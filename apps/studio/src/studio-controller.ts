@@ -80,7 +80,8 @@ export const createMainStudioController = async (options: CreateStudioController
 	await backend.initialize()
 	await backend.resize(options.viewport)
 	await backend.start()
-	return wrapBackend('main', backend, () => options.onMetrics(session.telemetry))
+	const publishAuthoritativeTelemetry = () => options.onMetrics(session.telemetry)
+	return wrapBackend('main', backend, publishAuthoritativeTelemetry, publishAuthoritativeTelemetry)
 }
 
 export const createWorkerStudioController = async (options: CreateStudioControllerOptions): Promise<StudioController> => {
@@ -130,6 +131,7 @@ const wrapBackend = (
 	kind: StudioRuntimeKind,
 	backend: ExecutionBackend<ParameterSchema, unknown>,
 	afterPause?: () => void,
+	afterStep?: () => void,
 ): StudioController => ({
 	kind,
 	get state() { return backend.state },
@@ -138,7 +140,10 @@ const wrapBackend = (
 		afterPause?.()
 	},
 	resume: () => backend.resume(),
-	step: () => backend.step(),
+	step: async () => {
+		await backend.step()
+		afterStep?.()
+	},
 	updateFormulaView: (view) => backend.updateFormulaView(view),
 	inspectPoint: (request) => backend.inspectPoint(request),
 	capturePointCloud: (request) => backend.capturePointCloud(request),
