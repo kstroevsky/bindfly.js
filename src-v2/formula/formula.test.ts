@@ -13,6 +13,7 @@ import {
 	evaluateFormula,
 	evaluateFormulaExperiment,
 	evaluateFormulaTransformComparison2D,
+	evaluateFormulaTransformComparisonDetailed2D,
 	evaluateFormulaTransform2D,
 	parseFormula,
 	parseFormulaProgram,
@@ -115,6 +116,27 @@ test('canonical programs serialize, recompile and preserve sorted variable ident
 	assert.equal(evaluateFormula({ ...first, version: 99 as 1 }, { a: 1, b: 2 }).ok, false)
 })
 
+test('traces the canonical VM with compiler-owned source spans', () => {
+	const source = 'tan(distance) * weight * cos(angle * exp(a))'
+	const program = expectCompiled(source, ['a', 'angle', 'distance', 'weight'])
+	const trace: Array<{ source: string; value: number }> = []
+	const result = evaluateFormula(program, { a: 1, angle: 0.25, distance: 0.5, weight: 2 }, (entry) => {
+		trace.push({ source: source.slice(entry.start, entry.end), value: entry.value })
+	})
+	assert.equal(result.ok, true)
+	assert.ok(trace.some((entry) => entry.source === 'tan(distance)'))
+	assert.ok(trace.some((entry) => entry.source === 'exp(a)'))
+	assert.ok(trace.some((entry) => entry.source === 'angle * exp(a)'))
+	assert.ok(trace.some((entry) => entry.source === 'cos(angle * exp(a))'))
+	assert.equal(trace.at(-1)?.source, source)
+
+	const serialized = JSON.parse(serializeFormulaProgram(program)) as Record<string, unknown>
+	serialized.traceSites = [{ instructionIndex: 0, nodeId: 0, start: 999, end: 1000 }]
+	const reparsed = parseFormulaProgram(serialized)
+	assert.equal(reparsed.ok, true)
+	if (reparsed.ok) assert.notDeepEqual(reparsed.value.traceSites, serialized.traceSites)
+})
+
 test('2D transforms execute and serialize tan/atan formula configuration', () => {
 	const transform = compileFormulaTransform2D({
 		xSource: 'tan(x)',
@@ -145,6 +167,22 @@ test('formula morphing evaluates synchronized A/B outputs and interpolates coord
 	})
 	assert.equal(evaluateFormulaTransformComparison2D({ a: a.value, b: b.value, morph: -0.1 }, { x: 4, y: 8 }).ok, false)
 	assert.equal(evaluateFormulaTransformComparison2D({ a: a.value, b: b.value, morph: 1.1 }, { x: 4, y: 8 }).ok, false)
+})
+
+test('detailed formula comparison preserves side-specific domain failures', () => {
+	const a = compileFormulaTransform2D({ xSource: 'sqrt(x)', ySource: 'y', variables: ['x', 'y'] })
+	const b = compileFormulaTransform2D({ xSource: 'x * 2', ySource: 'y * 3', variables: ['x', 'y'] })
+	assert.equal(a.ok, true)
+	assert.equal(b.ok, true)
+	if (!a.ok || !b.ok) return
+
+	const detailed = evaluateFormulaTransformComparisonDetailed2D({ a: a.value, b: b.value, morph: 0.5 }, { x: -1, y: 2 })
+	assert.equal(detailed.ok, true)
+	if (!detailed.ok) return
+	assert.equal(detailed.value.a.ok, false)
+	assert.deepEqual(detailed.value.b, { ok: true, value: { x: -2, y: 6 } })
+	assert.equal(detailed.value.morphed, undefined)
+	assert.equal(evaluateFormulaTransformComparison2D({ a: a.value, b: b.value, morph: 0.5 }, { x: -1, y: 2 }).ok, false)
 })
 
 test('Bindfly Originals preserve frozen source provenance and exact legacy coordinate formulas', async () => {

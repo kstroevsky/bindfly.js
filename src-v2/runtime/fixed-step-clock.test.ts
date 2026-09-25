@@ -31,6 +31,18 @@ test('pause ignores wall time and resume continues without a jump', () => {
 	assert.equal(clock.stepIndex, 2)
 })
 
+test('advances exactly one explicit fixed step while paused', () => {
+	const clock = new FixedStepClock({ stepSeconds: 0.01, maxCatchUpSteps: 4 })
+	clock.pause()
+
+	const step = clock.stepOnce()
+
+	assert.deepEqual(step, { index: 0, dtSeconds: 0.01, elapsedSeconds: 0.01 })
+	assert.equal(clock.stepIndex, 1)
+	assert.equal(clock.paused, true)
+	assert.equal(clock.advance(30).steps.length, 0)
+})
+
 test('caps catch-up work and reports every dropped simulation step', () => {
 	const clock = new FixedStepClock({ stepSeconds: 0.01, maxCatchUpSteps: 4 })
 	const advance = clock.advance(0.1)

@@ -9,7 +9,7 @@ import { MainThreadRuntime } from './main-thread-runtime.ts'
 
 const schema = defineParameterSchema({ speed: { kind: 'number', default: 1, invalidation: 'hot-update' } })
 
-test('adapts the fixed-step loop to the execution backend lifecycle', async () => {
+test('adapts the fixed-step loop to frozen hot updates and explicit stepping', async () => {
 	let nextId = 0
 	const callbacks = new Map<number, (timestamp: number) => void>()
 	const scheduler: AnimationFrameScheduler = {
@@ -21,9 +21,12 @@ test('adapts the fixed-step loop to the execution backend lifecycle', async () =
 		clock: new FixedStepClock({ stepSeconds: 1 / 60, maxCatchUpSteps: 4 }),
 		scheduler,
 		callbacks: {
-			step: () => {}, render: () => {}, reset: () => {}, dispose: () => actions.push('dispose'),
+			step: ({ index }) => actions.push(`step:${index}`), render: ({ simulationStepIndex }) => actions.push(`render:${simulationStepIndex}`), reset: () => {}, dispose: () => actions.push('dispose'),
 			resize: () => actions.push('resize'), applyInput: () => actions.push('input'),
 			applyParameterPatch: () => actions.push('parameters'),
+			updateFormulaView: (view) => actions.push(`formula-view:${view}`),
+			inspectPoint: ({ x, y }) => ({ pointId: 4, x, y }),
+			capturePointCloud: ({ source }) => ({ snapshotId: 'fixture', source }),
 		},
 	})
 	const runtime = new MainThreadRuntime<typeof schema, { type: 'nudge' }>(loop)
@@ -32,11 +35,18 @@ test('adapts the fixed-step loop to the execution backend lifecycle', async () =
 	await runtime.start()
 	await runtime.resize({ cssWidth: 1, cssHeight: 1, devicePixelRatio: 1, backingWidth: 1, backingHeight: 1 })
 	await runtime.applyInput({ type: 'nudge' })
-	await runtime.updateParameters({ speed: 2 })
 	await runtime.pause()
+	await runtime.updateParameters({ speed: 2 })
+	await runtime.updateFormulaView('compare')
+	assert.equal(loop.clock.stepIndex, 0)
+	await runtime.step()
+	assert.equal(loop.clock.stepIndex, 1)
+	assert.equal(runtime.state, 'paused')
+	assert.deepEqual(await runtime.inspectPoint({ x: 10, y: 20 }), { pointId: 4, x: 10, y: 20 })
+	assert.deepEqual(await runtime.capturePointCloud({ source: 'morph' }), { snapshotId: 'fixture', source: 'morph' })
 	await runtime.resume()
 	await runtime.reset()
 	await runtime.dispose()
 	assert.equal(runtime.state, 'disposed')
-	assert.deepEqual(actions, ['resize', 'dispose'])
+	assert.deepEqual(actions, ['resize', 'parameters', 'render:0', 'formula-view:compare', 'render:0', 'input', 'step:0', 'render:1', 'render:0', 'dispose'])
 })

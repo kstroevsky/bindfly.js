@@ -26,6 +26,14 @@ class FakeWorker implements WorkerTransport {
 				this.emit({ protocolVersion: RUNTIME_PROTOCOL_VERSION, type: 'error', requestId: command.requestId, error: { code: 'INIT_FAILED', message: 'init failed', recoverable: false } })
 				return
 			}
+			if (command.type === 'inspect-point') {
+				this.emit({ protocolVersion: RUNTIME_PROTOCOL_VERSION, type: 'inspection-result', requestId: command.requestId, payload: { pointId: 9 } })
+				return
+			}
+			if (command.type === 'capture-point-cloud') {
+				this.emit({ protocolVersion: RUNTIME_PROTOCOL_VERSION, type: 'point-cloud-snapshot', requestId: command.requestId, payload: { snapshotId: 'snapshot-1' } })
+				return
+			}
 			this.emit(command.type === 'initialize'
 				? { protocolVersion: RUNTIME_PROTOCOL_VERSION, type: 'ready', requestId: command.requestId }
 				: { protocolVersion: RUNTIME_PROTOCOL_VERSION, type: 'ack', requestId: command.requestId })
@@ -65,12 +73,16 @@ test('orders commands, acknowledges lifecycle, and terminates cleanly', async ()
 		runtime.applyInput({ type: 'nudge' }),
 	])
 	await runtime.pause()
+	await runtime.updateFormulaView('compare')
+	await runtime.step()
+	assert.deepEqual(await runtime.inspectPoint({ x: 12, y: 16, maxDistance: 10 }), { pointId: 9 })
+	assert.deepEqual(await runtime.capturePointCloud({ source: 'morph' }), { snapshotId: 'snapshot-1' })
 	await runtime.resume()
 	await runtime.reset()
 	await runtime.dispose()
 
 	assert.deepEqual(worker.commands.map(({ sequence }) => sequence), worker.commands.map((_, index) => index))
-	assert.deepEqual(worker.commands.map(({ type }) => type), ['initialize', 'resume', 'resize', 'parameters', 'input', 'pause', 'resume', 'reset', 'dispose'])
+	assert.deepEqual(worker.commands.map(({ type }) => type), ['initialize', 'resume', 'resize', 'parameters', 'input', 'pause', 'formula-view', 'step', 'inspect-point', 'capture-point-cloud', 'resume', 'reset', 'dispose'])
 	assert.equal(runtime.needsCanvasRemount, true)
 	assert.equal(runtime.state, 'disposed')
 	assert.equal(worker.terminated, true)

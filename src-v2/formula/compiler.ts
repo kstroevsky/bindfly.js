@@ -8,6 +8,7 @@ import type {
 	FormulaLimitOverrides,
 	FormulaLimits,
 	FormulaProgram,
+	FormulaTraceSite,
 } from './contracts.ts'
 import { FORMULA_PROGRAM_VERSION } from './contracts.ts'
 import { identifierPattern, issue, resolveFormulaLimits } from './internal.ts'
@@ -68,9 +69,12 @@ export const compileFormula = (
 	if (!parsed.ok) return parsed
 
 	let nodeCount = 0
+	let nodeId = 0
 	const instructions: FormulaInstruction[] = []
+	const traceSites: FormulaTraceSite[] = []
 	const emit = (node: FormulaAst, depth: number): FormulaIssue | undefined => {
 		nodeCount++
+		const currentNodeId = nodeId++
 		if (nodeCount > limits.value.maxNodes) {
 			return issue('node-limit', `Formula exceeds the ${limits.value.maxNodes}-node AST limit.`, node.at)
 		}
@@ -80,17 +84,20 @@ export const compileFormula = (
 		switch (node.kind) {
 			case 'number':
 				instructions.push({ op: 'constant', value: node.value })
+				traceSites.push({ instructionIndex: instructions.length - 1, nodeId: currentNodeId, start: node.start, end: node.end })
 				return undefined
 			case 'variable': {
 				const index = variableIndices.get(node.name)
 				if (index === undefined) return issue('unknown-variable', `Unknown variable '${node.name}'.`, node.at)
 				instructions.push({ op: 'variable', index })
+				traceSites.push({ instructionIndex: instructions.length - 1, nodeId: currentNodeId, start: node.start, end: node.end })
 				return undefined
 			}
 			case 'unary': {
 				const error = emit(node.argument, depth + 1)
 				if (error) return error
 				instructions.push({ op: 'unary', operator: node.operator })
+				traceSites.push({ instructionIndex: instructions.length - 1, nodeId: currentNodeId, start: node.start, end: node.end })
 				return undefined
 			}
 			case 'binary': {
@@ -99,6 +106,7 @@ export const compileFormula = (
 				const rightError = emit(node.right, depth + 1)
 				if (rightError) return rightError
 				instructions.push({ op: 'binary', operator: node.operator })
+				traceSites.push({ instructionIndex: instructions.length - 1, nodeId: currentNodeId, start: node.start, end: node.end })
 				return undefined
 			}
 			case 'call': {
@@ -112,6 +120,7 @@ export const compileFormula = (
 					if (error) return error
 				}
 				instructions.push({ op: 'call', function: node.name })
+				traceSites.push({ instructionIndex: instructions.length - 1, nodeId: currentNodeId, start: node.start, end: node.end })
 				return undefined
 			}
 		}
@@ -120,6 +129,9 @@ export const compileFormula = (
 	const semanticIssue = emit(parsed.value, 1)
 	if (semanticIssue) return { ok: false, error: semanticIssue }
 	const frozenInstructions = instructions.map((instruction) => Object.freeze(instruction))
+	const frozenTraceSites = traceSites
+		.sort((left, right) => left.instructionIndex - right.instructionIndex)
+		.map((site) => Object.freeze(site))
 	return {
 		ok: true,
 		value: Object.freeze({
@@ -128,6 +140,7 @@ export const compileFormula = (
 			variables: Object.freeze(variables),
 			operationLimit: limits.value.maxOperations,
 			instructions: Object.freeze(frozenInstructions),
+			traceSites: Object.freeze(frozenTraceSites),
 		}),
 	}
 }

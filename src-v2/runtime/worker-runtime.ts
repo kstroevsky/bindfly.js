@@ -4,7 +4,7 @@ import type { ExecutionBackend } from './execution-backend.ts'
 import { assertRuntimeTransition } from './lifecycle.ts'
 import type { RuntimeState } from './lifecycle.ts'
 import { RUNTIME_PROTOCOL_VERSION, createRuntimeCommand, isRuntimeEvent } from './protocol.ts'
-import type { RuntimeCommandType, RuntimeErrorPayload, RuntimeEvent } from './protocol.ts'
+import type { RuntimeCommandType, RuntimeErrorPayload, RuntimeEvent, RuntimeFormulaView, RuntimePointCloudCaptureRequest, RuntimePointInspectionRequest } from './protocol.ts'
 
 export interface WorkerTransport {
 	postMessage(message: unknown, transfer?: Transferable[]): void
@@ -43,7 +43,7 @@ export class WorkerRuntime<Schema extends ParameterSchema, Input, InitializePayl
 	private sequence = 0
 	private requestCounter = 0
 	private commandChain: Promise<void> = Promise.resolve()
-	private readonly pending = new Map<string, { resolve: () => void; reject: (error: unknown) => void }>()
+	private readonly pending = new Map<string, { resolve: (value: unknown) => void; reject: (error: unknown) => void }>()
 	private transferred = false
 
 	constructor(options: WorkerRuntimeOptions<InitializePayload>) {
@@ -67,11 +67,11 @@ export class WorkerRuntime<Schema extends ParameterSchema, Input, InitializePayl
 		if (!isRuntimeEvent(event.data)) return
 		const runtimeEvent = event.data
 		this.options.onEvent?.(runtimeEvent)
-		if (runtimeEvent.type === 'ready' || runtimeEvent.type === 'ack') {
+		if (runtimeEvent.type === 'ready' || runtimeEvent.type === 'ack' || runtimeEvent.type === 'inspection-result' || runtimeEvent.type === 'point-cloud-snapshot') {
 			const pending = this.pending.get(runtimeEvent.requestId)
 			if (!pending) return
 			this.pending.delete(runtimeEvent.requestId)
-			pending.resolve()
+			pending.resolve(runtimeEvent.type === 'inspection-result' || runtimeEvent.type === 'point-cloud-snapshot' ? runtimeEvent.payload : undefined)
 			return
 		}
 		if (runtimeEvent.type === 'error') {
@@ -107,12 +107,12 @@ export class WorkerRuntime<Schema extends ParameterSchema, Input, InitializePayl
 		this.worker = undefined
 	}
 
-	private dispatch(type: RuntimeCommandType, payload: unknown, transfer?: Transferable[]): Promise<void> {
+	private dispatch<Result = void>(type: RuntimeCommandType, payload: unknown, transfer?: Transferable[]): Promise<Result> {
 		if (!this.worker) return Promise.reject(new Error('Worker runtime is not initialized.'))
 		const requestId = `runtime-${this.requestCounter++}`
 		const command = createRuntimeCommand({ requestId, sequence: this.sequence++, type, payload })
-		return new Promise<void>((resolve, reject) => {
-			this.pending.set(requestId, { resolve, reject })
+		return new Promise<Result>((resolve, reject) => {
+			this.pending.set(requestId, { resolve: (value) => resolve(value as Result), reject })
 			this.worker?.postMessage(command, transfer)
 		})
 	}
@@ -120,6 +120,12 @@ export class WorkerRuntime<Schema extends ParameterSchema, Input, InitializePayl
 	private enqueue(type: RuntimeCommandType, payload: unknown): Promise<void> {
 		const operation = this.commandChain.then(() => this.dispatch(type, payload))
 		this.commandChain = operation.catch(() => {})
+		return operation
+	}
+
+	private enqueueResult<Result>(type: RuntimeCommandType, payload: unknown): Promise<Result> {
+		const operation = this.commandChain.then(() => this.dispatch<Result>(type, payload))
+		this.commandChain = operation.then(() => undefined, () => undefined)
 		return operation
 	}
 
@@ -147,6 +153,22 @@ export class WorkerRuntime<Schema extends ParameterSchema, Input, InitializePayl
 	async resume(): Promise<void> {
 		await this.enqueue('resume', undefined)
 		this.transition('running')
+	}
+
+	step(): Promise<void> {
+		return this.enqueue('step', undefined)
+	}
+
+	updateFormulaView(view: RuntimeFormulaView): Promise<void> {
+		return this.enqueue('formula-view', view)
+	}
+
+	inspectPoint(request: RuntimePointInspectionRequest): Promise<unknown> {
+		return this.enqueueResult('inspect-point', request)
+	}
+
+	capturePointCloud(request: RuntimePointCloudCaptureRequest): Promise<unknown> {
+		return this.enqueueResult('capture-point-cloud', request)
 	}
 
 	resize(viewport: Viewport): Promise<void> {

@@ -1,5 +1,5 @@
 import type { Result } from '../core/index.ts'
-import type { FormulaFunctionName, FormulaInstruction, FormulaIssue, FormulaProgram } from './contracts.ts'
+import type { FormulaFunctionName, FormulaInstruction, FormulaIssue, FormulaProgram, FormulaTraceSink, FormulaTraceSite } from './contracts.ts'
 import { DEFAULT_FORMULA_LIMITS, FORMULA_PROGRAM_VERSION } from './contracts.ts'
 import { issue } from './internal.ts'
 
@@ -49,9 +49,11 @@ const evaluateFunction = (name: FormulaFunctionName, args: readonly number[]): R
 export const evaluateFormula = (
 	program: FormulaProgram,
 	scope: Readonly<Record<string, number>>,
+	traceSink?: FormulaTraceSink,
 ): Result<number, FormulaIssue> => {
 	const candidate: unknown = program
 	if (!isRecord(candidate)
+		|| typeof candidate.source !== 'string'
 		|| !Array.isArray(candidate.variables)
 		|| !candidate.variables.every((name): name is string => typeof name === 'string')
 		|| !Array.isArray(candidate.instructions)
@@ -60,6 +62,8 @@ export const evaluateFormula = (
 	}
 	const variableNames = candidate.variables
 	const instructions = candidate.instructions
+	const source = candidate.source
+	const traceSites = traceSink ? candidate.traceSites : undefined
 	if (candidate.version !== FORMULA_PROGRAM_VERSION) {
 		return { ok: false, error: issue('invalid-program', `Formula program version '${String(candidate.version)}' is invalid.`) }
 	}
@@ -85,6 +89,18 @@ export const evaluateFormula = (
 		return { ok: false, error: issue('invalid-program', 'Formula operation limit is invalid.') }
 	}
 	const operationLimit = candidate.operationLimit as number
+	let traceByInstruction: Map<number, FormulaTraceSite> | undefined
+	if (traceSink) {
+		if (!Array.isArray(traceSites) || !traceSites.every((site): site is FormulaTraceSite =>
+			isRecord(site)
+			&& Number.isInteger(site.instructionIndex) && (site.instructionIndex as number) >= 0 && (site.instructionIndex as number) < instructions.length
+			&& Number.isInteger(site.nodeId) && (site.nodeId as number) >= 0
+			&& Number.isInteger(site.start) && (site.start as number) >= 0
+			&& Number.isInteger(site.end) && (site.end as number) >= (site.start as number) && (site.end as number) <= source.length)) {
+			return { ok: false, error: issue('invalid-program', 'Formula trace metadata is invalid.') }
+		}
+		traceByInstruction = new Map(traceSites.map((site) => [site.instructionIndex, site]))
+	}
 	const stack: number[] = []
 	let operations = 0
 	const pop = (): Result<number, FormulaIssue> => {
@@ -94,7 +110,9 @@ export const evaluateFormula = (
 			: { ok: true, value }
 	}
 
-	for (const instruction of instructions) {
+	for (let instructionIndex = 0; instructionIndex < instructions.length; instructionIndex++) {
+		const instruction = instructions[instructionIndex]
+		if (!instruction) return { ok: false, error: issue('invalid-program', 'Formula instruction is missing.') }
 		operations++
 		if (operations > operationLimit) {
 			return { ok: false, error: issue('operation-limit', `Formula exceeds the ${operationLimit}-operation evaluation limit.`) }
@@ -152,6 +170,11 @@ export const evaluateFormula = (
 			}
 			default:
 				return { ok: false, error: issue('invalid-program', 'Formula instruction is invalid.') }
+		}
+		if (traceSink && traceByInstruction) {
+			const site = traceByInstruction.get(instructionIndex)
+			const value = stack.at(-1)
+			if (site && value !== undefined) traceSink({ ...site, value })
 		}
 	}
 	return stack.length === 1

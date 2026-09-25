@@ -3,10 +3,10 @@ import type { FormulaIssue } from './contracts.ts'
 import { issue } from './internal.ts'
 
 export type FormulaToken =
-	| { readonly kind: 'number'; readonly value: number; readonly at: number }
-	| { readonly kind: 'identifier'; readonly value: string; readonly at: number }
-	| { readonly kind: 'operator'; readonly value: '+' | '-' | '*' | '/' | '^'; readonly at: number }
-	| { readonly kind: 'left-parenthesis' | 'right-parenthesis' | 'comma' | 'end'; readonly at: number }
+	| { readonly kind: 'number'; readonly value: number; readonly at: number; readonly end: number }
+	| { readonly kind: 'identifier'; readonly value: string; readonly at: number; readonly end: number }
+	| { readonly kind: 'operator'; readonly value: '+' | '-' | '*' | '/' | '^'; readonly at: number; readonly end: number }
+	| { readonly kind: 'left-parenthesis' | 'right-parenthesis' | 'comma' | 'end'; readonly at: number; readonly end: number }
 
 const numberPattern = /^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/
 const identifierStart = /[A-Za-z_]/
@@ -34,7 +34,7 @@ export const tokenizeFormula = (
 			if (!matched) return { ok: false, error: issue('invalid-number', 'Invalid number.', index) }
 			const value = Number(matched)
 			if (!Number.isFinite(value)) return { ok: false, error: issue('invalid-number', 'Formula numbers must be finite.', index) }
-			const error = append({ kind: 'number', value, at: index })
+			const error = append({ kind: 'number', value, at: index, end: index + matched.length })
 			if (error) return { ok: false, error }
 			index += matched.length
 			continue
@@ -42,12 +42,13 @@ export const tokenizeFormula = (
 		if (identifierStart.test(character)) {
 			const start = index++
 			while (identifierPart.test(source[index] ?? '')) index++
-			const error = append({ kind: 'identifier', value: source.slice(start, index), at: start })
+			const error = append({ kind: 'identifier', value: source.slice(start, index), at: start, end: index })
 			if (error) return { ok: false, error }
 			continue
 		}
 		if (['+', '-', '*', '/', '^'].includes(character)) {
-			const error = append({ kind: 'operator', value: character as '+' | '-' | '*' | '/' | '^', at: index++ })
+			const start = index++
+			const error = append({ kind: 'operator', value: character as '+' | '-' | '*' | '/' | '^', at: start, end: index })
 			if (error) return { ok: false, error }
 			continue
 		}
@@ -56,12 +57,13 @@ export const tokenizeFormula = (
 				: character === ',' ? 'comma'
 					: undefined
 		if (punctuation) {
-			const error = append({ kind: punctuation, at: index++ })
+			const start = index++
+			const error = append({ kind: punctuation, at: start, end: index })
 			if (error) return { ok: false, error }
 			continue
 		}
 		return { ok: false, error: issue('invalid-character', `Invalid formula character '${character}'.`, index) }
 	}
-	tokens.push({ kind: 'end', at: source.length })
+	tokens.push({ kind: 'end', at: source.length, end: source.length })
 	return { ok: true, value: tokens }
 }

@@ -84,6 +84,16 @@ export class FixedStepClock implements SimulationClock {
 		}
 	}
 
+	stepOnce(): SimulationStep {
+		if (!this.isPaused) throw new Error('Explicit fixed-step advance requires a paused clock.')
+		const index = this.currentStepIndex++
+		return {
+			index,
+			dtSeconds: this.stepSeconds,
+			elapsedSeconds: (index + 1) * this.stepSeconds,
+		}
+	}
+
 	pause(): void {
 		this.isPaused = true
 	}

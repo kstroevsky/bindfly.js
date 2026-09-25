@@ -3,6 +3,7 @@ import type { ClockAdvance, RenderFrame, SimulationStep, Viewport } from '@bindf
 import type { FixedStepClock } from './fixed-step-clock.ts'
 import { assertRuntimeTransition } from './lifecycle.ts'
 import type { RuntimeState } from './lifecycle.ts'
+import type { RuntimeFormulaView, RuntimePointCloudCaptureRequest, RuntimePointInspectionRequest } from './protocol.ts'
 
 export interface AnimationFrameScheduler {
 	request(callback: (timestampMs: number) => void): number
@@ -14,9 +15,12 @@ export interface FixedStepLoopCallbacks<Input, ParameterPatch> {
 	render(frame: RenderFrame, advance: ClockAdvance): void
 	applyInput(input: Input): void
 	applyParameterPatch(patch: ParameterPatch): void
+	updateFormulaView?(view: RuntimeFormulaView): void
 	reset(): void
 	resize(viewport: Viewport): void
 	dispose(): void
+	inspectPoint?(request: RuntimePointInspectionRequest): unknown
+	capturePointCloud?(request: RuntimePointCloudCaptureRequest): unknown
 	onOverload?(advance: ClockAdvance): void
 	onError?(error: unknown): void
 }
@@ -84,10 +88,10 @@ export class FixedStepLoop<Input, ParameterPatch> {
 		this.animationFrameId = undefined
 	}
 
-	private applyEvents(stepIndex: number): void {
+	private applyEvents(stepIndex: number, type?: ScheduledLoopEvent<Input, ParameterPatch>['type']): void {
 		const remaining: ScheduledLoopEvent<Input, ParameterPatch>[] = []
 		for (const event of this.queue) {
-			if (event.stepIndex !== stepIndex) {
+			if (event.stepIndex !== stepIndex || (type !== undefined && event.type !== type)) {
 				remaining.push(event)
 				continue
 			}
@@ -149,6 +153,43 @@ export class FixedStepLoop<Input, ParameterPatch> {
 		this.clock.resume()
 		this.previousTimestampMs = undefined
 		this.requestFrame()
+	}
+
+	applyCurrentParameterEventsAndRender(): void {
+		if (this.lifecycleState !== 'paused') {
+			throw new Error(`Cannot apply frozen parameter events in '${this.lifecycleState}' state.`)
+		}
+		this.applyEvents(this.clock.stepIndex, 'parameters')
+		this.render(this.clock.advance(0))
+	}
+
+	stepOnce(): void {
+		if (this.lifecycleState !== 'paused') {
+			throw new Error(`Cannot single-step a fixed-step loop in '${this.lifecycleState}' state.`)
+		}
+		this.applyEvents(this.clock.stepIndex)
+		const step = this.clock.stepOnce()
+		this.callbacks.step(step)
+		this.render(this.clock.advance(0))
+	}
+
+	updateFormulaView(view: RuntimeFormulaView): void {
+		this.assertOperational('update formula view on')
+		if (!this.callbacks.updateFormulaView) throw new Error('This session does not support formula-view presentation updates.')
+		this.callbacks.updateFormulaView(view)
+		if (this.lifecycleState === 'paused') this.render(this.clock.advance(0))
+	}
+
+	inspectPoint(request: RuntimePointInspectionRequest): unknown {
+		this.assertOperational('inspect')
+		if (!this.callbacks.inspectPoint) throw new Error('This session does not support point inspection.')
+		return this.callbacks.inspectPoint(request)
+	}
+
+	capturePointCloud(request: RuntimePointCloudCaptureRequest): unknown {
+		this.assertOperational('capture point cloud from')
+		if (!this.callbacks.capturePointCloud) throw new Error('This session does not support point-cloud capture.')
+		return this.callbacks.capturePointCloud(request)
 	}
 
 	reset(): void {

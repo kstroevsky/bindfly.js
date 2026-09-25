@@ -159,6 +159,22 @@ class FakeExecutionBackend implements ExecutionBackend<typeof schema, { readonly
 		return Promise.resolve()
 	}
 
+	step(): Promise<void> {
+		return Promise.resolve()
+	}
+
+	updateFormulaView(): Promise<void> {
+		return Promise.resolve()
+	}
+
+	inspectPoint(): Promise<unknown> {
+		return Promise.resolve(undefined)
+	}
+
+	capturePointCloud(): Promise<unknown> {
+		return Promise.resolve(undefined)
+	}
+
 	resize(viewport: Viewport): Promise<void> {
 		this.lastViewport = viewport
 		return Promise.resolve()

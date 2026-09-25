@@ -116,6 +116,41 @@ test('surfaces clock saturation through loop telemetry', () => {
 	loop.dispose()
 })
 
+test('applies frozen parameter patches and redraws without advancing simulation', () => {
+	const scheduler = new ManualAnimationFrameScheduler()
+	const actions: string[] = []
+	const loop = new FixedStepLoop<string, { readonly speed: number }>({
+		clock: new FixedStepClock({ stepSeconds: 0.01, maxCatchUpSteps: 2 }),
+		scheduler,
+		callbacks: {
+			step: ({ index }) => actions.push(`step:${index}`),
+			render: ({ simulationStepIndex }) => actions.push(`render:${simulationStepIndex}`),
+			applyInput: (input) => actions.push(`input:${input}`),
+			applyParameterPatch: ({ speed }) => actions.push(`speed:${speed}`),
+			reset: () => {},
+			resize: () => {},
+			dispose: () => {},
+		},
+	})
+
+	loop.start()
+	scheduler.fire(0)
+	loop.pause()
+	loop.scheduleInput('nudge')
+	const patch = loop.scheduleParameterPatch({ speed: 2 })
+	loop.applyCurrentParameterEventsAndRender()
+
+	assert.equal(loop.clock.stepIndex, 0)
+	assert.deepEqual(actions, ['render:0', 'speed:2', 'render:0'])
+	assert.deepEqual(loop.eventLog, [patch])
+
+	loop.stepOnce()
+	assert.equal(loop.clock.stepIndex, 1)
+	assert.equal(loop.state, 'paused')
+	assert.deepEqual(actions, ['render:0', 'speed:2', 'render:0', 'input:nudge', 'step:0', 'render:1'])
+	loop.dispose()
+})
+
 test('enters failed state and stops scheduling when a callback throws', () => {
 	const scheduler = new ManualAnimationFrameScheduler()
 	const errors: unknown[] = []

@@ -6,7 +6,13 @@ import { bindflyOriginals } from '../../formula/index.ts'
 import { createParametricOriginalDefinition, parametricOriginalDefinitions } from './definition.ts'
 import { compileParametricOriginalFormulaPair } from './formula.ts'
 import { createParametricOriginalParameters } from './parameters.ts'
-import { createParametricPointDerivation } from './points.ts'
+import {
+	FORMULA_COMPARISON_VALIDITY,
+	createParametricComparisonPointViewDerivation,
+	createParametricFormulaComparisonDerivation,
+	createParametricPointDerivation,
+	probeParametricFormulaPoint,
+} from './points.ts'
 
 const viewport = createViewport({ cssWidth: 320, cssHeight: 200, devicePixelRatio: 1 })
 const step = { index: 0, dtSeconds: 1 / 120, elapsedSeconds: 1 / 120 }
@@ -89,4 +95,79 @@ test('derives exact Spiral II coordinates through formula IR', () => {
 	assert.equal(points.x[1], 160 + distance * Math.cos(angle * Math.exp(2.8)) * Math.atan(2.8))
 	assert.equal(points.y[1], 100 + distance * Math.cos(2.8) * -1)
 	assert.equal(points.invalidFormulaPointCount, 0)
+})
+
+test('derives A, B, morph and displacement once with side-specific validity', () => {
+	const a = compileParametricOriginalFormulaPair({
+		formulaAX: 'sqrt(a)',
+		formulaAY: 'positionY',
+		formulaBX: 'positionX + a',
+		formulaBY: 'positionY + weight',
+	} as never)
+	assert.equal(a.ok, true)
+	if (!a.ok) return
+	const comparison = createParametricFormulaComparisonDerivation(4)
+	const state = {
+		phases: { count: 2, capacity: 2, values: new Float64Array([-1, 4]) },
+		accumulator: 4,
+		reverse: false,
+		centerX: 160,
+		centerY: 100,
+	}
+	const result = comparison.update({
+		state,
+		kind: 'spiral',
+		viewportWidth: 320,
+		viewportHeight: 200,
+		weight: 10,
+		formulaA: a.value.a,
+		formulaB: a.value.b,
+		formulaMorph: 0.25,
+	})
+
+	assert.equal(result.count, 2)
+	assert.equal(result.validity[0], FORMULA_COMPARISON_VALIDITY.aInvalid)
+	assert.equal(Number.isNaN(result.ax[0]), true)
+	assert.equal(result.bx[0], 159)
+	assert.equal(Number.isNaN(result.magnitude[0]), true)
+	assert.equal(result.validity[1], FORMULA_COMPARISON_VALIDITY.bothValid)
+	assert.equal(result.ax[1], 2)
+	assert.equal(result.bx[1], 164)
+	assert.equal(result.mx[1], 42.5)
+	assert.equal(result.my[1], 102.5)
+	assert.equal(result.dx[1], 162)
+	assert.equal(result.dy[1], 10)
+	assert.equal(result.magnitude[1], Math.hypot(162, 10))
+
+	const view = createParametricComparisonPointViewDerivation(4, 'a')
+	const aPoints = view.update(result)
+	assert.equal(aPoints.count, 1)
+	assert.equal(aPoints.ids[0], 1)
+	assert.equal(aPoints.x[0], 2)
+})
+
+test('probes one point with the canonical scope and VM trace', () => {
+	const formulas = compileParametricOriginalFormulaPair({
+		formulaAX: 'positionX + distance * cos(a)',
+		formulaAY: 'positionY + tan(distance) * weight',
+		formulaBX: 'positionX + distance * sin(a)',
+		formulaBY: 'positionY + distance',
+	} as never)
+	assert.equal(formulas.ok, true)
+	if (!formulas.ok) return
+	const state = {
+		phases: { count: 1, capacity: 1, values: new Float64Array([0.5]) },
+		accumulator: 0.5, reverse: false, centerX: 100, centerY: 80,
+	}
+	const probe = probeParametricFormulaPoint({
+		state, kind: 'spiral', viewportWidth: 320, viewportHeight: 200, weight: 2,
+		formulaA: formulas.value.a, formulaB: formulas.value.b, formulaMorph: 0.25,
+	}, 0, 17)
+	assert.equal(probe.pointId, 0)
+	assert.equal(probe.simulationStep, 17)
+	assert.equal(probe.scope.a, 0.5)
+	assert.ok(probe.a.x.trace.some(({ expression }) => expression === 'cos(a)'))
+	assert.ok(probe.a.x.trace.some(({ expression }) => expression === 'distance * cos(a)'))
+	assert.equal(probe.validity, FORMULA_COMPARISON_VALIDITY.bothValid)
+	assert.ok(probe.displacement)
 })

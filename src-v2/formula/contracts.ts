@@ -1,3 +1,5 @@
+import type { Result } from '../core/index.ts'
+
 export const FORMULA_PROGRAM_FORMAT = 'bindfly-formula'
 export const FORMULA_PROGRAM_VERSION = 1
 export const FORMULA_TRANSFORM_FORMAT = 'bindfly-formula-transform'
@@ -57,6 +59,8 @@ export type FormulaFunctionName = 'sin' | 'cos' | 'tan' | 'atan' | 'exp' | 'log'
 
 interface FormulaNodeBase {
 	readonly at: number
+	readonly start: number
+	readonly end: number
 }
 
 export type FormulaAst =
@@ -79,7 +83,21 @@ export interface FormulaProgram {
 	readonly variables: readonly string[]
 	readonly operationLimit: number
 	readonly instructions: readonly FormulaInstruction[]
+	readonly traceSites: readonly FormulaTraceSite[]
 }
+
+export interface FormulaTraceSite {
+	readonly instructionIndex: number
+	readonly nodeId: number
+	readonly start: number
+	readonly end: number
+}
+
+export interface FormulaTraceResult extends FormulaTraceSite {
+	readonly value: number
+}
+
+export type FormulaTraceSink = (result: FormulaTraceResult) => void
 
 export interface FormulaCompileOptions {
 	readonly variables: readonly string[]
@@ -99,9 +117,20 @@ export interface FormulaTransformComparison2D {
 }
 
 export interface FormulaTransformComparisonResult2D {
-	readonly a: { readonly x: number; readonly y: number }
-	readonly b: { readonly x: number; readonly y: number }
-	readonly morphed: { readonly x: number; readonly y: number }
+	readonly a: FormulaPoint2D
+	readonly b: FormulaPoint2D
+	readonly morphed: FormulaPoint2D
+}
+
+export interface FormulaPoint2D {
+	readonly x: number
+	readonly y: number
+}
+
+export interface FormulaTransformComparisonDetailedResult2D {
+	readonly a: Result<FormulaPoint2D, FormulaIssue>
+	readonly b: Result<FormulaPoint2D, FormulaIssue>
+	readonly morphed?: FormulaPoint2D
 }
 
 export interface CompileFormulaTransform2DInput extends FormulaCompileOptions {

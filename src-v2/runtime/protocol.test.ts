@@ -17,6 +17,10 @@ test('enumerates the complete runtime command surface', () => {
 		'reset',
 		'pause',
 		'resume',
+		'step',
+		'formula-view',
+		'inspect-point',
+		'capture-point-cloud',
 		'dispose',
 	])
 })

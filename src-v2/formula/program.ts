@@ -5,6 +5,7 @@ import type {
 	FormulaIssue,
 	FormulaProgram,
 	FormulaTransformComparison2D,
+	FormulaTransformComparisonDetailedResult2D,
 	FormulaTransformComparisonResult2D,
 	FormulaTransform2D,
 } from './contracts.ts'
@@ -81,19 +82,38 @@ export const evaluateFormulaTransformComparison2D = (
 	comparison: FormulaTransformComparison2D,
 	scope: Readonly<Record<string, number>>,
 ): Result<FormulaTransformComparisonResult2D, FormulaIssue> => {
+	const detailed = evaluateFormulaTransformComparisonDetailed2D(comparison, scope)
+	if (!detailed.ok) return detailed
+	if (!detailed.value.a.ok) return detailed.value.a
+	if (!detailed.value.b.ok) return detailed.value.b
+	const morphed = detailed.value.morphed
+	if (!morphed) return { ok: false, error: issue('invalid-program', 'Valid comparison branches require a morphed result.') }
+	return {
+		ok: true,
+		value: {
+			a: detailed.value.a.value,
+			b: detailed.value.b.value,
+			morphed,
+		},
+	}
+}
+
+export const evaluateFormulaTransformComparisonDetailed2D = (
+	comparison: FormulaTransformComparison2D,
+	scope: Readonly<Record<string, number>>,
+): Result<FormulaTransformComparisonDetailedResult2D, FormulaIssue> => {
 	if (!Number.isFinite(comparison.morph) || comparison.morph < 0 || comparison.morph > 1) {
 		return { ok: false, error: issue('numeric-domain', 'Formula morph must be finite and between 0 and 1.') }
 	}
 	const a = evaluateFormulaTransform2D(comparison.a, scope)
-	if (!a.ok) return a
 	const b = evaluateFormulaTransform2D(comparison.b, scope)
-	if (!b.ok) return b
+	if (!a.ok || !b.ok) return { ok: true, value: { a, b } }
 	const inverse = 1 - comparison.morph
 	return {
 		ok: true,
 		value: {
-			a: a.value,
-			b: b.value,
+			a,
+			b,
 			morphed: {
 				x: inverse * a.value.x + comparison.morph * b.value.x,
 				y: inverse * a.value.y + comparison.morph * b.value.y,

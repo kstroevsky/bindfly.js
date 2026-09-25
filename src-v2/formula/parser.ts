@@ -31,7 +31,8 @@ class Parser {
 	}
 
 	private peek(): FormulaToken {
-		return this.tokens[this.position] ?? { kind: 'end', at: this.tokens.at(-1)?.at ?? 0 }
+		const end = this.tokens.at(-1)?.at ?? 0
+		return this.tokens[this.position] ?? { kind: 'end', at: end, end }
 	}
 
 	private consume(): FormulaToken {
@@ -63,7 +64,7 @@ class Parser {
 		let operator = this.takeOperator(['+', '-'])
 		while (operator?.kind === 'operator') {
 			const right = this.parseMultiplicative()
-			left = { kind: 'binary', operator: operator.value as FormulaBinaryOperator, left, right, at: operator.at }
+			left = { kind: 'binary', operator: operator.value as FormulaBinaryOperator, left, right, at: operator.at, start: left.start, end: right.end }
 			operator = this.takeOperator(['+', '-'])
 		}
 		return left
@@ -74,7 +75,7 @@ class Parser {
 		let operator = this.takeOperator(['*', '/'])
 		while (operator?.kind === 'operator') {
 			const right = this.parseUnary()
-			left = { kind: 'binary', operator: operator.value as FormulaBinaryOperator, left, right, at: operator.at }
+			left = { kind: 'binary', operator: operator.value as FormulaBinaryOperator, left, right, at: operator.at, start: left.start, end: right.end }
 			operator = this.takeOperator(['*', '/'])
 		}
 		return left
@@ -88,6 +89,8 @@ class Parser {
 			operator: operator.value as FormulaUnaryOperator,
 			argument: this.nested(operator.at, () => this.parseUnary()),
 			at: operator.at,
+			start: operator.at,
+			get end() { return this.argument.end },
 		}
 	}
 
@@ -101,14 +104,16 @@ class Parser {
 			left,
 			right: this.nested(operator.at, () => this.parseUnary()),
 			at: operator.at,
+			start: left.start,
+			get end() { return this.right.end },
 		}
 	}
 
 	private parsePrimary(): FormulaAst {
 		const token = this.consume()
-		if (token.kind === 'number') return { kind: 'number', value: token.value, at: token.at }
+		if (token.kind === 'number') return { kind: 'number', value: token.value, at: token.at, start: token.at, end: token.end }
 		if (token.kind === 'identifier') {
-			if (this.peek().kind !== 'left-parenthesis') return { kind: 'variable', name: token.value, at: token.at }
+			if (this.peek().kind !== 'left-parenthesis') return { kind: 'variable', name: token.value, at: token.at, start: token.at, end: token.end }
 			this.consume()
 			const args: FormulaAst[] = []
 			if (this.peek().kind !== 'right-parenthesis') {
@@ -121,7 +126,7 @@ class Parser {
 			}
 			const closing = this.consume()
 			if (closing.kind !== 'right-parenthesis') this.fail(`Expected ')' for function '${token.value}'.`, closing.at)
-			return { kind: 'call', name: token.value, arguments: args, at: token.at }
+			return { kind: 'call', name: token.value, arguments: args, at: token.at, start: token.at, end: closing.end }
 		}
 		if (token.kind === 'left-parenthesis') {
 			const expression = this.nested(token.at, () => this.parseAdditive())
