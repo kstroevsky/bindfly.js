@@ -1,0 +1,1811 @@
+{
+  "benchmark": "Stage 15A Canvas2D rendering baseline",
+  "version": 1,
+  "measuredAt": "2026-09-25T17:24:22.823Z",
+  "renderer": "canvas2d",
+  "runtime": "main-thread",
+  "browser": "Chromium 153.0.8010.12",
+  "platform": "darwin 24.6.0 arm64",
+  "cpu": "Apple M1 Max",
+  "logicalCpuCount": 10,
+  "gitCommit": "ea080cb72c3b0d531e7084dd2536d6aa24499249",
+  "trackedWorkingTreeDirty": false,
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "timingSemantics": {
+    "simulationMs": "Fixed-step simulation work accumulated since the previous rendered frame.",
+    "derivationMs": "CPU derivation/sampling performed by the experiment session before renderer submission.",
+    "uploadMs": "CPU-to-GPU upload time; zero for Canvas2D.",
+    "renderMs": "Synchronous renderer submission/call duration.",
+    "totalFrameMs": "simulationMs + derivationMs + uploadMs + renderMs."
+  },
+  "results": [
+    {
+      "workload": {
+        "id": "flying-lines-dense-500",
+        "experimentId": "flying-lines",
+        "seed": "bindfly-flying-lines-simple-v1",
+        "parameters": {
+          "particleCount": 500,
+          "connectionRadius": 120
+        },
+        "initialConditions": [],
+        "minimumSimulationStep": 240,
+        "warmupMilliseconds": 500,
+        "sampleCount": 40
+      },
+      "canvasCssSize": {
+        "width": 1060,
+        "height": 900
+      },
+      "summary": {
+        "simulationMs": {
+          "mean": 0.01249999925494194,
+          "median": 0,
+          "p95": 0.09999999403953552,
+          "min": 0,
+          "max": 0.09999999403953552
+        },
+        "derivationMs": {
+          "mean": 0.4950000010430813,
+          "median": 0.5,
+          "p95": 0.5999999940395355,
+          "min": 0.4000000059604645,
+          "max": 0.6000000089406967
+        },
+        "uploadMs": {
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "renderMs": {
+          "mean": 1.0974999997764825,
+          "median": 1.0999999940395355,
+          "p95": 1.2000000029802322,
+          "min": 0.8999999910593033,
+          "max": 1.2999999970197678
+        },
+        "totalFrameMs": {
+          "mean": 1.6050000000745057,
+          "median": 1.5999999940395355,
+          "p95": 1.7999999970197678,
+          "min": 1.4000000059604645,
+          "max": 1.7999999970197678
+        }
+      },
+      "samples": [
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.4000000059604645,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.4000000059604645,
+          "points": 500,
+          "edges": 5681
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.199999988079071,
+          "totalFrameMs": 1.699999988079071,
+          "points": 500,
+          "edges": 5676
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0.4000000059604645,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.5,
+          "points": 500,
+          "edges": 5684
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.5,
+          "points": 500,
+          "edges": 5712
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.4000000059604645,
+          "uploadMs": 0,
+          "renderMs": 1.0999999940395355,
+          "totalFrameMs": 1.5,
+          "points": 500,
+          "edges": 5699
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.2000000029802322,
+          "totalFrameMs": 1.7000000029802322,
+          "points": 500,
+          "edges": 5701
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.0999999940395355,
+          "totalFrameMs": 1.5999999940395355,
+          "points": 500,
+          "edges": 5710
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.0999999940395355,
+          "totalFrameMs": 1.5999999940395355,
+          "points": 500,
+          "edges": 5722
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5999999940395355,
+          "uploadMs": 0,
+          "renderMs": 1.2000000029802322,
+          "totalFrameMs": 1.7999999970197678,
+          "points": 500,
+          "edges": 5722
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0.4000000059604645,
+          "uploadMs": 0,
+          "renderMs": 1.199999988079071,
+          "totalFrameMs": 1.699999988079071,
+          "points": 500,
+          "edges": 5714
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5999999940395355,
+          "uploadMs": 0,
+          "renderMs": 1.1000000089406967,
+          "totalFrameMs": 1.7000000029802322,
+          "points": 500,
+          "edges": 5714
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.6000000089406967,
+          "uploadMs": 0,
+          "renderMs": 1.0999999940395355,
+          "totalFrameMs": 1.7000000029802322,
+          "points": 500,
+          "edges": 5739
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.4000000059604645,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.4000000059604645,
+          "points": 500,
+          "edges": 5762
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5999999940395355,
+          "uploadMs": 0,
+          "renderMs": 1.0999999940395355,
+          "totalFrameMs": 1.699999988079071,
+          "points": 500,
+          "edges": 5806
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.5,
+          "points": 500,
+          "edges": 5831
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.2000000029802322,
+          "totalFrameMs": 1.7000000029802322,
+          "points": 500,
+          "edges": 5852
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.2000000029802322,
+          "totalFrameMs": 1.7000000029802322,
+          "points": 500,
+          "edges": 5878
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0.4000000059604645,
+          "uploadMs": 0,
+          "renderMs": 1.0999999940395355,
+          "totalFrameMs": 1.5999999940395355,
+          "points": 500,
+          "edges": 5876
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.4000000059604645,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.4000000059604645,
+          "points": 500,
+          "edges": 5881
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.5,
+          "points": 500,
+          "edges": 5893
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.5,
+          "points": 500,
+          "edges": 5909
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.1000000089406967,
+          "totalFrameMs": 1.6000000089406967,
+          "points": 500,
+          "edges": 5938
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.0999999940395355,
+          "totalFrameMs": 1.5999999940395355,
+          "points": 500,
+          "edges": 5954
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.0999999940395355,
+          "totalFrameMs": 1.5999999940395355,
+          "points": 500,
+          "edges": 5950
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.1000000089406967,
+          "totalFrameMs": 1.6000000089406967,
+          "points": 500,
+          "edges": 5933
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5999999940395355,
+          "uploadMs": 0,
+          "renderMs": 1.2000000029802322,
+          "totalFrameMs": 1.7999999970197678,
+          "points": 500,
+          "edges": 5917
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.1000000089406967,
+          "totalFrameMs": 1.6000000089406967,
+          "points": 500,
+          "edges": 5923
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.4000000059604645,
+          "uploadMs": 0,
+          "renderMs": 1.2999999970197678,
+          "totalFrameMs": 1.7000000029802322,
+          "points": 500,
+          "edges": 5911
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.0999999940395355,
+          "totalFrameMs": 1.5999999940395355,
+          "points": 500,
+          "edges": 5915
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.4000000059604645,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.4000000059604645,
+          "points": 500,
+          "edges": 5940
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.2000000029802322,
+          "totalFrameMs": 1.7999999970197678,
+          "points": 500,
+          "edges": 5941
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5999999940395355,
+          "uploadMs": 0,
+          "renderMs": 1.1000000089406967,
+          "totalFrameMs": 1.7000000029802322,
+          "points": 500,
+          "edges": 5950
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.2000000029802322,
+          "totalFrameMs": 1.7000000029802322,
+          "points": 500,
+          "edges": 5940
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5999999940395355,
+          "uploadMs": 0,
+          "renderMs": 1.2000000029802322,
+          "totalFrameMs": 1.7999999970197678,
+          "points": 500,
+          "edges": 5914
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.1000000089406967,
+          "totalFrameMs": 1.6000000089406967,
+          "points": 500,
+          "edges": 5914
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.5,
+          "points": 500,
+          "edges": 5896
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.6000000089406967,
+          "uploadMs": 0,
+          "renderMs": 0.8999999910593033,
+          "totalFrameMs": 1.5,
+          "points": 500,
+          "edges": 5892
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1.2000000029802322,
+          "totalFrameMs": 1.7999999970197678,
+          "points": 500,
+          "edges": 5873
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.4000000059604645,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.4000000059604645,
+          "points": 500,
+          "edges": 5871
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0.5,
+          "uploadMs": 0,
+          "renderMs": 1,
+          "totalFrameMs": 1.5,
+          "points": 500,
+          "edges": 5871
+        }
+      ]
+    },
+    {
+      "workload": {
+        "id": "vector-field-glyphs-and-trails",
+        "experimentId": "vector-field-2d",
+        "seed": "vector-field-hopf-v1",
+        "parameters": {
+          "fieldDensity": 31,
+          "trailLength": 1024
+        },
+        "initialConditions": [
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.5,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.5,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.8
+          }
+        ],
+        "minimumSimulationStep": 240,
+        "warmupMilliseconds": 500,
+        "sampleCount": 40
+      },
+      "canvasCssSize": {
+        "width": 1060,
+        "height": 900
+      },
+      "summary": {
+        "simulationMs": {
+          "mean": 0.19000000022351743,
+          "median": 0.20000000298023224,
+          "p95": 0.30000001192092896,
+          "min": 0.09999999403953552,
+          "max": 0.3999999910593033
+        },
+        "derivationMs": {
+          "mean": 0.0025000002235174177,
+          "median": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0.10000000894069672
+        },
+        "uploadMs": {
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "renderMs": {
+          "mean": 0.38749999962747095,
+          "median": 0.3999999910593033,
+          "p95": 0.5,
+          "min": 0.20000000298023224,
+          "max": 0.7000000029802322
+        },
+        "totalFrameMs": {
+          "mean": 0.5800000000745058,
+          "median": 0.5,
+          "p95": 0.800000011920929,
+          "min": 0.4000000059604645,
+          "max": 1.0999999940395355
+        }
+      },
+      "samples": [
+        {
+          "simulationMs": 0.3999999910593033,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.7000000029802322,
+          "totalFrameMs": 1.0999999940395355,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.29999999701976776,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.4000000059604645,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.29999999701976776,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.699999988079071,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.5,
+          "totalFrameMs": 0.7000000029802322,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.30000001192092896,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.6000000089406967,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.29999999701976776,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.5,
+          "totalFrameMs": 0.7999999970197678,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.10000000894069672,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.30000001192092896,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.5999999940395355,
+          "totalFrameMs": 0.9000000059604645,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.5999999940395355,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.19999998807907104,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.5999999940395355,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.6000000089406967,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.10000000894069672,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.5,
+          "totalFrameMs": 0.6000000089406967,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.19999998807907104,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.5999999940395355,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.10000000894069672,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.4000000059604645,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.30000001192092896,
+          "totalFrameMs": 0.4000000059604645,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.6000000089406967,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.10000000894069672,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.5999999940395355,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.5999999940395355,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0.10000000894069672,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.19999998807907104,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.5,
+          "totalFrameMs": 0.699999988079071,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.19999998807907104,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.30000001192092896,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.10000000894069672,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.19999998807907104,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.5999999940395355,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.10000000894069672,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.10000000894069672,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.5,
+          "totalFrameMs": 0.6000000089406967,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.30000001192092896,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.5,
+          "totalFrameMs": 0.800000011920929,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.19999998807907104,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.5999999940395355,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.30000001192092896,
+          "totalFrameMs": 0.4000000059604645,
+          "points": 15,
+          "edges": 1147
+        },
+        {
+          "simulationMs": 0.19999998807907104,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.5,
+          "totalFrameMs": 0.699999988079071,
+          "points": 15,
+          "edges": 1147
+        }
+      ]
+    },
+    {
+      "workload": {
+        "id": "discrete-map-many-orbit-points",
+        "experimentId": "discrete-map-2d",
+        "seed": "henon-map-v1",
+        "parameters": {
+          "trailLength": 2048
+        },
+        "initialConditions": [
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.5,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.5,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.8
+          }
+        ],
+        "minimumSimulationStep": 72,
+        "warmupMilliseconds": 500,
+        "sampleCount": 40
+      },
+      "canvasCssSize": {
+        "width": 1060,
+        "height": 900
+      },
+      "summary": {
+        "simulationMs": {
+          "mean": 0.019999999552965164,
+          "median": 0,
+          "p95": 0.09999999403953552,
+          "min": 0,
+          "max": 0.20000000298023224
+        },
+        "derivationMs": {
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "uploadMs": {
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "renderMs": {
+          "mean": 0.2850000001490116,
+          "median": 0.29999999701976776,
+          "p95": 0.5,
+          "min": 0.09999999403953552,
+          "max": 0.7999999970197678
+        },
+        "totalFrameMs": {
+          "mean": 0.3049999997019768,
+          "median": 0.29999999701976776,
+          "p95": 0.5,
+          "min": 0.09999999403953552,
+          "max": 1
+        }
+      },
+      "samples": [
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.3999999910593033,
+          "points": 15,
+          "edges": 82
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.5,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 83
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.19999998807907104,
+          "totalFrameMs": 0.29999998211860657,
+          "points": 15,
+          "edges": 85
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.4000000059604645,
+          "points": 15,
+          "edges": 86
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 15,
+          "edges": 87
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 15,
+          "edges": 89
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 15,
+          "edges": 91
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 15,
+          "edges": 92
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 15,
+          "edges": 93
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.4000000059604645,
+          "points": 15,
+          "edges": 94
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 15,
+          "edges": 97
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.29999999701976776,
+          "points": 15,
+          "edges": 98
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 15,
+          "edges": 99
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.3999999910593033,
+          "points": 15,
+          "edges": 100
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.3999999910593033,
+          "points": 15,
+          "edges": 101
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.29999999701976776,
+          "points": 15,
+          "edges": 104
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.29999999701976776,
+          "points": 15,
+          "edges": 105
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.3999999910593033,
+          "points": 15,
+          "edges": 106
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 15,
+          "edges": 107
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.5,
+          "totalFrameMs": 0.5999999940395355,
+          "points": 15,
+          "edges": 109
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.3999999910593033,
+          "totalFrameMs": 0.3999999910593033,
+          "points": 15,
+          "edges": 111
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 15,
+          "edges": 112
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.4000000059604645,
+          "points": 15,
+          "edges": 113
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.4000000059604645,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 115
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 15,
+          "edges": 116
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 15,
+          "edges": 118
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 15,
+          "edges": 119
+        },
+        {
+          "simulationMs": 0.10000000894069672,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.4000000059604645,
+          "points": 15,
+          "edges": 121
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 15,
+          "edges": 122
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 15,
+          "edges": 124
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 15,
+          "edges": 125
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 15,
+          "edges": 127
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.29999999701976776,
+          "points": 15,
+          "edges": 128
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.5,
+          "totalFrameMs": 0.5,
+          "points": 15,
+          "edges": 129
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.29999999701976776,
+          "points": 15,
+          "edges": 131
+        },
+        {
+          "simulationMs": 0.20000000298023224,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.7999999970197678,
+          "totalFrameMs": 1,
+          "points": 15,
+          "edges": 133
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.29999999701976776,
+          "points": 15,
+          "edges": 134
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.30000001192092896,
+          "totalFrameMs": 0.30000001192092896,
+          "points": 15,
+          "edges": 135
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 15,
+          "edges": 136
+        },
+        {
+          "simulationMs": 0.09999999403953552,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.3999999910593033,
+          "points": 15,
+          "edges": 139
+        }
+      ]
+    },
+    {
+      "workload": {
+        "id": "scalar-field-dense-grid",
+        "experimentId": "scalar-field-2d",
+        "seed": "scalar-field-radial-v1",
+        "parameters": {
+          "sampleDensity": 96
+        },
+        "initialConditions": [],
+        "minimumSimulationStep": 0,
+        "warmupMilliseconds": 1000,
+        "sampleCount": 40
+      },
+      "canvasCssSize": {
+        "width": 1060,
+        "height": 900
+      },
+      "summary": {
+        "simulationMs": {
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "derivationMs": {
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "uploadMs": {
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "renderMs": {
+          "mean": 0.12000000141561032,
+          "median": 0.10000000894069672,
+          "p95": 0.20000000298023224,
+          "min": 0,
+          "max": 0.29999999701976776
+        },
+        "totalFrameMs": {
+          "mean": 0.11750000119209289,
+          "median": 0.10000000894069672,
+          "p95": 0.20000000298023224,
+          "min": 0,
+          "max": 0.29999999701976776
+        }
+      },
+      "samples": [
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0,
+          "totalFrameMs": 0,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0,
+          "totalFrameMs": 0,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.19999998807907104,
+          "totalFrameMs": 0.19999998807907104,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.20000000298023224,
+          "totalFrameMs": 0.20000000298023224,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.10000000894069672,
+          "totalFrameMs": 0.10000000894069672,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.09999999403953552,
+          "totalFrameMs": 0.09999999403953552,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0,
+          "totalFrameMs": 0,
+          "points": 11058,
+          "edges": 0
+        },
+        {
+          "simulationMs": 0,
+          "derivationMs": 0,
+          "uploadMs": 0,
+          "renderMs": 0.29999999701976776,
+          "totalFrameMs": 0.29999999701976776,
+          "points": 11058,
+          "edges": 0
+        }
+      ]
+    }
+  ]
+}
