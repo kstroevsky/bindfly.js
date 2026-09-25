@@ -16,7 +16,7 @@ import type {
 import { evaluateFormula, isFormulaConfigurationParameter } from '../../../src-v2/formula/index.ts'
 import type { FormulaProgram } from '../../../src-v2/formula/index.ts'
 import { createPhasePortraitCanvasRenderer } from '../../../src-v2/rendering/canvas2d/phase-portrait-renderer.ts'
-import type { PhasePortraitRenderView } from '../../../src-v2/rendering/canvas2d/phase-portrait-renderer.ts'
+import type { PhasePortraitRenderView } from '../../../src-v2/rendering/phase-portrait.ts'
 import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 

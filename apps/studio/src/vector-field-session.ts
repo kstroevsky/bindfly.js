@@ -21,7 +21,7 @@ import {
 import type {
 	PhasePortraitRenderView,
 	VectorFieldSample,
-} from '../../../src-v2/rendering/canvas2d/phase-portrait-renderer.ts'
+} from '../../../src-v2/rendering/phase-portrait.ts'
 import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 

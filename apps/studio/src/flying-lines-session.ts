@@ -6,7 +6,7 @@ import { flyingLinesParameters } from '../../../src-v2/effects/flying-lines/para
 import type { FlyingLinesInput, FlyingLinesState } from '../../../src-v2/effects/flying-lines/types.ts'
 import { MAXIMUM_MOVING_POINT_COUNT } from '../../../src-v2/effects/moving-points/parameters.ts'
 import { createFlyingLinesCanvasRenderer } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
-import type { FlyingLinesRenderView } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
+import type { FlyingLinesRenderView } from '../../../src-v2/rendering/flying-lines.ts'
 import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 

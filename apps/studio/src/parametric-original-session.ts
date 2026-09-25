@@ -19,10 +19,10 @@ import type { ParametricOriginalInput, ParametricOriginalParameters, ParametricO
 import { createFormulaParameterScope } from '../../../src-v2/formula/index.ts'
 import type { RuntimeFormulaView } from '../../../src-v2/runtime/protocol.ts'
 import {
-	DIFFERENCE_DISCONTINUITY_KIND,
 	createFlyingLinesCanvasRenderer,
 } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
-import type { FlyingLinesDifferenceView, FlyingLinesRenderView } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
+import { DIFFERENCE_DISCONTINUITY_KIND } from '../../../src-v2/rendering/flying-lines.ts'
+import type { FlyingLinesDifferenceView, FlyingLinesRenderView } from '../../../src-v2/rendering/flying-lines.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 
 export interface CreateParametricOriginalSessionOptions {
