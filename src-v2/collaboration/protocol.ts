@@ -72,6 +72,7 @@ export type AuthoritativeSubmitErrorCode =
 	| 'AHEAD_OF_AUTHORITY'
 	| 'INVALID_INPUT'
 	| 'INPUT_TOO_LARGE'
+	| 'UNAUTHORIZED'
 	| 'IDEMPOTENCY_CONFLICT'
 
 export type AuthoritativeSubmitResult<Input> =

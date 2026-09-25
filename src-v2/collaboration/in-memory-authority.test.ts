@@ -41,12 +41,14 @@ const proposal = (participantId: string, clientEventId: string, knownSequence: n
 	input,
 })
 
+const allowAll = () => ({ ok: true as const, value: undefined })
+
 test('authority orders concurrent inputs and replicas recover out-of-order delivery, duplicates and divergence', async () => {
 	const authorityAdapter = createAdapter()
 	const firstReplicaAdapter = createAdapter()
 	const secondReplicaAdapter = createAdapter()
 	const room = new InMemoryAuthoritativeRoom({
-		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: authorityAdapter,
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: authorityAdapter, authorizeInput: allowAll,
 	})
 	const firstReplica = new CollaborationReplica({
 		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: firstReplicaAdapter,
@@ -97,6 +99,9 @@ test('authority rejects malformed, future-version and conflicting idempotency in
 	const adapter = createAdapter()
 	const room = new InMemoryAuthoritativeRoom({
 		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter,
+		authorizeInput: (participantId) => participantId === 'blocked'
+			? { ok: false as const, error: 'participant is blocked' }
+			: allowAll(),
 	})
 
 	const malformed = room.submit(proposal('alice', 'bad', 0, Number.NaN))
@@ -104,10 +109,52 @@ test('authority rejects malformed, future-version and conflicting idempotency in
 
 	const future = room.submit({ ...proposal('alice', 'future', 0, 1), protocolVersion: 99 })
 	assert.deepEqual(future.ok ? undefined : future.code, 'PROTOCOL_VERSION_MISMATCH')
+	const unauthorized = room.submit(proposal('blocked', 'denied', 0, 1))
+	assert.deepEqual(unauthorized.ok ? undefined : unauthorized.code, 'UNAUTHORIZED')
 
 	const accepted = room.submit(proposal('alice', 'same-id', 0, 1))
 	assert.equal(accepted.ok, true)
 	const conflict = room.submit(proposal('alice', 'same-id', 1, 2))
 	assert.deepEqual(conflict.ok ? undefined : conflict.code, 'IDEMPOTENCY_CONFLICT')
 	assert.equal(adapter.read(), 1)
+})
+
+test('replica rejects a tampered authoritative snapshot before restoring state', async () => {
+	const authorityAdapter = createAdapter()
+	const replicaAdapter = createAdapter()
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: authorityAdapter, authorizeInput: allowAll,
+	})
+	const replica = new CollaborationReplica({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: replicaAdapter,
+	})
+	const accepted = room.submit(proposal('alice', 'event-a', 0, 2))
+	assert.equal(accepted.ok, true)
+	if (!accepted.ok) return
+	replica.receive(accepted.event)
+	const snapshot = await room.createSnapshot()
+	const tampered = { ...snapshot, stateBytes: snapshot.stateBytes.slice() }
+	tampered.stateBytes[0] ^= 0xff
+
+	const result = await replica.resynchronize(tampered)
+	assert.equal(result.ok, false)
+	assert.match(result.ok ? '' : result.error, /checksum verification failed/)
+	assert.equal(replicaAdapter.read(), 2)
+})
+
+test('replica requests resynchronization when an authoritative event arrives after its scheduled step', () => {
+	const authorityAdapter = createAdapter()
+	const replicaAdapter = createAdapter()
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: authorityAdapter, authorizeInput: allowAll,
+	})
+	const replica = new CollaborationReplica({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: replicaAdapter,
+	})
+	const accepted = room.submit(proposal('alice', 'event-a', 0, 2))
+	assert.equal(accepted.ok, true)
+	if (!accepted.ok) return
+	assert.equal(replica.advanceStepIndex(1).ok, true)
+	assert.equal(replica.receive(accepted.event).status, 'needs-resync')
+	assert.equal(replicaAdapter.read(), 0)
 })

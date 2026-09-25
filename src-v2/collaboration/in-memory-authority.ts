@@ -1,5 +1,6 @@
 import { createSnapshotChecksum, encodeCanonicalSnapshotV1 } from './canonical-snapshot.ts'
 import { COLLABORATION_PROTOCOL_VERSION } from './protocol.ts'
+import type { Result } from '../core/result.ts'
 import type {
 	AuthoritativeEvent,
 	AuthoritativeSnapshot,
@@ -16,6 +17,7 @@ export interface InMemoryAuthoritativeRoomOptions<Input> {
 	readonly experimentId: string
 	readonly stateVersion: number
 	readonly adapter: CollaborationStateAdapter<Input>
+	readonly authorizeInput: (participantId: string, input: Input) => Result<void, string>
 	readonly maxInputBytes?: number
 }
 
@@ -34,6 +36,7 @@ export class InMemoryAuthoritativeRoom<Input> {
 	private readonly experimentId: string
 	private readonly stateVersion: number
 	private readonly adapter: CollaborationStateAdapter<Input>
+	private readonly authorizeInput: (participantId: string, input: Input) => Result<void, string>
 	private readonly maxInputBytes: number
 	private readonly events: AuthoritativeEvent<Input>[] = []
 	private readonly acceptedByClientId = new Map<string, { event: AuthoritativeEvent<Input>; inputBytes: Uint8Array }>()
@@ -53,6 +56,7 @@ export class InMemoryAuthoritativeRoom<Input> {
 		this.experimentId = options.experimentId
 		this.stateVersion = options.stateVersion
 		this.adapter = options.adapter
+		this.authorizeInput = options.authorizeInput
 		this.maxInputBytes = maxInputBytes
 	}
 
@@ -98,8 +102,10 @@ export class InMemoryAuthoritativeRoom<Input> {
 		if (inputBytes.byteLength > this.maxInputBytes) {
 			return { ok: false, code: 'INPUT_TOO_LARGE', error: `Input exceeds ${this.maxInputBytes} bytes.` }
 		}
+		const authorization = this.authorizeInput(proposal.participantId, parsed.value)
+		if (!authorization.ok) return { ok: false, code: 'UNAUTHORIZED', error: authorization.error }
 
-		const idempotencyKey = `${proposal.participantId}\u0000${proposal.clientEventId}`
+		const idempotencyKey = JSON.stringify([proposal.participantId, proposal.clientEventId])
 		const existing = this.acceptedByClientId.get(idempotencyKey)
 		if (existing) {
 			if (!bytesEqual(existing.inputBytes, inputBytes)) {

@@ -2,6 +2,8 @@ import type { RandomSource, SeededRandomSnapshot, Simulation, SimulationEnvironm
 import { restoreSeededRandom } from '../../core/index.ts'
 
 import { MAXIMUM_MOVING_POINT_COUNT } from './parameters.ts'
+import { assertMovingPointCheckpoint, MOVING_POINT_CHECKPOINT_VERSION } from './checkpoint.ts'
+import type { MovingPointCheckpoint } from './checkpoint.ts'
 import type { MovingPointBuffer, MovingPointInput, MovingPointParameters, MovingPointState } from './types.ts'
 
 export interface CreateMovingPointSimulationInput {
@@ -27,7 +29,12 @@ const createBuffer = (capacity: number): MovingPointBuffer => ({
 	lifeSeconds: new Float64Array(capacity),
 })
 
-class MovingPointSimulation implements Simulation<MovingPointState, MovingPointInput> {
+export interface CheckpointableMovingPointSimulation extends Simulation<MovingPointState, MovingPointInput> {
+	captureCheckpoint(): MovingPointCheckpoint
+	restoreCheckpoint(checkpoint: MovingPointCheckpoint): void
+}
+
+class MovingPointSimulation implements CheckpointableMovingPointSimulation {
 	readonly state: MovingPointState
 	private readonly initialRandomSnapshot: SeededRandomSnapshot
 	private viewport: Viewport
@@ -177,6 +184,40 @@ class MovingPointSimulation implements Simulation<MovingPointState, MovingPointI
 		}
 	}
 
+	captureCheckpoint(): MovingPointCheckpoint {
+		const particles = this.state.particles
+		return {
+			version: MOVING_POINT_CHECKPOINT_VERSION,
+			random: this.random.snapshot(),
+			nextId: this.nextId,
+			particles: {
+				count: particles.count,
+				capacity: particles.count,
+				ids: particles.ids.slice(0, particles.count),
+				x: particles.x.slice(0, particles.count),
+				y: particles.y.slice(0, particles.count),
+				velocityX: particles.velocityX.slice(0, particles.count),
+				velocityY: particles.velocityY.slice(0, particles.count),
+				lifeSeconds: particles.lifeSeconds.slice(0, particles.count),
+			},
+		}
+	}
+
+	restoreCheckpoint(checkpoint: MovingPointCheckpoint): void {
+		assertMovingPointCheckpoint(checkpoint)
+		const particles = this.state.particles
+		this.ensureCapacity(checkpoint.particles.count)
+		particles.count = checkpoint.particles.count
+		particles.ids.set(checkpoint.particles.ids.subarray(0, particles.count), 0)
+		particles.x.set(checkpoint.particles.x.subarray(0, particles.count), 0)
+		particles.y.set(checkpoint.particles.y.subarray(0, particles.count), 0)
+		particles.velocityX.set(checkpoint.particles.velocityX.subarray(0, particles.count), 0)
+		particles.velocityY.set(checkpoint.particles.velocityY.subarray(0, particles.count), 0)
+		particles.lifeSeconds.set(checkpoint.particles.lifeSeconds.subarray(0, particles.count), 0)
+		this.random = restoreSeededRandom(checkpoint.random)
+		this.nextId = checkpoint.nextId
+	}
+
 	resize(viewport: Viewport): void {
 		this.viewport = viewport
 		const particles = this.state.particles
@@ -205,5 +246,5 @@ class MovingPointSimulation implements Simulation<MovingPointState, MovingPointI
 export const createMovingPointSimulation = ({
 	environment,
 	parameters,
-}: CreateMovingPointSimulationInput): Simulation<MovingPointState, MovingPointInput> =>
+}: CreateMovingPointSimulationInput): CheckpointableMovingPointSimulation =>
 	new MovingPointSimulation(environment, parameters)

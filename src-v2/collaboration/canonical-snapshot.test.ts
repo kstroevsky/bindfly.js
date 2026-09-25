@@ -22,6 +22,7 @@ test('snapshot checksum v1 is SHA-256 over the explicitly encoded canonical snap
 	assert.equal(checksum.algorithm, 'sha-256')
 	assert.equal(checksum.encodingVersion, 1)
 	assert.equal(checksum.value, createHash('sha256').update(bytes).digest('hex'))
+	assert.equal(checksum.value, 'e72bd14a3efe386e6eff8f4ad02ecba28f0b7be5832b374d23d1939a7b2927c7')
 
 	const changed = await createSnapshotChecksum(encodeCanonicalSnapshotV1({
 		roomId: 'room-1', experimentId: 'fixture', stateVersion: 3,
