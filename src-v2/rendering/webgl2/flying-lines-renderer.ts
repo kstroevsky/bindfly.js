@@ -1,13 +1,13 @@
 import type { RenderFrame, Renderer, RendererFrameTiming, Viewport } from '../../core/index.ts'
 import type { FlyingLinesRenderView } from '../flying-lines.ts'
 import {
-	appendColoredVertex,
 	ColoredPrimitiveProgram,
 	createWebGL2Context,
 	hslToNormalizedRgba,
 	installWebGL2ContextLifecycle,
 	parseCssColorRgba,
 	resizeWebGLCanvas,
+	ReusableColoredVertexBuffer,
 	WebGL2GpuTimer,
 } from './common.ts'
 
@@ -18,6 +18,8 @@ class FlyingLinesWebGL2Renderer implements Renderer<FlyingLinesRenderView> {
 	private primitives: ColoredPrimitiveProgram | undefined
 	private edgeBuffer: WebGLBuffer | undefined
 	private pointBuffer: WebGLBuffer | undefined
+	private readonly edgeVertices = new ReusableColoredVertexBuffer()
+	private readonly pointVertices = new ReusableColoredVertexBuffer()
 	private gpuTimer: WebGL2GpuTimer | undefined
 	private contextLost = false
 	private disposed = false
@@ -64,22 +66,22 @@ class FlyingLinesWebGL2Renderer implements Renderer<FlyingLinesRenderView> {
 		if (!primitives || !edgeBuffer || !pointBuffer) throw new Error('Flying Lines WebGL2 resources are unavailable.')
 
 		const uploadStarted = performance.now()
-		const edgeVertices: number[] = []
+		this.edgeVertices.reset()
 		for (let edgeIndex = 0; edgeIndex < view.edges.edgeCount; edgeIndex++) {
 			const sourceIndex = view.edges.sourceIndices[edgeIndex] ?? 0
 			const targetIndex = view.edges.targetIndices[edgeIndex] ?? 0
 			const sourceId = view.particles.ids[sourceIndex] ?? 0
 			const color = hslToNormalizedRgba((sourceId * 137.508) % 360, 0.82, 0.68, view.edges.opacities[edgeIndex] ?? 1)
-			appendColoredVertex(edgeVertices, view.particles.x[sourceIndex] ?? 0, view.particles.y[sourceIndex] ?? 0, color)
-			appendColoredVertex(edgeVertices, view.particles.x[targetIndex] ?? 0, view.particles.y[targetIndex] ?? 0, color)
+			this.edgeVertices.append(view.particles.x[sourceIndex] ?? 0, view.particles.y[sourceIndex] ?? 0, color)
+			this.edgeVertices.append(view.particles.x[targetIndex] ?? 0, view.particles.y[targetIndex] ?? 0, color)
 		}
-		const pointVertices: number[] = []
+		this.pointVertices.reset()
 		const pointColor = [1, 1, 1, 0.72] as const
 		for (let index = 0; index < view.particles.count; index++) {
-			appendColoredVertex(pointVertices, view.particles.x[index] ?? 0, view.particles.y[index] ?? 0, pointColor)
+			this.pointVertices.append(view.particles.x[index] ?? 0, view.particles.y[index] ?? 0, pointColor)
 		}
-		primitives.upload(edgeBuffer, new Float32Array(edgeVertices))
-		primitives.upload(pointBuffer, new Float32Array(pointVertices))
+		primitives.upload(edgeBuffer, this.edgeVertices.data)
+		primitives.upload(pointBuffer, this.pointVertices.data)
 		const uploadMs = performance.now() - uploadStarted
 
 		const gpuRenderMs = this.gpuTimer?.poll()
@@ -88,8 +90,8 @@ class FlyingLinesWebGL2Renderer implements Renderer<FlyingLinesRenderView> {
 		const background = parseCssColorRgba(view.background)
 		this.gl.clearColor(background[0], background[1], background[2], background[3])
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT)
-		primitives.draw(edgeBuffer, this.gl.LINES, edgeVertices.length / 6, this.viewport)
-		primitives.draw(pointBuffer, this.gl.POINTS, pointVertices.length / 6, this.viewport, 2.7, true)
+		primitives.draw(edgeBuffer, this.gl.LINES, this.edgeVertices.vertexCount, this.viewport)
+		primitives.draw(pointBuffer, this.gl.POINTS, this.pointVertices.vertexCount, this.viewport, 2.7, true)
 		this.gpuTimer?.end()
 		return {
 			uploadMs,

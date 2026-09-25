@@ -2,6 +2,8 @@ import type { Viewport } from '../../core/index.ts'
 
 export type NormalizedRgba = readonly [number, number, number, number]
 
+const COLORED_VERTEX_FLOAT_COUNT = 6
+
 interface DisjointTimerQueryWebGL2Extension {
 	readonly TIME_ELAPSED_EXT: number
 	readonly GPU_DISJOINT_EXT: number
@@ -265,6 +267,51 @@ export class ColoredPrimitiveProgram {
 
 	dispose(): void {
 		this.gl.deleteProgram(this.program)
+	}
+}
+
+export class ReusableColoredVertexBuffer {
+	private storage: Float32Array
+	private floatCount = 0
+
+	constructor(initialVertexCapacity = 0) {
+		if (!Number.isInteger(initialVertexCapacity) || initialVertexCapacity < 0) {
+			throw new RangeError('Initial colored-vertex capacity must be a non-negative integer.')
+		}
+		this.storage = new Float32Array(initialVertexCapacity * COLORED_VERTEX_FLOAT_COUNT)
+	}
+
+	get vertexCount(): number {
+		return this.floatCount / COLORED_VERTEX_FLOAT_COUNT
+	}
+
+	get data(): Float32Array {
+		return this.storage.subarray(0, this.floatCount)
+	}
+
+	reset(): void {
+		this.floatCount = 0
+	}
+
+	append(x: number, y: number, color: NormalizedRgba): void {
+		this.ensureCapacity(this.floatCount + COLORED_VERTEX_FLOAT_COUNT)
+		const offset = this.floatCount
+		this.storage[offset] = x
+		this.storage[offset + 1] = y
+		this.storage[offset + 2] = color[0]
+		this.storage[offset + 3] = color[1]
+		this.storage[offset + 4] = color[2]
+		this.storage[offset + 5] = color[3]
+		this.floatCount += COLORED_VERTEX_FLOAT_COUNT
+	}
+
+	private ensureCapacity(requiredFloatCount: number): void {
+		if (requiredFloatCount <= this.storage.length) return
+		let nextLength = Math.max(COLORED_VERTEX_FLOAT_COUNT, this.storage.length)
+		while (nextLength < requiredFloatCount) nextLength *= 2
+		const next = new Float32Array(nextLength)
+		next.set(this.storage.subarray(0, this.floatCount))
+		this.storage = next
 	}
 }
 

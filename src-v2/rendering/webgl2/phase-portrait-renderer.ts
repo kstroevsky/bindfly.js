@@ -2,13 +2,13 @@ import { createPhaseSpaceTransform } from '../../core/index.ts'
 import type { RenderFrame, Renderer, RendererFrameTiming, Viewport } from '../../core/index.ts'
 import type { PhasePortraitRenderView } from '../phase-portrait.ts'
 import {
-	appendColoredVertex,
 	ColoredPrimitiveProgram,
 	createWebGL2Context,
 	hslToNormalizedRgba,
 	installWebGL2ContextLifecycle,
 	parseCssColorRgba,
 	resizeWebGLCanvas,
+	ReusableColoredVertexBuffer,
 	WebGL2GpuTimer,
 } from './common.ts'
 
@@ -24,6 +24,9 @@ class PhasePortraitWebGL2Renderer implements Renderer<PhasePortraitRenderView> {
 	private viewport: Viewport | undefined
 	private primitives: ColoredPrimitiveProgram | undefined
 	private buffers: PrimitiveBuffers | undefined
+	private readonly lineVertices = new ReusableColoredVertexBuffer()
+	private readonly trailPointVertices = new ReusableColoredVertexBuffer()
+	private readonly headVertices = new ReusableColoredVertexBuffer()
 	private gpuTimer: WebGL2GpuTimer | undefined
 	private contextLost = false
 	private disposed = false
@@ -73,15 +76,15 @@ class PhasePortraitWebGL2Renderer implements Renderer<PhasePortraitRenderView> {
 		const transform = createPhaseSpaceTransform(this.viewport, view.domainRadius)
 
 		const uploadStarted = performance.now()
-		const lines: number[] = []
-		const trailPoints: number[] = []
-		const heads: number[] = []
+		this.lineVertices.reset()
+		this.trailPointVertices.reset()
+		this.headVertices.reset()
 		const axisColor = [1, 1, 1, 0.16] as const
 		const origin = transform.toCanvas({ x: 0, y: 0 })
-		appendColoredVertex(lines, origin.x, 0, axisColor)
-		appendColoredVertex(lines, origin.x, this.viewport.cssHeight, axisColor)
-		appendColoredVertex(lines, 0, origin.y, axisColor)
-		appendColoredVertex(lines, this.viewport.cssWidth, origin.y, axisColor)
+		this.lineVertices.append(origin.x, 0, axisColor)
+		this.lineVertices.append(origin.x, this.viewport.cssHeight, axisColor)
+		this.lineVertices.append(0, origin.y, axisColor)
+		this.lineVertices.append(this.viewport.cssWidth, origin.y, axisColor)
 
 		if (view.field) {
 			const fieldColor = [103 / 255, 232 / 255, 249 / 255, 0.34] as const
@@ -93,8 +96,8 @@ class PhasePortraitWebGL2Renderer implements Renderer<PhasePortraitRenderView> {
 				const length = cell * 0.32 * Math.tanh(magnitude)
 				const ux = sample.dx / magnitude
 				const uy = sample.dy / magnitude
-				appendColoredVertex(lines, point.x - ux * length * 0.5, point.y + uy * length * 0.5, fieldColor)
-				appendColoredVertex(lines, point.x + ux * length * 0.5, point.y - uy * length * 0.5, fieldColor)
+				this.lineVertices.append(point.x - ux * length * 0.5, point.y + uy * length * 0.5, fieldColor)
+				this.lineVertices.append(point.x + ux * length * 0.5, point.y - uy * length * 0.5, fieldColor)
 			}
 		}
 
@@ -104,15 +107,15 @@ class PhasePortraitWebGL2Renderer implements Renderer<PhasePortraitRenderView> {
 			if (view.trajectoryStyle === 'points') {
 				for (let index = 0; index < trajectory.trailX.length; index++) {
 					const point = transform.toCanvas({ x: trajectory.trailX[index] ?? 0, y: trajectory.trailY[index] ?? 0 })
-					appendColoredVertex(trailPoints, point.x, point.y, trailColor)
+					this.trailPointVertices.append(point.x, point.y, trailColor)
 				}
 			} else {
 				for (let index = 1; index < trajectory.trailX.length; index++) {
 					if (trajectory.trailEpochs?.[index] !== trajectory.trailEpochs?.[index - 1]) continue
 					const previous = transform.toCanvas({ x: trajectory.trailX[index - 1] ?? 0, y: trajectory.trailY[index - 1] ?? 0 })
 					const current = transform.toCanvas({ x: trajectory.trailX[index] ?? 0, y: trajectory.trailY[index] ?? 0 })
-					appendColoredVertex(lines, previous.x, previous.y, trailColor)
-					appendColoredVertex(lines, current.x, current.y, trailColor)
+					this.lineVertices.append(previous.x, previous.y, trailColor)
+					this.lineVertices.append(current.x, current.y, trailColor)
 				}
 			}
 			const headColor = trajectory.status === 'active'
@@ -121,15 +124,12 @@ class PhasePortraitWebGL2Renderer implements Renderer<PhasePortraitRenderView> {
 					? [251 / 255, 191 / 255, 36 / 255, 0.95] as const
 					: [248 / 255, 113 / 255, 113 / 255, 0.95] as const
 			const head = transform.toCanvas(trajectory)
-			appendColoredVertex(heads, head.x, head.y, headColor)
+			this.headVertices.append(head.x, head.y, headColor)
 		}
 
-		const lineVertices = new Float32Array(lines)
-		const trailPointVertices = new Float32Array(trailPoints)
-		const headVertices = new Float32Array(heads)
-		primitives.upload(buffers.lines, lineVertices)
-		primitives.upload(buffers.trailPoints, trailPointVertices)
-		primitives.upload(buffers.heads, headVertices)
+		primitives.upload(buffers.lines, this.lineVertices.data)
+		primitives.upload(buffers.trailPoints, this.trailPointVertices.data)
+		primitives.upload(buffers.heads, this.headVertices.data)
 		const uploadMs = performance.now() - uploadStarted
 
 		const gpuRenderMs = this.gpuTimer?.poll()
@@ -138,9 +138,9 @@ class PhasePortraitWebGL2Renderer implements Renderer<PhasePortraitRenderView> {
 		const background = parseCssColorRgba(view.background)
 		this.gl.clearColor(background[0], background[1], background[2], background[3])
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT)
-		primitives.draw(buffers.lines, this.gl.LINES, lineVertices.length / 6, this.viewport)
-		primitives.draw(buffers.trailPoints, this.gl.POINTS, trailPointVertices.length / 6, this.viewport, 2.7, true)
-		primitives.draw(buffers.heads, this.gl.POINTS, headVertices.length / 6, this.viewport, 5.2, true)
+		primitives.draw(buffers.lines, this.gl.LINES, this.lineVertices.vertexCount, this.viewport)
+		primitives.draw(buffers.trailPoints, this.gl.POINTS, this.trailPointVertices.vertexCount, this.viewport, 2.7, true)
+		primitives.draw(buffers.heads, this.gl.POINTS, this.headVertices.vertexCount, this.viewport, 5.2, true)
 		this.gpuTimer?.end()
 		return {
 			uploadMs,

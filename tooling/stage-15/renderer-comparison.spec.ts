@@ -159,7 +159,7 @@ test('records the Stage 15C controlled Canvas2D/WebGL2 comparison', async ({ pag
 	}
 
 	const output = {
-		benchmark: 'Stage 15C controlled renderer comparison',
+		benchmark: process.env.STAGE15_BENCHMARK_NAME ?? 'Stage 15C controlled renderer comparison',
 		version: STAGE_15_RENDERING_BENCHMARK_VERSION,
 		measuredAt: new Date().toISOString(),
 		runtime: 'main-thread',
@@ -185,7 +185,7 @@ test('records the Stage 15C controlled Canvas2D/WebGL2 comparison', async ({ pag
 		},
 		results,
 	}
-	const destination = path.resolve('docs/v2/stage-15c-renderer-comparison.json')
+	const destination = path.resolve(process.env.STAGE15_OUTPUT ?? 'docs/v2/stage-15c-renderer-comparison.json')
 	await mkdir(path.dirname(destination), { recursive: true })
 	await writeFile(destination, `${JSON.stringify(output, null, 2)}\n`, 'utf8')
 })
