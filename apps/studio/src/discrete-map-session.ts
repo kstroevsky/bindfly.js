@@ -21,6 +21,7 @@ import type { PhasePortraitRenderView } from '../../../src-v2/rendering/phase-po
 import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 import { requireHtmlCanvas } from './session-renderer.ts'
+import { checksumDiscreteMapSimulation, checksumPhasePortraitRenderView, stage15ParityEvidence } from './stage-15-parity.ts'
 
 export interface DiscreteMapProbeAxis {
 	readonly value?: number
@@ -54,6 +55,7 @@ export const createDiscreteMapSession = (options: {
 	readonly parameters: DiscreteMapParameters
 	readonly seed: string
 	readonly viewport: Viewport
+	readonly stage15Benchmark?: boolean
 }): ExperimentSession<typeof discreteMapParameters, DiscreteMapInput, DiscreteMapState, ExperimentTelemetry> => {
 	let parameters = options.parameters
 	let viewport = options.viewport
@@ -105,6 +107,10 @@ export const createDiscreteMapSession = (options: {
 			assertActive()
 			const startedAt = performance.now()
 			const derived = frameTimer.measure(renderView)
+			const parityBefore = options.stage15Benchmark ? {
+				simulationChecksum: checksumDiscreteMapSimulation(simulation.state),
+				renderViewChecksum: checksumPhasePortraitRenderView(derived.value),
+			} : undefined
 			const rendered = frameTimer.measure(() => renderer.render(derived.value, frame))
 			const stage15Timing = frameTimer.finish(
 				derived.durationMs,
@@ -112,6 +118,10 @@ export const createDiscreteMapSession = (options: {
 				rendered.value?.uploadMs ?? 0,
 				rendered.value?.gpuRenderMs,
 			)
+			const parity = parityBefore ? stage15ParityEvidence(parityBefore, {
+				simulationChecksum: checksumDiscreteMapSimulation(simulation.state),
+				renderViewChecksum: checksumPhasePortraitRenderView(derived.value),
+			}) : undefined
 			telemetry = {
 				points: simulation.state.orbits.length,
 				edges: simulation.state.iteration,
@@ -119,6 +129,7 @@ export const createDiscreteMapSession = (options: {
 				step: frame.simulationStepIndex,
 				frameMs: performance.now() - startedAt,
 				...stage15Timing,
+				...(parity ? { stage15Parity: parity } : {}),
 				droppedSteps,
 				searchBackend: 'brute',
 			}

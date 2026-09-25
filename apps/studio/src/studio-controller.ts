@@ -46,6 +46,7 @@ export interface CreateStudioControllerOptions {
 	readonly formulaView: StudioFormulaView
 	readonly seed: string
 	readonly startPaused?: boolean
+	readonly stage15Benchmark?: boolean
 	readonly onMetrics: (metrics: StudioMetrics) => void
 	readonly onFailure: (error: unknown) => void
 }

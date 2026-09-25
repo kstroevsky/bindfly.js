@@ -26,6 +26,7 @@ import type {
 import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 import { requireHtmlCanvas } from './session-renderer.ts'
+import { checksumPhasePortraitRenderView, checksumVectorFieldSimulation, stage15ParityEvidence } from './stage-15-parity.ts'
 
 export interface VectorFieldProbeAxis {
 	readonly value?: number
@@ -59,6 +60,7 @@ export const createVectorFieldSession = (options: {
 	readonly parameters: VectorFieldParameters
 	readonly seed: string
 	readonly viewport: Viewport
+	readonly stage15Benchmark?: boolean
 }): ExperimentSession<typeof vectorFieldParameters, VectorFieldInput, VectorFieldState, ExperimentTelemetry> => {
 	let parameters = options.parameters
 	let viewport = options.viewport
@@ -147,6 +149,10 @@ export const createVectorFieldSession = (options: {
 			const startedAt = performance.now()
 			const derived = frameTimer.measure(renderView)
 			const view = derived.value
+			const parityBefore = options.stage15Benchmark ? {
+				simulationChecksum: checksumVectorFieldSimulation(simulation.state),
+				renderViewChecksum: checksumPhasePortraitRenderView(view),
+			} : undefined
 			const rendered = frameTimer.measure(() => renderer.render(view, frame))
 			const stage15Timing = frameTimer.finish(
 				derived.durationMs,
@@ -154,6 +160,10 @@ export const createVectorFieldSession = (options: {
 				rendered.value?.uploadMs ?? 0,
 				rendered.value?.gpuRenderMs,
 			)
+			const parity = parityBefore ? stage15ParityEvidence(parityBefore, {
+				simulationChecksum: checksumVectorFieldSimulation(simulation.state),
+				renderViewChecksum: checksumPhasePortraitRenderView(view),
+			}) : undefined
 			telemetry = {
 				points: simulation.state.trajectories.length,
 				edges: view.field?.length ?? 0,
@@ -161,6 +171,7 @@ export const createVectorFieldSession = (options: {
 				step: frame.simulationStepIndex,
 				frameMs: performance.now() - startedAt,
 				...stage15Timing,
+				...(parity ? { stage15Parity: parity } : {}),
 				droppedSteps,
 				searchBackend: 'brute',
 			}

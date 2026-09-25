@@ -308,6 +308,7 @@ export const StudioApp = () => {
 				formulaView: runtimeConfiguration.formulaView,
 				seed: runtimeConfiguration.seed,
 				startPaused: STAGE_15_BENCHMARK_MODE && runtimeConfiguration.plugin.temporalSemantics.kind !== 'static',
+				stage15Benchmark: STAGE_15_BENCHMARK_MODE,
 				onMetrics: (nextMetrics: StudioMetrics) => {
 					metricsRef.current = nextMetrics
 					setMetrics(nextMetrics)
@@ -727,7 +728,7 @@ export const StudioApp = () => {
 			{error ? <p className="error-message" role="alert">{error}</p> : null}
 			<section aria-labelledby="performance-heading"><h2 id="performance-heading">Performance</h2><dl className="metrics">
 				{plugin.metrics.map((descriptor) => {
-					const value = metrics[descriptor.id as keyof StudioMetrics] ?? 0
+					const value = metrics[descriptor.id as keyof Omit<StudioMetrics, 'stage15Parity'>] ?? 0
 					return <div className="metric" data-metric-id={descriptor.id} data-metric-value={String(value)} key={descriptor.id}><dt>{descriptor.label}</dt><dd>{descriptor.format ? descriptor.format(value) : String(value)}</dd></div>
 				})}
 			</dl></section>
@@ -735,6 +736,14 @@ export const StudioApp = () => {
 		</aside>
 		<section className="viewport" ref={viewportRef}>
 			<canvas className={workspace === 'analyze' && analysisSnapshot && analysisResult ? 'simulation-canvas simulation-canvas--analysis-hidden' : 'simulation-canvas'} key={`${plugin.id}-${rendererKind}-${runtimeKind}-${stateGeneration}`} ref={canvasRef} tabIndex={0} aria-label={`Interactive ${plugin.title} simulation`} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerCancel} />
+			{STAGE_15_BENCHMARK_MODE && metrics.stage15Parity ? <output
+				hidden
+				data-stage15-simulation-checksum={metrics.stage15Parity.simulationChecksum}
+				data-stage15-render-view-checksum={metrics.stage15Parity.renderViewChecksum}
+				data-stage15-post-render-simulation-checksum={metrics.stage15Parity.postRenderSimulationChecksum}
+				data-stage15-post-render-view-checksum={metrics.stage15Parity.postRenderViewChecksum}
+				data-stage15-parity="true"
+			/> : null}
 			{workspace === 'analyze' && analysisSnapshot && analysisResult ? <canvas ref={analysisCanvasRef} className="analysis-canvas" aria-label={`Pinned ${pointCloudSourceLabel(analysisSnapshot.source)} Rips complex at step ${analysisSnapshot.simulationStep}`} /> : null}
 			<div className="badge">{workspace === 'analyze' && analysisSnapshot ? `pinned · step ${analysisSnapshot.simulationStep} · ε ${analysisEpsilon.toFixed(0)} px` : `seed · ${seed} · derivation ${metrics.searchBackend} · ${rendererKind} · ${runtimeKind}`}</div>
 		</section>

@@ -21,6 +21,7 @@ import { createScalarFieldWebGL2Renderer } from '../../../src-v2/rendering/webgl
 import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 import { requireHtmlCanvas } from './session-renderer.ts'
+import { checksumScalarFieldRenderView, checksumScalarFieldSimulation, stage15ParityEvidence } from './stage-15-parity.ts'
 
 export interface ScalarFieldProbe {
 	readonly kind: 'scalar-field-probe'
@@ -48,6 +49,7 @@ export const createScalarFieldSession = (options: {
 	readonly parameters: ScalarFieldParameters
 	readonly seed: string
 	readonly viewport: Viewport
+	readonly stage15Benchmark?: boolean
 }): ExperimentSession<typeof scalarFieldParameters, ScalarFieldInput, ScalarFieldState, ExperimentTelemetry> => {
 	let parameters = options.parameters
 	let viewport = options.viewport
@@ -99,20 +101,29 @@ export const createScalarFieldSession = (options: {
 			const startedAt = performance.now()
 			const derived = frameTimer.measure(grid)
 			const currentGrid = derived.value
-			const rendered = frameTimer.measure(() => renderer.render({
+			const view = {
 				background: parameters.background,
 				domainRadius: parameters.domainRadius,
 				title: 'Scalar field · sampled z = f(x,y) · piecewise-linear level set',
 				grid: currentGrid,
 				contourLevel: parameters.contourLevel,
 				valueScale: parameters.valueScale,
-			}, frame))
+			}
+			const parityBefore = options.stage15Benchmark ? {
+				simulationChecksum: checksumScalarFieldSimulation(),
+				renderViewChecksum: checksumScalarFieldRenderView(view),
+			} : undefined
+			const rendered = frameTimer.measure(() => renderer.render(view, frame))
 			const stage15Timing = frameTimer.finish(
 				derived.durationMs,
 				rendered.value?.renderMs ?? rendered.durationMs,
 				rendered.value?.uploadMs ?? 0,
 				rendered.value?.gpuRenderMs,
 			)
+			const parity = parityBefore ? stage15ParityEvidence(parityBefore, {
+				simulationChecksum: checksumScalarFieldSimulation(),
+				renderViewChecksum: checksumScalarFieldRenderView(view),
+			}) : undefined
 			telemetry = {
 				points: currentGrid.validCount,
 				edges: currentGrid.invalidCount,
@@ -120,6 +131,7 @@ export const createScalarFieldSession = (options: {
 				step: frame.simulationStepIndex,
 				frameMs: performance.now() - startedAt,
 				...stage15Timing,
+				...(parity ? { stage15Parity: parity } : {}),
 				droppedSteps,
 				searchBackend: 'brute',
 			}

@@ -11,6 +11,7 @@ import { createFlyingLinesWebGL2Renderer } from '../../../src-v2/rendering/webgl
 import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
 import { requireHtmlCanvas } from './session-renderer.ts'
+import { checksumFlyingLinesRenderView, checksumFlyingLinesSimulation, stage15ParityEvidence } from './stage-15-parity.ts'
 
 export interface CreateFlyingLinesSessionOptions {
 	readonly canvas: HTMLCanvasElement | OffscreenCanvas
@@ -18,6 +19,7 @@ export interface CreateFlyingLinesSessionOptions {
 	readonly parameters: ParameterValues<typeof flyingLinesParameters>
 	readonly seed: string
 	readonly viewport: Viewport
+	readonly stage15Benchmark?: boolean
 }
 
 export type FlyingLinesSession = ExperimentSession<
@@ -88,6 +90,10 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 			}))
 			const edges = derived.value
 			if (view.edges !== edges) view = { ...view, edges }
+			const parityBefore = options.stage15Benchmark ? {
+				simulationChecksum: checksumFlyingLinesSimulation(simulation.state),
+				renderViewChecksum: checksumFlyingLinesRenderView(view),
+			} : undefined
 			const rendered = frameTimer.measure(() => renderer.render(view, frame))
 			const stage15Timing = frameTimer.finish(
 				derived.durationMs,
@@ -95,6 +101,10 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 				rendered.value?.uploadMs ?? 0,
 				rendered.value?.gpuRenderMs,
 			)
+			const parity = parityBefore ? stage15ParityEvidence(parityBefore, {
+				simulationChecksum: checksumFlyingLinesSimulation(simulation.state),
+				renderViewChecksum: checksumFlyingLinesRenderView(view),
+			}) : undefined
 			telemetry = {
 				points: simulation.state.particles.count,
 				edges: edges.edgeCount,
@@ -102,6 +112,7 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 				step: frame.simulationStepIndex,
 				frameMs: performance.now() - startedAt,
 				...stage15Timing,
+				...(parity ? { stage15Parity: parity } : {}),
 				droppedSteps,
 				searchBackend: proximity.backend,
 			}

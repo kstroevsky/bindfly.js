@@ -270,6 +270,59 @@ test('WebGL2 parity renderer uses the same Studio state for all Stage 15 benchma
 	}
 })
 
+test('WebGL2 context loss restores renderer resources without changing mathematical state', async ({ page }) => {
+	await page.goto('/?stage15Benchmark=1#/lab/scalar-field-2d')
+	await page.getByLabel('Renderer').selectOption('webgl2')
+	await expect(page.locator('.badge')).toContainText('webgl2 · main')
+	const canvas = page.getByLabel('Interactive Scalar Field Lab simulation')
+	const samples = page.locator('.metric').filter({ has: page.locator('dt', { hasText: /^Samples$/ }) }).locator('dd')
+	await expect.poll(async () => Number(await samples.textContent())).toBeGreaterThan(0)
+	const parity = page.locator('[data-stage15-parity="true"]')
+	await expect(parity).toHaveCount(1)
+	const stateBefore = {
+		points: await samples.textContent(),
+		invalid: await metric(page, 'Invalid samples').textContent(),
+		simulation: await parity.getAttribute('data-stage15-simulation-checksum'),
+		renderView: await parity.getAttribute('data-stage15-render-view-checksum'),
+	}
+	const pixelBefore = await canvas.evaluate((element) => {
+		const gl = (element as HTMLCanvasElement).getContext('webgl2')
+		if (!gl) return null
+		const pixel = new Uint8Array(4)
+		gl.readPixels(Math.floor(gl.drawingBufferWidth / 2), Math.floor(gl.drawingBufferHeight / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel)
+		return Array.from(pixel)
+	})
+
+	const restored = await canvas.evaluate(async (element) => {
+		const gl = (element as HTMLCanvasElement).getContext('webgl2')
+		const extension = gl?.getExtension('WEBGL_lose_context')
+		if (!gl || !extension) return false
+		const lost = new Promise<void>((resolve) => element.addEventListener('webglcontextlost', () => resolve(), { once: true }))
+		extension.loseContext()
+		await lost
+		await new Promise<void>((resolve) => window.setTimeout(resolve, 0))
+		const restoredEvent = new Promise<void>((resolve) => element.addEventListener('webglcontextrestored', () => resolve(), { once: true }))
+		extension.restoreContext()
+		await restoredEvent
+		return true
+	})
+	if (!restored) test.skip(true, 'WEBGL_lose_context is unavailable in this browser.')
+
+	await expect(samples).toHaveText(stateBefore.points ?? '')
+	await expect(metric(page, 'Invalid samples')).toHaveText(stateBefore.invalid ?? '')
+	await expect.poll(() => parity.getAttribute('data-stage15-simulation-checksum')).toBe(stateBefore.simulation)
+	await expect.poll(() => parity.getAttribute('data-stage15-render-view-checksum')).toBe(stateBefore.renderView)
+	if (pixelBefore) {
+		await expect.poll(() => canvas.evaluate((element) => {
+			const gl = (element as HTMLCanvasElement).getContext('webgl2')
+			if (!gl) return null
+			const pixel = new Uint8Array(4)
+			gl.readPixels(Math.floor(gl.drawingBufferWidth / 2), Math.floor(gl.drawingBufferHeight / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel)
+			return Array.from(pixel)
+		})).toEqual(pixelBefore)
+	}
+})
+
 test('experiments without a WebGL2 profile keep the renderer unavailable', async ({ page }) => {
 	await page.goto('/#/lab/drooping-lines')
 	const renderer = page.getByLabel('Renderer')

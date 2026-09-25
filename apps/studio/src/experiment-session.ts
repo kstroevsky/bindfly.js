@@ -7,6 +7,7 @@ import type {
 	Viewport,
 } from '../../../src-v2/core/index.ts'
 import type { RuntimeFormulaView, RuntimePointCloudCaptureRequest, RuntimePointInspectionRequest } from '../../../src-v2/runtime/protocol.ts'
+import type { Stage15ParityEvidence } from './stage-15-parity.ts'
 
 export interface ExperimentTelemetry {
 	readonly points: number
@@ -20,6 +21,7 @@ export interface ExperimentTelemetry {
 	readonly renderMs?: number
 	readonly gpuRenderMs?: number
 	readonly totalFrameMs?: number
+	readonly stage15Parity?: Stage15ParityEvidence
 	readonly droppedSteps: number
 	readonly searchBackend: 'brute' | 'grid'
 }

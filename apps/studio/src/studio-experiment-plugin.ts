@@ -105,6 +105,7 @@ export interface StudioExperimentPlugin {
 		readonly formulaView: StudioFormulaView
 		readonly seed: string
 		readonly viewport: Viewport
+		readonly stage15Benchmark?: boolean
 	}): ErasedExperimentSession
 	createInteractionController(): StudioInteractionController
 	serializeConfiguration(parameters: unknown, seed: string): string
@@ -146,6 +147,7 @@ export interface DefineStudioExperimentOptions<
 		readonly formulaView: StudioFormulaView
 		readonly seed: string
 		readonly viewport: Viewport
+		readonly stage15Benchmark?: boolean
 	}): ExperimentSession<Schema, Input, SnapshotState, Telemetry>
 	createInteractionController(): TypedStudioInteractionController<Input>
 	parseInput(value: unknown): Result<Input, string>
