@@ -8,6 +8,7 @@ import type { RawData } from 'ws'
 import type { Result } from '../../../src-v2/core/index.ts'
 import {
 	COLLABORATION_WIRE_VERSION,
+	MAX_COLLABORATION_ID_LENGTH,
 	encodeServerCollaborationWireMessage,
 	parseClientCollaborationWireMessage,
 } from '../../../src-v2/collaboration/index.ts'
@@ -21,6 +22,8 @@ const DEFAULT_HOST = '127.0.0.1'
 const DEFAULT_PORT = 0
 const DEFAULT_PATH = '/collaboration'
 const DEFAULT_MAX_WIRE_BYTES = 64 * 1024
+const DEFAULT_MAX_CONNECTIONS = 128
+const DEFAULT_MAX_CONNECTIONS_PER_PARTICIPANT = 4
 
 export interface AuthenticatedCollaborationParticipant {
 	readonly participantId: string
@@ -38,6 +41,8 @@ export interface AuthoritativeRoomWebSocketServerOptions<Input> {
 	readonly port?: number
 	readonly path?: string
 	readonly maxWireBytes?: number
+	readonly maxConnections?: number
+	readonly maxConnectionsPerParticipant?: number
 }
 
 export interface CollaborationServerAddress {
@@ -79,6 +84,8 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 	private readonly host: string
 	private readonly port: number
 	private readonly path: string
+	private readonly maxConnections: number
+	private readonly maxConnectionsPerParticipant: number
 	private readonly httpServer: Server
 	private readonly webSocketServer: WebSocketServer
 	private readonly sessions = new Set<ConnectionSession>()
@@ -91,12 +98,23 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		if (!Number.isSafeInteger(maxWireBytes) || maxWireBytes <= 0) {
 			throw new RangeError('Collaboration maxWireBytes must be a positive safe integer.')
 		}
+		const maxConnections = options.maxConnections ?? DEFAULT_MAX_CONNECTIONS
+		if (!Number.isSafeInteger(maxConnections) || maxConnections <= 0) {
+			throw new RangeError('Collaboration maxConnections must be a positive safe integer.')
+		}
+		const maxConnectionsPerParticipant = options.maxConnectionsPerParticipant
+			?? DEFAULT_MAX_CONNECTIONS_PER_PARTICIPANT
+		if (!Number.isSafeInteger(maxConnectionsPerParticipant) || maxConnectionsPerParticipant <= 0) {
+			throw new RangeError('Collaboration maxConnectionsPerParticipant must be a positive safe integer.')
+		}
 		this.room = options.room
 		this.authenticate = options.authenticate
 		this.stateStore = options.stateStore
 		this.host = options.host ?? DEFAULT_HOST
 		this.port = options.port ?? DEFAULT_PORT
 		this.path = options.path ?? DEFAULT_PATH
+		this.maxConnections = maxConnections
+		this.maxConnectionsPerParticipant = maxConnectionsPerParticipant
 		if (!this.path.startsWith('/')) throw new Error('Collaboration WebSocket path must start with /.')
 
 		this.httpServer = createServer((_request, response) => {
@@ -128,8 +146,22 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 			return
 		}
 		const authenticated = await this.authenticate(request)
-		if (!authenticated.ok || authenticated.value.participantId.length === 0) {
+		if (!authenticated.ok
+			|| authenticated.value.participantId.length === 0
+			|| authenticated.value.participantId.length > MAX_COLLABORATION_ID_LENGTH) {
 			writeUpgradeRejection(socket, 401, 'Unauthorized')
+			return
+		}
+		if (this.sessions.size >= this.maxConnections) {
+			writeUpgradeRejection(socket, 503, 'Service Unavailable')
+			return
+		}
+		let participantConnections = 0
+		for (const session of this.sessions) {
+			if (session.participantId === authenticated.value.participantId) participantConnections++
+		}
+		if (participantConnections >= this.maxConnectionsPerParticipant) {
+			writeUpgradeRejection(socket, 429, 'Too Many Requests')
 			return
 		}
 		this.webSocketServer.handleUpgrade(request, socket, head, (webSocket) => {

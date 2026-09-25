@@ -109,6 +109,21 @@ const closeSocket = async (socket: WebSocket): Promise<void> => {
 	})
 }
 
+const rejectedUpgradeStatus = async (
+	url: string,
+	participantId?: string,
+): Promise<number> => new Promise<number>((resolve, reject) => {
+	const socket = new WebSocket(url, participantId
+		? { headers: { 'x-bindfly-participant-id': participantId } }
+		: undefined)
+	socket.once('unexpected-response', (_request, response) => {
+		response.resume()
+		resolve(response.statusCode ?? 0)
+	})
+	socket.once('open', () => reject(new Error('Rejected collaboration WebSocket unexpectedly opened.')))
+	socket.once('error', () => undefined)
+})
+
 const rawDataToUtf8 = (raw: RawData): string => {
 	if (Array.isArray(raw)) return Buffer.concat(raw).toString('utf8')
 	if (raw instanceof ArrayBuffer) return Buffer.from(raw).toString('utf8')
@@ -214,15 +229,7 @@ test('real WebSocket clients preserve authoritative ordering and reconnect throu
 	const bobReplica = new CollaborationReplica({
 		roomId: 'shared-flying-lines', experimentId: 'flying-lines', stateVersion: 1, adapter: bob.adapter,
 	})
-	const unauthorizedStatus = await new Promise<number>((resolve, reject) => {
-		const socket = new WebSocket(address.url)
-		socket.once('unexpected-response', (_request, response) => {
-			response.resume()
-			resolve(response.statusCode ?? 0)
-		})
-		socket.once('open', () => reject(new Error('Unauthenticated collaboration WebSocket unexpectedly opened.')))
-		socket.once('error', () => undefined)
-	})
+	const unauthorizedStatus = await rejectedUpgradeStatus(address.url)
 	assert.equal(unauthorizedStatus, 401)
 
 	const aliceSocket = await openSocket(address.url, 'alice')
@@ -536,4 +543,36 @@ test('WebSocket room fails closed after durable persistence becomes unavailable'
 	assert.equal(room.logHeadSequence, 1)
 	await assert.rejects(server.advanceStepIndex(1), /fixture storage failure/)
 	assert.equal(room.currentStepIndex, 0)
+})
+
+test('WebSocket transport bounds authenticated identities and concurrent connections', async (t) => {
+	const authority = createHarness()
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'shared-flying-lines',
+		experimentId: 'flying-lines',
+		stateVersion: 1,
+		adapter: authority.adapter,
+		authorizeInput: () => ({ ok: true, value: undefined }),
+	})
+	const server = new AuthoritativeRoomWebSocketServer({
+		room,
+		maxConnections: 2,
+		maxConnectionsPerParticipant: 1,
+		authenticate: (request) => {
+			const participantId = request.headers['x-bindfly-participant-id']
+			return typeof participantId === 'string' && participantId.length > 0
+				? { ok: true, value: { participantId } }
+				: { ok: false, error: 'Missing participant identity.' }
+		},
+	})
+	t.after(async () => server.stop())
+	const address = await server.start()
+	assert.equal(await rejectedUpgradeStatus(address.url, 'x'.repeat(129)), 401)
+
+	const alice = await openSocket(address.url, 'alice')
+	t.after(async () => closeSocket(alice))
+	assert.equal(await rejectedUpgradeStatus(address.url, 'alice'), 429)
+	const bob = await openSocket(address.url, 'bob')
+	t.after(async () => closeSocket(bob))
+	assert.equal(await rejectedUpgradeStatus(address.url, 'charlie'), 503)
 })

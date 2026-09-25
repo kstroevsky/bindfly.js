@@ -4,6 +4,7 @@ export const COLLABORATION_PROTOCOL_VERSION = 1
 export const CANONICAL_SNAPSHOT_ENCODING_VERSION = 1
 export const SNAPSHOT_CHECKSUM_ALGORITHM = 'sha-256'
 export const AUTHORITATIVE_ROOM_PERSISTENCE_VERSION = 1
+export const MAX_COLLABORATION_ID_LENGTH = 128
 
 export type SequenceNumber = number
 

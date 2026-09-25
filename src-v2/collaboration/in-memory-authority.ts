@@ -1,5 +1,9 @@
 import { createSnapshotChecksum, encodeCanonicalSnapshotV1, snapshotChecksumsEqual } from './canonical-snapshot.ts'
-import { AUTHORITATIVE_ROOM_PERSISTENCE_VERSION, COLLABORATION_PROTOCOL_VERSION } from './protocol.ts'
+import {
+	AUTHORITATIVE_ROOM_PERSISTENCE_VERSION,
+	COLLABORATION_PROTOCOL_VERSION,
+	MAX_COLLABORATION_ID_LENGTH,
+} from './protocol.ts'
 import type { Result } from '../core/result.ts'
 import type {
 	AuthoritativeEvent,
@@ -18,7 +22,6 @@ const DEFAULT_MAX_INPUT_BYTES = 4_096
 const DEFAULT_INPUT_LEAD_STEPS = 1
 const DEFAULT_MAX_REPLAY_EVENTS = 256
 const DEFAULT_MAX_INPUTS_PER_PARTICIPANT_PER_STEP = 64
-const MAX_ID_LENGTH = 128
 
 export interface InMemoryAuthoritativeRoomOptions<Input> {
 	readonly roomId: string
@@ -40,7 +43,8 @@ const bytesEqual = (left: Uint8Array, right: Uint8Array): boolean => {
 	return true
 }
 
-const validIdentity = (value: string): boolean => value.length > 0 && value.length <= MAX_ID_LENGTH
+const validIdentity = (value: string): boolean =>
+	value.length > 0 && value.length <= MAX_COLLABORATION_ID_LENGTH
 
 export class InMemoryAuthoritativeRoom<Input> {
 	private readonly roomId: string
