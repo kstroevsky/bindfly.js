@@ -18,6 +18,7 @@ export const RIPSER_WASM_METADATA: PersistenceBackendMetadata = Object.freeze({
 	version: '1',
 	sourceCommit: '01add51ff64aaf40889483260cc5c3b7d0f2a1e7',
 	license: 'MIT',
+	numericSemantics: 'Full H₀/H₁ over F₂ · Ripser float filtration',
 })
 
 const cancelled = () => new PersistentHomologyBackendError('cancelled', 'Persistent homology analysis was cancelled.')
@@ -52,7 +53,7 @@ export class RipserWasmAdapter implements PersistentHomologyBackend {
 		signal?: AbortSignal,
 	): Promise<RipsPersistenceResult> {
 		if (options.maximumHomologyDimension !== 1 || options.coefficientField !== 2) {
-			throw new PersistentHomologyBackendError('backend-failed', 'Ripser WASM Stage 13 supports exact H0/H1 over F2 only.')
+			throw new PersistentHomologyBackendError('backend-failed', 'Ripser WASM Stage 13 supports full H0/H1 over F2 with float filtration values only.')
 		}
 		if (signal?.aborted) throw cancelled()
 		const preflight = preflightRipsPersistence(snapshot, options.epsilonMax, options.budget)
@@ -94,7 +95,9 @@ export class RipserWasmAdapter implements PersistentHomologyBackend {
 				pointCount: preflight.pointCount,
 				edgeCount: preflight.edgeCount,
 				triangleCount: preflight.triangleCount,
+				triangleCountExact: true,
 				simplexCount: preflight.simplexCount,
+				simplexCountExact: true,
 				h0: persistence.h0,
 				h1: persistence.h1,
 				warnings: [],

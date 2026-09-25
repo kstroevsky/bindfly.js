@@ -1,15 +1,20 @@
 import { analyzeRipsComplex, DEFAULT_RIPS_ANALYSIS_BUDGET } from '../../../src-v2/analysis/rips-complex.ts'
 import { DEFAULT_RIPS_PERSISTENCE_BUDGET } from '../../../src-v2/analysis/rips-persistence.ts'
+import type { PersistentHomologyBackend } from '../../../src-v2/analysis/rips-persistence.ts'
 import { isAnalysisWorkerRequest } from './analysis-worker-protocol.ts'
 import type { AnalysisWorkerResponse } from './analysis-worker-protocol.ts'
-import { RipserWasmAdapter } from './ripser-wasm-adapter.ts'
 
 interface AnalysisWorkerScope {
 	postMessage(message: AnalysisWorkerResponse): void
 }
 
 const scope = self as unknown as AnalysisWorkerScope
-const persistenceBackend = new RipserWasmAdapter()
+let persistenceBackendPromise: Promise<PersistentHomologyBackend> | undefined
+
+const loadPersistenceBackend = () => {
+	persistenceBackendPromise ??= import('./ripser-wasm-adapter.ts').then(({ RipserWasmAdapter }) => new RipserWasmAdapter())
+	return persistenceBackendPromise
+}
 
 self.onmessage = (event: MessageEvent<unknown>) => {
 	if (!isAnalysisWorkerRequest(event.data)) return
@@ -20,6 +25,7 @@ self.onmessage = (event: MessageEvent<unknown>) => {
 			const result = analyzeRipsComplex(request.snapshot, request.epsilon, DEFAULT_RIPS_ANALYSIS_BUDGET)
 			scope.postMessage({ type: 'rips-result', requestId: request.requestId, result })
 		} else {
+			const persistenceBackend = await loadPersistenceBackend()
 			const result = await persistenceBackend.compute(request.snapshot, {
 				epsilonMax: request.epsilonMax,
 				maximumHomologyDimension: 1,

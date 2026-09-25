@@ -32,9 +32,10 @@ test('analysis worker protocol validates pinned snapshot requests and structure 
 		type: 'persistence-result', requestId: 'p1',
 		result: {
 			status: 'computed', epsilonMax: 1000, metric: 'euclidean',
-			pointCount: 2, edgeCount: 1, triangleCount: 0, simplexCount: 3,
+			pointCount: 2, edgeCount: 1, triangleCount: 0, triangleCountExact: true,
+			simplexCount: 3, simplexCountExact: true,
 			h0: [{ birth: 0, death: 5 }, { birth: 0, death: null }], h1: [], warnings: [],
-			backend: { id: 'ripser-wasm', version: '1', sourceCommit: 'fixture', license: 'MIT' },
+			backend: { id: 'ripser-wasm', version: '1', sourceCommit: 'fixture', license: 'MIT', numericSemantics: 'Full H₀/H₁ over F₂ · Ripser float filtration' },
 		},
 	}), true)
 	assert.equal(isAnalysisWorkerResponse({ type: 'analysis-error', requestId: 'r1', message: 'failed' }), true)

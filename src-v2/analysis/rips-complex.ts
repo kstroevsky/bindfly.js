@@ -46,6 +46,14 @@ export interface RipsComplexResult {
 	readonly warnings: readonly string[]
 }
 
+export interface RipsComplexSizeMeasurement {
+	readonly pointCount: number
+	readonly edgeCount: number
+	/** Exact when `triangleCountExact` is true; otherwise a proven lower bound. */
+	readonly triangleCount: number
+	readonly triangleCountExact: boolean
+}
+
 interface Adjacency {
 	readonly offsets: Uint32Array
 	readonly neighbors: Uint32Array
@@ -123,6 +131,37 @@ const forEachTriangle = (
 		}
 	}
 	return triangleIndex
+}
+
+export const measureRipsComplexSize = (
+	snapshot: PointCloudSnapshot,
+	epsilon: number,
+	triangleCountLimit = Number.POSITIVE_INFINITY,
+): RipsComplexSizeMeasurement => {
+	if (!Number.isFinite(epsilon) || epsilon <= 0) throw new RangeError('Rips epsilon must be a positive finite number.')
+	if (triangleCountLimit !== Number.POSITIVE_INFINITY
+		&& (!Number.isInteger(triangleCountLimit) || triangleCountLimit <= 0)) {
+		throw new RangeError('Rips triangle count limit must be a positive integer or Infinity.')
+	}
+	const pointCount = snapshot.ids.length
+	if (pointCount === 0) return { pointCount: 0, edgeCount: 0, triangleCount: 0, triangleCountExact: true }
+	const points: PointBuffer2D = { count: pointCount, capacity: pointCount, ids: snapshot.ids, x: snapshot.x, y: snapshot.y }
+	const graph = createProximityGraphWorkspace(pointCount).analyze(points, epsilon)
+	const adjacency = createAdjacency(pointCount, graph.edgeCount, graph.sourceIndices, graph.targetIndices, graph.degrees)
+	const triangleCount = forEachTriangle(
+		graph.edgeCount,
+		graph.sourceIndices,
+		graph.targetIndices,
+		adjacency,
+		() => {},
+		triangleCountLimit,
+	)
+	return {
+		pointCount,
+		edgeCount: graph.edgeCount,
+		triangleCount,
+		triangleCountExact: triangleCountLimit === Number.POSITIVE_INFINITY || triangleCount < triangleCountLimit,
+	}
 }
 
 const symmetricDifference = (left: readonly number[], right: readonly number[]): number[] => {

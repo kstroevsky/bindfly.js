@@ -53,7 +53,9 @@ const isRipsPersistenceResult = (value: unknown): value is RipsPersistenceResult
 	&& typeof value.pointCount === 'number'
 	&& typeof value.edgeCount === 'number'
 	&& typeof value.triangleCount === 'number'
+	&& typeof value.triangleCountExact === 'boolean'
 	&& typeof value.simplexCount === 'number'
+	&& typeof value.simplexCountExact === 'boolean'
 	&& Array.isArray(value.h0) && value.h0.every(isPersistenceInterval)
 	&& Array.isArray(value.h1) && value.h1.every(isPersistenceInterval)
 	&& Array.isArray(value.warnings) && value.warnings.every((warning) => typeof warning === 'string')
@@ -62,6 +64,7 @@ const isRipsPersistenceResult = (value: unknown): value is RipsPersistenceResult
 	&& typeof value.backend.version === 'string'
 	&& typeof value.backend.sourceCommit === 'string'
 	&& typeof value.backend.license === 'string'
+	&& typeof value.backend.numericSemantics === 'string'
 
 export const isAnalysisWorkerResponse = (value: unknown): value is AnalysisWorkerResponse => {
 	if (!isRecord(value) || typeof value.requestId !== 'string' || value.requestId.length === 0) return false

@@ -1,8 +1,8 @@
 import type { PointCloudSnapshot } from './point-cloud-snapshot.ts'
-import { analyzeRipsComplex } from './rips-complex.ts'
+import { measureRipsComplexSize } from './rips-complex.ts'
 
 export const RIPS_PERSISTENCE_ANALYZER_ID = 'rips-persistence-2d'
-export const RIPS_PERSISTENCE_ANALYZER_VERSION = '2'
+export const RIPS_PERSISTENCE_ANALYZER_VERSION = '3'
 
 export interface RipsPersistenceBudget {
 	readonly maxTriangles: number
@@ -24,6 +24,7 @@ export interface PersistenceBackendMetadata {
 	readonly version: string
 	readonly sourceCommit: string
 	readonly license: string
+	readonly numericSemantics: string
 }
 
 export interface RipsPersistenceResult {
@@ -33,7 +34,9 @@ export interface RipsPersistenceResult {
 	readonly pointCount: number
 	readonly edgeCount: number
 	readonly triangleCount: number
+	readonly triangleCountExact: boolean
 	readonly simplexCount: number
+	readonly simplexCountExact: boolean
 	readonly h0: readonly PersistenceInterval[]
 	readonly h1: readonly PersistenceInterval[]
 	readonly warnings: readonly string[]
@@ -83,7 +86,9 @@ export interface RipsPersistencePreflight {
 	readonly pointCount: number
 	readonly edgeCount: number
 	readonly triangleCount: number
+	readonly triangleCountExact: boolean
 	readonly simplexCount: number
+	readonly simplexCountExact: boolean
 	readonly warnings: readonly string[]
 }
 
@@ -106,13 +111,10 @@ export const preflightRipsPersistence = (
 	}
 	validateBudget(budget)
 
-	const complex = analyzeRipsComplex(snapshot, epsilonMax, {
-		maxMaterializedTriangles: budget.maxTriangles,
-		maxTriangleCountForMaterialization: budget.maxTriangles,
-		maxHomologyTriangles: 0,
-	})
+	const complex = measureRipsComplexSize(snapshot, epsilonMax, budget.maxTriangles + 1)
 	const simplexCount = complex.pointCount + complex.edgeCount + complex.triangleCount
-	if (complex.triangleCount > budget.maxTriangles) {
+	const simplexCountExact = complex.triangleCountExact
+	if (!complex.triangleCountExact || complex.triangleCount > budget.maxTriangles) {
 		return {
 			status: 'budget-exceeded',
 			epsilonMax,
@@ -120,8 +122,10 @@ export const preflightRipsPersistence = (
 			pointCount: complex.pointCount,
 			edgeCount: complex.edgeCount,
 			triangleCount: complex.triangleCount,
+			triangleCountExact: complex.triangleCountExact,
 			simplexCount,
-			warnings: [`Persistent homology was not computed: ${complex.triangleCount} triangles exceed the budget of ${budget.maxTriangles}.`],
+			simplexCountExact,
+			warnings: [`Persistent homology was not computed: more than ${budget.maxTriangles} triangles exceed the analysis budget.`],
 		}
 	}
 	if (simplexCount > budget.maxSimplices) {
@@ -132,7 +136,9 @@ export const preflightRipsPersistence = (
 			pointCount: complex.pointCount,
 			edgeCount: complex.edgeCount,
 			triangleCount: complex.triangleCount,
+			triangleCountExact: true,
 			simplexCount,
+			simplexCountExact: true,
 			warnings: [`Persistent homology was not computed: ${simplexCount} simplices exceed the budget of ${budget.maxSimplices}.`],
 		}
 	}
@@ -143,7 +149,9 @@ export const preflightRipsPersistence = (
 		pointCount: complex.pointCount,
 		edgeCount: complex.edgeCount,
 		triangleCount: complex.triangleCount,
+		triangleCountExact: true,
 		simplexCount,
+		simplexCountExact: true,
 		warnings: [],
 	}
 }
@@ -162,7 +170,9 @@ export const createBudgetExceededPersistenceResult = (
 		pointCount: preflight.pointCount,
 		edgeCount: preflight.edgeCount,
 		triangleCount: preflight.triangleCount,
+		triangleCountExact: preflight.triangleCountExact,
 		simplexCount: preflight.simplexCount,
+		simplexCountExact: preflight.simplexCountExact,
 		h0: [],
 		h1: [],
 		warnings: preflight.warnings,

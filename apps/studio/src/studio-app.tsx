@@ -655,6 +655,7 @@ export const StudioApp = () => {
 						<dl className="analysis-provenance">
 							<div><dt>Analyzer</dt><dd>{persistenceResult.analyzerId} v{persistenceResult.analyzerVersion}</dd></div>
 							<div><dt>Backend</dt><dd>{persistenceResult.value.backend.id} v{persistenceResult.value.backend.version} · {persistenceResult.value.backend.sourceCommit.slice(0, 8)}</dd></div>
+							<div><dt>Computation</dt><dd>{persistenceResult.value.backend.numericSemantics}</dd></div>
 							<div><dt>εmax</dt><dd>{persistenceResult.value.epsilonMax.toFixed(0)} px</dd></div>
 							<div><dt>Duration</dt><dd>{persistenceResult.durationMs.toFixed(1)} ms</dd></div>
 						</dl>

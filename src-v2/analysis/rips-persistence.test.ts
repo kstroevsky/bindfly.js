@@ -20,7 +20,7 @@ const snapshot = (coordinates: readonly (readonly [number, number])[]) => create
 	},
 })
 
-const backend = { id: 'fixture', version: '1', sourceCommit: 'fixture', license: 'MIT' } as const
+const backend = { id: 'fixture', version: '1', sourceCommit: 'fixture', license: 'MIT', numericSemantics: 'fixture' } as const
 
 test('persistence cursor counts precomputed half-open intervals without recomputation', () => {
 	const h0 = [{ birth: 0, death: 2 }, { birth: 0, death: null }] as const
@@ -36,14 +36,19 @@ test('persistence preflight records the exact filtration size before invoking a 
 	assert.equal(result.pointCount, 4)
 	assert.equal(result.edgeCount, 6)
 	assert.equal(result.triangleCount, 4)
+	assert.equal(result.triangleCountExact, true)
 	assert.equal(result.simplexCount, 14)
+	assert.equal(result.simplexCountExact, true)
 })
 
 test('persistence preflight refuses work outside triangle and simplex budgets', () => {
 	const square = snapshot([[0, 0], [1, 0], [1, 1], [0, 1]])
 	const triangleLimited = preflightRipsPersistence(square, 2, { maxTriangles: 3, maxSimplices: 100 })
 	assert.equal(triangleLimited.status, 'budget-exceeded')
-	assert.match(triangleLimited.warnings.join(' '), /triangles exceed the budget/i)
+	assert.equal(triangleLimited.triangleCount, 4)
+	assert.equal(triangleLimited.triangleCountExact, false)
+	assert.equal(triangleLimited.simplexCountExact, false)
+	assert.match(triangleLimited.warnings.join(' '), /more than 3 triangles/i)
 	const refusal = createBudgetExceededPersistenceResult(triangleLimited, backend)
 	assert.deepEqual(refusal.h0, [])
 	assert.deepEqual(refusal.h1, [])
@@ -52,4 +57,14 @@ test('persistence preflight refuses work outside triangle and simplex budgets', 
 	const simplexLimited = preflightRipsPersistence(square, 2, { maxTriangles: 10, maxSimplices: 10 })
 	assert.equal(simplexLimited.status, 'budget-exceeded')
 	assert.match(simplexLimited.warnings.join(' '), /simplices exceed the budget/i)
+})
+
+test('persistence preflight stops triangle enumeration as soon as refusal is proven', () => {
+	const clique = snapshot(Array.from({ length: 10 }, (_, index) => [Math.cos(index), Math.sin(index)] as const))
+	const result = preflightRipsPersistence(clique, 3, { maxTriangles: 10, maxSimplices: 10_000 })
+	assert.equal(result.status, 'budget-exceeded')
+	assert.equal(result.triangleCount, 11)
+	assert.equal(result.triangleCountExact, false)
+	assert.equal(result.simplexCountExact, false)
+	assert.match(result.warnings.join(' '), /more than 10 triangles/i)
 })
