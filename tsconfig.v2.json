@@ -27,6 +27,8 @@
       "@bindfly-v2/rendering/*": ["src-v2/rendering/*"],
       "@bindfly-v2/runtime": ["src-v2/runtime/index.ts"],
       "@bindfly-v2/runtime/*": ["src-v2/runtime/*"],
+      "@bindfly-v2/collaboration": ["src-v2/collaboration/index.ts"],
+      "@bindfly-v2/collaboration/*": ["src-v2/collaboration/*"],
       "@bindfly-v2/analysis": ["src-v2/analysis/index.ts"],
       "@bindfly-v2/analysis/*": ["src-v2/analysis/*"],
       "@bindfly-v2/benchmarks": ["src-v2/benchmarks/index.ts"],

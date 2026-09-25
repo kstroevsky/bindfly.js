@@ -10,6 +10,7 @@ const moduleRoots = {
 	effects: path.join('src-v2', 'effects'),
 	rendering: path.join('src-v2', 'rendering'),
 	runtime: path.join('src-v2', 'runtime'),
+	collaboration: path.join('src-v2', 'collaboration'),
 	analysis: path.join('src-v2', 'analysis'),
 	benchmarks: path.join('src-v2', 'benchmarks'),
 	studio: path.join('apps', 'studio', 'src'),
@@ -21,9 +22,10 @@ const allowedDependencies = {
 	effects: ['core', 'formula'],
 	rendering: ['core'],
 	runtime: ['core'],
+	collaboration: ['core'],
 	analysis: ['core'],
-	benchmarks: ['core', 'formula', 'effects', 'rendering', 'runtime', 'analysis'],
-	studio: ['core', 'formula', 'effects', 'rendering', 'runtime', 'analysis', 'benchmarks'],
+	benchmarks: ['core', 'formula', 'effects', 'rendering', 'runtime', 'collaboration', 'analysis'],
+	studio: ['core', 'formula', 'effects', 'rendering', 'runtime', 'collaboration', 'analysis', 'benchmarks'],
 }
 
 const forbiddenModuleNames = ['shared', 'types', 'utils']
