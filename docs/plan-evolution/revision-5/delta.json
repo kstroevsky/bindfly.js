@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "base_sha256": "b6ebd42c1b8015a88187f313a6e4a216519385bf90ad144a9c86513078212f5e",
+  "closed_world": true,
+  "source_feedback": [
+    "User review and continuation instruction recorded in docs/plan-evolution/revision-5/approved-feedback-payload.md."
+  ],
+  "changes": [
+    {
+      "feedback_id": "DOC-STATUS-01",
+      "operation": "ADD",
+      "requirement_ids": ["DOC-STATUS-001"],
+      "allowed_sections": [
+        ["Bindfly 2 Implementation Plan — Candidate"],
+        ["Bindfly 2 Implementation Plan — Candidate", "Source request"],
+        ["Bindfly 2 Implementation Plan"],
+        ["Bindfly 2 Implementation Plan", "Source request"]
+      ],
+      "required_literals": ["Status: accepted/canonical."],
+      "forbidden_literals": [
+        "Bindfly 2 Implementation Plan — Candidate",
+        "candidate under verification, not yet accepted/canonical"
+      ],
+      "allowed_new_numeric_tokens": [],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Remove stale candidate metadata while preserving the canonical plan body byte-for-byte."
+    }
+  ]
+}

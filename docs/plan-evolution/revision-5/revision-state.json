@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "phase": "COMPLETE",
+  "acceptance_status": "ACCEPTED_CANONICAL_AMENDMENT",
+  "base_sha256": "b6ebd42c1b8015a88187f313a6e4a216519385bf90ad144a9c86513078212f5e",
+  "candidate_sha256": "da39c962809699778a9e59995faff883e792f921364af9cd6d82142a27cd78bc",
+  "completed_feedback_ids": ["DOC-STATUS-01"],
+  "validation_results": {
+    "mechanical": "PASS",
+    "semantic": "PASS",
+    "independent": "NOT_REQUIRED"
+  },
+  "open_findings": []
+}

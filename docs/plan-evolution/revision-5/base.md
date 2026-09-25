@@ -1,6 +1,6 @@
-# Bindfly 2 Implementation Plan
+# Bindfly 2 Implementation Plan — Candidate
 
-> Status: accepted/canonical. Preservation base: `docs/initial_plan.md`, SHA-256 `0815d8a1a1e895c43e9345f5f8ba291cac81fbda6791a1f230165df815c67a37`. Normative keywords such as **must**, **must not**, **required**, **exit criterion**, and ❌ define implementation constraints; code and numeric blocks explicitly labeled illustrative are not frozen defaults.
+> Status: candidate under verification, not yet accepted/canonical. Preservation base: `docs/initial_plan.md`, SHA-256 `0815d8a1a1e895c43e9345f5f8ba291cac81fbda6791a1f230165df815c67a37`. Normative keywords such as **must**, **must not**, **required**, **exit criterion**, and ❌ define implementation constraints; code and numeric blocks explicitly labeled illustrative are not frozen defaults.
 
 ## Source request
 
