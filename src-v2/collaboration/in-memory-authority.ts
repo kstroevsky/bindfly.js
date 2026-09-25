@@ -1,8 +1,9 @@
 import { createSnapshotChecksum, encodeCanonicalSnapshotV1, snapshotChecksumsEqual } from './canonical-snapshot.ts'
-import { COLLABORATION_PROTOCOL_VERSION } from './protocol.ts'
+import { AUTHORITATIVE_ROOM_PERSISTENCE_VERSION, COLLABORATION_PROTOCOL_VERSION } from './protocol.ts'
 import type { Result } from '../core/result.ts'
 import type {
 	AuthoritativeEvent,
+	AuthoritativeRoomPersistenceState,
 	AuthoritativeSnapshot,
 	AuthoritativeSubmitResult,
 	AuthoritativeTick,
@@ -10,6 +11,7 @@ import type {
 	CollaborationResumePlan,
 	CollaborationResumeRequest,
 	CollaborationStateAdapter,
+	PersistedAuthoritativeEvent,
 } from './protocol.ts'
 
 const DEFAULT_MAX_INPUT_BYTES = 4_096
@@ -88,6 +90,123 @@ export class InMemoryAuthoritativeRoom<Input> {
 		this.inputLeadSteps = inputLeadSteps
 		this.maxReplayEvents = maxReplayEvents
 		this.maxInputsPerParticipantPerStep = maxInputsPerParticipantPerStep
+	}
+
+	static async recover<Input>(
+		options: InMemoryAuthoritativeRoomOptions<Input>,
+		persisted: AuthoritativeRoomPersistenceState,
+	): Promise<InMemoryAuthoritativeRoom<Input>> {
+		const room = new InMemoryAuthoritativeRoom(options)
+		if (persisted.persistenceVersion !== AUTHORITATIVE_ROOM_PERSISTENCE_VERSION) {
+			throw new Error('Unsupported authoritative-room persistence version.')
+		}
+		if (persisted.inputLeadSteps !== room.inputLeadSteps) {
+			throw new Error('Persisted authoritative-room input scheduling policy does not match the room being recovered.')
+		}
+		const { snapshot } = persisted
+		if (snapshot.protocolVersion !== COLLABORATION_PROTOCOL_VERSION) {
+			throw new Error('Persisted authoritative snapshot uses an incompatible collaboration protocol version.')
+		}
+		if (snapshot.roomId !== room.roomId || snapshot.experimentId !== room.experimentId || snapshot.stateVersion !== room.stateVersion) {
+			throw new Error('Persisted authoritative snapshot identity does not match the room being recovered.')
+		}
+		if (!Number.isSafeInteger(snapshot.lastAppliedSequence) || snapshot.lastAppliedSequence < 0
+			|| !Number.isSafeInteger(snapshot.stepIndex) || snapshot.stepIndex < 0) {
+			throw new Error('Persisted authoritative snapshot sequence or step index is invalid.')
+		}
+		const expectedChecksum = await createSnapshotChecksum(encodeCanonicalSnapshotV1({
+			roomId: snapshot.roomId,
+			experimentId: snapshot.experimentId,
+			stateVersion: snapshot.stateVersion,
+			lastAppliedSequence: snapshot.lastAppliedSequence,
+			stepIndex: snapshot.stepIndex,
+			configurationBytes: snapshot.configurationBytes,
+			stateBytes: snapshot.stateBytes,
+		}))
+		if (!snapshotChecksumsEqual(snapshot.checksum, expectedChecksum)) {
+			throw new Error('Persisted authoritative snapshot checksum verification failed.')
+		}
+		if (!bytesEqual(snapshot.configurationBytes, room.adapter.captureConfigurationBytes())) {
+			throw new Error('Persisted authoritative snapshot configuration does not match the room adapter.')
+		}
+		if (snapshot.lastAppliedSequence > persisted.events.length) {
+			throw new Error('Persisted authoritative snapshot references an event sequence beyond the stored log.')
+		}
+
+		const recoveredEvents: Array<{ event: AuthoritativeEvent<Input>; inputBytes: Uint8Array }> = []
+		const recoveredClientIds = new Set<string>()
+		let previousStepIndex = 0
+		for (let index = 0; index < persisted.events.length; index++) {
+			const stored = persisted.events[index]!
+			const expectedSequence = index + 1
+			if (stored.protocolVersion !== COLLABORATION_PROTOCOL_VERSION
+				|| stored.roomId !== room.roomId
+				|| stored.experimentId !== room.experimentId
+				|| stored.stateVersion !== room.stateVersion) {
+				throw new Error(`Persisted authoritative event ${expectedSequence} has incompatible room identity.`)
+			}
+			if (stored.sequence !== expectedSequence) {
+				throw new Error(`Persisted authoritative event sequence ${stored.sequence} is not the expected contiguous sequence ${expectedSequence}.`)
+			}
+			if (!validIdentity(stored.participantId) || !validIdentity(stored.clientEventId)) {
+				throw new Error(`Persisted authoritative event ${stored.sequence} has invalid participant/client identity.`)
+			}
+			if (!Number.isSafeInteger(stored.stepIndex) || stored.stepIndex <= 0 || stored.stepIndex < previousStepIndex) {
+				throw new Error(`Persisted authoritative event ${stored.sequence} has an invalid scheduled step.`)
+			}
+			if (stored.sequence <= snapshot.lastAppliedSequence && stored.stepIndex > snapshot.stepIndex) {
+				throw new Error(`Persisted authoritative event ${stored.sequence} is marked applied before its scheduled step.`)
+			}
+			if (stored.sequence > snapshot.lastAppliedSequence && stored.stepIndex <= snapshot.stepIndex) {
+				throw new Error(`Persisted authoritative event ${stored.sequence} is missing from snapshot state despite being due.`)
+			}
+			const decoded = room.adapter.decodeInput(stored.inputBytes)
+			if (!decoded.ok) throw new Error(`Persisted authoritative event ${stored.sequence} input is invalid: ${decoded.error}`)
+			const canonicalInputBytes = room.adapter.encodeInput(decoded.value)
+			if (!bytesEqual(canonicalInputBytes, stored.inputBytes)) {
+				throw new Error(`Persisted authoritative event ${stored.sequence} input bytes are not canonical.`)
+			}
+			const idempotencyKey = JSON.stringify([stored.participantId, stored.clientEventId])
+			if (recoveredClientIds.has(idempotencyKey)) {
+				throw new Error(`Persisted authoritative event ${stored.sequence} reuses an existing participant/client event ID.`)
+			}
+			recoveredClientIds.add(idempotencyKey)
+			recoveredEvents.push({
+				event: {
+					protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+					roomId: room.roomId,
+					experimentId: room.experimentId,
+					stateVersion: room.stateVersion,
+					participantId: stored.participantId,
+					clientEventId: stored.clientEventId,
+					sequence: stored.sequence,
+					stepIndex: stored.stepIndex,
+					input: decoded.value,
+				},
+				inputBytes: canonicalInputBytes,
+			})
+			previousStepIndex = stored.stepIndex
+		}
+
+		room.adapter.restoreStateBytes(snapshot.stateBytes.slice())
+		room.stepIndex = snapshot.stepIndex
+		room.appliedSequenceValue = snapshot.lastAppliedSequence
+		for (const recovered of recoveredEvents) {
+			room.events.push(recovered.event)
+			const idempotencyKey = JSON.stringify([recovered.event.participantId, recovered.event.clientEventId])
+			room.acceptedByClientId.set(idempotencyKey, {
+				event: recovered.event,
+				inputBytes: recovered.inputBytes.slice(),
+			})
+			if (recovered.event.stepIndex === room.stepIndex + room.inputLeadSteps) {
+				const usage = room.participantStepUsage.get(recovered.event.participantId)
+				room.participantStepUsage.set(recovered.event.participantId, {
+					stepIndex: room.stepIndex,
+					count: (usage?.stepIndex === room.stepIndex ? usage.count : 0) + 1,
+				})
+			}
+		}
+		return room
 	}
 
 	get eventLog(): readonly AuthoritativeEvent<Input>[] {
@@ -220,6 +339,27 @@ export class InMemoryAuthoritativeRoom<Input> {
 			configurationBytes,
 			stateBytes,
 			checksum: await createSnapshotChecksum(canonicalBytes),
+		}
+	}
+
+	async capturePersistenceState(): Promise<AuthoritativeRoomPersistenceState> {
+		const snapshot = await this.createSnapshot()
+		const events: PersistedAuthoritativeEvent[] = this.events.map((event) => ({
+			protocolVersion: event.protocolVersion,
+			roomId: event.roomId,
+			experimentId: event.experimentId,
+			stateVersion: event.stateVersion,
+			participantId: event.participantId,
+			clientEventId: event.clientEventId,
+			sequence: event.sequence,
+			stepIndex: event.stepIndex,
+			inputBytes: this.adapter.encodeInput(event.input).slice(),
+		}))
+		return {
+			persistenceVersion: AUTHORITATIVE_ROOM_PERSISTENCE_VERSION,
+			inputLeadSteps: this.inputLeadSteps,
+			snapshot,
+			events,
 		}
 	}
 

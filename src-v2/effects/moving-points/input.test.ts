@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { encodeMovingPointInputV1, parseMovingPointInput } from './input.ts'
+import { decodeMovingPointInputV1, encodeMovingPointInputV1, parseMovingPointInput } from './input.ts'
 
 test('point-input parser validates the shared interaction domain', () => {
 	assert.deepEqual(parseMovingPointInput({ type: 'move-point', id: 7, x: 12, y: 14 }), {
@@ -22,4 +22,17 @@ test('point inputs have deterministic versioned binary identity for collaboratio
 		encodeMovingPointInputV1({ type: 'add-point', x: 12, y: 14 }),
 		encodeMovingPointInputV1({ type: 'add-point', x: 12, y: 15 }),
 	)
+})
+
+test('point input binary identity round-trips every collaboration input variant', () => {
+	const inputs = [
+		{ type: 'add-point', x: 12, y: 14 },
+		{ type: 'remove-nearest', x: 1, y: 2, maxDistance: 30 },
+		{ type: 'move-point', id: 7, x: 12, y: 14 },
+		{ type: 'move-nearest', fromX: 1, fromY: 2, x: 3, y: 4, maxDistance: 50 },
+	] as const
+	for (const input of inputs) {
+		assert.deepEqual(decodeMovingPointInputV1(encodeMovingPointInputV1(input)), input)
+	}
+	assert.throws(() => decodeMovingPointInputV1(new Uint8Array([1, 2])), /invalid/)
 })

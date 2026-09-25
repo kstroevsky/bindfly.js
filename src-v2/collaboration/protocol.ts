@@ -3,6 +3,7 @@ import type { Result } from '../core/result.ts'
 export const COLLABORATION_PROTOCOL_VERSION = 1
 export const CANONICAL_SNAPSHOT_ENCODING_VERSION = 1
 export const SNAPSHOT_CHECKSUM_ALGORITHM = 'sha-256'
+export const AUTHORITATIVE_ROOM_PERSISTENCE_VERSION = 1
 
 export type SequenceNumber = number
 
@@ -68,10 +69,30 @@ export interface DivergenceEvidence {
 export interface CollaborationStateAdapter<Input> {
 	parseInput(value: unknown): Result<Input, string>
 	encodeInput(input: Input): Uint8Array
+	decodeInput(bytes: Uint8Array): Result<Input, string>
 	applyInput(input: Input): void
 	captureConfigurationBytes(): Uint8Array
 	captureStateBytes(): Uint8Array
 	restoreStateBytes(bytes: Uint8Array): void
+}
+
+export interface PersistedAuthoritativeEvent {
+	readonly protocolVersion: typeof COLLABORATION_PROTOCOL_VERSION
+	readonly roomId: string
+	readonly experimentId: string
+	readonly stateVersion: number
+	readonly participantId: string
+	readonly clientEventId: string
+	readonly sequence: SequenceNumber
+	readonly stepIndex: number
+	readonly inputBytes: Uint8Array
+}
+
+export interface AuthoritativeRoomPersistenceState {
+	readonly persistenceVersion: typeof AUTHORITATIVE_ROOM_PERSISTENCE_VERSION
+	readonly inputLeadSteps: number
+	readonly snapshot: AuthoritativeSnapshot
+	readonly events: readonly PersistedAuthoritativeEvent[]
 }
 
 export interface CollaborationResumeRequest {

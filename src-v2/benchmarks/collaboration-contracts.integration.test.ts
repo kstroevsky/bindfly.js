@@ -5,25 +5,39 @@ import { CollaborationReplica, COLLABORATION_PROTOCOL_VERSION, InMemoryAuthorita
 import { createSeededRandom, createViewport } from '../core/index.ts'
 import {
 	decodeMovingPointCheckpointV1,
+	decodeMovingPointInputV1,
+	encodeFlyingLinesCollaborationConfigurationV1,
 	encodeMovingPointCheckpointV1,
 	encodeMovingPointInputV1,
 	parseMovingPointInput,
 } from '../effects/index.ts'
 import { createMovingPointSimulation } from '../effects/moving-points/simulation.ts'
 
-const parameters = {
+const configuration = {
+	seed: 'shared-room-seed',
+	simulationWidth: 640,
+	simulationHeight: 480,
+	fixedStepSeconds: 1 / 120,
+	parameters: {
 	particleCount: 3,
 	maxSpeed: 80,
 	particleLifetimeSeconds: 15,
 	margin: 20,
-}
-const viewport = createViewport({ cssWidth: 640, cssHeight: 480, devicePixelRatio: 1 })
-const configurationBytes = new TextEncoder().encode('flying-lines-collaboration-fixture-v1')
+		connectionRadius: 250,
+		background: '#050508',
+	},
+} as const
+const viewport = createViewport({
+	cssWidth: configuration.simulationWidth,
+	cssHeight: configuration.simulationHeight,
+	devicePixelRatio: 1,
+})
+const configurationBytes = encodeFlyingLinesCollaborationConfigurationV1(configuration)
 
 const createHarness = () => {
 	const simulation = createMovingPointSimulation({
-		environment: { random: createSeededRandom('shared-room-seed'), viewport },
-		parameters,
+		environment: { random: createSeededRandom(configuration.seed), viewport },
+		parameters: configuration.parameters,
 	})
 	return {
 		simulation,
@@ -34,6 +48,11 @@ const createHarness = () => {
 				}
 			},
 			encodeInput: encodeMovingPointInputV1,
+			decodeInput: (bytes: Uint8Array) => {
+				try { return { ok: true as const, value: decodeMovingPointInputV1(bytes) } } catch (error) {
+					return { ok: false as const, error: error instanceof Error ? error.message : 'Invalid moving-point input bytes.' }
+				}
+			},
 			applyInput: (input: ReturnType<typeof parseMovingPointInput>) => simulation.applyInput(input),
 			captureConfigurationBytes: () => configurationBytes.slice(),
 			captureStateBytes: () => encodeMovingPointCheckpointV1(simulation.captureCheckpoint()),
@@ -53,7 +72,11 @@ const proposal = (participantId: string, clientEventId: string, knownSequence: n
 
 const stepSimulation = (simulation: ReturnType<typeof createMovingPointSimulation>, from: number, to: number) => {
 	for (let index = from; index < to; index++) {
-		simulation.step({ index, dtSeconds: 1 / 120, elapsedSeconds: (index + 1) / 120 })
+		simulation.step({
+			index,
+			dtSeconds: configuration.fixedStepSeconds,
+			elapsedSeconds: (index + 1) * configuration.fixedStepSeconds,
+		})
 	}
 }
 

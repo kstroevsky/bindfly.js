@@ -23,6 +23,11 @@ const createAdapter = () => {
 			? { ok: true as const, value }
 			: { ok: false as const, error: 'delta must be finite' },
 		encodeInput: numberBytes,
+		decodeInput: (bytes: Uint8Array) => {
+			try { return { ok: true as const, value: numberFromBytes(bytes) } } catch (error) {
+				return { ok: false as const, error: error instanceof Error ? error.message : 'invalid fixture input' }
+			}
+		},
 		applyInput: (delta: number) => { state += delta },
 		captureConfigurationBytes: () => new Uint8Array([9, 9]),
 		captureStateBytes: () => numberBytes(state),
@@ -382,4 +387,73 @@ test('resume uses a current-state checksum mismatch to force authoritative snaps
 	assert.equal(plan.ok && plan.mode, 'snapshot')
 	assert.equal((await replica.applyResumePlan(plan)).ok, true)
 	assert.equal(replicaAdapter.read(), 2)
+})
+
+test('authoritative persistence recovers applied state, pending events, idempotency and current-step rate usage', async () => {
+	const firstAdapter = createAdapter()
+	const firstRoom = new InMemoryAuthoritativeRoom({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: firstAdapter, authorizeInput: allowAll,
+		maxInputsPerParticipantPerStep: 2,
+	})
+	assert.equal(firstRoom.submit(proposal('alice', 'event-a', 0, 2)).ok, true)
+	firstRoom.advanceStepIndex(1)
+	assert.equal(firstRoom.submit(proposal('alice', 'event-b', 1, 3)).ok, true)
+	assert.equal(firstRoom.submit(proposal('alice', 'event-c', 2, 4)).ok, true)
+	const persisted = await firstRoom.capturePersistenceState()
+
+	const recoveredAdapter = createAdapter()
+	const recoveredRoom = await InMemoryAuthoritativeRoom.recover({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: recoveredAdapter, authorizeInput: allowAll,
+		maxInputsPerParticipantPerStep: 2,
+	}, persisted)
+	assert.equal(recoveredAdapter.read(), 2)
+	assert.equal(recoveredRoom.currentStepIndex, 1)
+	assert.equal(recoveredRoom.appliedSequence, 1)
+	assert.equal(recoveredRoom.logHeadSequence, 3)
+	const retry = recoveredRoom.submit(proposal('alice', 'event-c', 3, 4))
+	assert.equal(retry.ok && retry.duplicate, true)
+	const limited = recoveredRoom.submit(proposal('alice', 'event-d', 3, 5))
+	assert.deepEqual(limited.ok ? undefined : limited.code, 'RATE_LIMIT_EXCEEDED')
+	recoveredRoom.advanceStepIndex(2)
+	assert.equal(recoveredAdapter.read(), 9)
+	await assert.rejects(
+		InMemoryAuthoritativeRoom.recover({
+			roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
+			inputLeadSteps: 2,
+		}, persisted),
+		/input scheduling policy/,
+	)
+})
+
+test('authoritative persistence rejects tampered snapshots and invalid persisted input bytes', async () => {
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
+	})
+	assert.equal(room.submit(proposal('alice', 'event-a', 0, 2)).ok, true)
+	room.advanceStepIndex(1)
+	const persisted = await room.capturePersistenceState()
+	const tamperedSnapshot = {
+		...persisted,
+		snapshot: { ...persisted.snapshot, stateBytes: persisted.snapshot.stateBytes.slice() },
+	}
+	tamperedSnapshot.snapshot.stateBytes[0] ^= 0xff
+	await assert.rejects(
+		InMemoryAuthoritativeRoom.recover({
+			roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
+		}, tamperedSnapshot),
+		/checksum verification failed/,
+	)
+
+	const invalidInput = {
+		...persisted,
+		events: persisted.events.map((event, index) => index === 0
+			? { ...event, inputBytes: new Uint8Array([...event.inputBytes, 0]) }
+			: event),
+	}
+	await assert.rejects(
+		InMemoryAuthoritativeRoom.recover({
+			roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
+		}, invalidInput),
+		/input is invalid/,
+	)
 })

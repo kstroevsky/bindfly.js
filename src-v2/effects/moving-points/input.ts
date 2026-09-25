@@ -89,3 +89,38 @@ export const encodeMovingPointInputV1 = (input: MovingPointInput): Uint8Array =>
 	}
 	return bytes
 }
+
+export const decodeMovingPointInputV1 = (bytes: Uint8Array): MovingPointInput => {
+	if (bytes.byteLength < 1) throw new Error('Moving-point input is truncated.')
+	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+	let offset = 1
+	const readFloat64 = (): number => {
+		if (offset + 8 > bytes.byteLength) throw new Error('Moving-point input is truncated.')
+		const value = view.getFloat64(offset, false)
+		offset += 8
+		return value
+	}
+
+	let input: MovingPointInput
+	if (bytes[0] === 1 && bytes.byteLength === 17) {
+		input = { type: 'add-point', x: readFloat64(), y: readFloat64() }
+	} else if (bytes[0] === 2 && bytes.byteLength === 25) {
+		input = { type: 'remove-nearest', x: readFloat64(), y: readFloat64(), maxDistance: readFloat64() }
+	} else if (bytes[0] === 3 && bytes.byteLength === 21) {
+		const id = view.getUint32(offset, false)
+		offset += 4
+		input = { type: 'move-point', id, x: readFloat64(), y: readFloat64() }
+	} else if (bytes[0] === 4 && bytes.byteLength === 41) {
+		input = {
+			type: 'move-nearest',
+			fromX: readFloat64(),
+			fromY: readFloat64(),
+			x: readFloat64(),
+			y: readFloat64(),
+			maxDistance: readFloat64(),
+		}
+	} else {
+		throw new Error(`Moving-point input tag '${bytes[0] ?? -1}' or byte length '${bytes.byteLength}' is invalid.`)
+	}
+	return parseMovingPointInput(input)
+}

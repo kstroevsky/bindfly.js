@@ -15,6 +15,7 @@ import type {
 	CollaborationServerWireMessage,
 	InMemoryAuthoritativeRoom,
 } from '../../../src-v2/collaboration/index.ts'
+import type { AuthoritativeRoomStateStore } from './authoritative-room-state-store.ts'
 
 const DEFAULT_HOST = '127.0.0.1'
 const DEFAULT_PORT = 0
@@ -32,6 +33,7 @@ export type AuthenticateCollaborationConnection = (
 export interface AuthoritativeRoomWebSocketServerOptions<Input> {
 	readonly room: InMemoryAuthoritativeRoom<Input>
 	readonly authenticate: AuthenticateCollaborationConnection
+	readonly stateStore?: AuthoritativeRoomStateStore
 	readonly host?: string
 	readonly port?: number
 	readonly path?: string
@@ -73,6 +75,7 @@ const rawDataToUtf8 = (raw: RawData): string => {
 export class AuthoritativeRoomWebSocketServer<Input> {
 	private readonly room: InMemoryAuthoritativeRoom<Input>
 	private readonly authenticate: AuthenticateCollaborationConnection
+	private readonly stateStore: AuthoritativeRoomStateStore | undefined
 	private readonly host: string
 	private readonly port: number
 	private readonly path: string
@@ -81,6 +84,7 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 	private readonly sessions = new Set<ConnectionSession>()
 	private operationTail: Promise<void> = Promise.resolve()
 	private address: CollaborationServerAddress | undefined
+	private persistenceFailure: Error | undefined
 
 	constructor(options: AuthoritativeRoomWebSocketServerOptions<Input>) {
 		const maxWireBytes = options.maxWireBytes ?? DEFAULT_MAX_WIRE_BYTES
@@ -89,6 +93,7 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		}
 		this.room = options.room
 		this.authenticate = options.authenticate
+		this.stateStore = options.stateStore
 		this.host = options.host ?? DEFAULT_HOST
 		this.port = options.port ?? DEFAULT_PORT
 		this.path = options.path ?? DEFAULT_PATH
@@ -169,6 +174,16 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		}
 	}
 
+	private async persistState(): Promise<void> {
+		if (!this.stateStore) return
+		try {
+			await this.stateStore.save(await this.room.capturePersistenceState())
+		} catch (error) {
+			this.persistenceFailure = error instanceof Error ? error : new Error('Collaboration persistence failed.')
+			throw this.persistenceFailure
+		}
+	}
+
 	private async handleMessage(session: ConnectionSession, text: string): Promise<void> {
 		const parsed = parseClientCollaborationWireMessage(text)
 		if (!parsed.ok) {
@@ -190,7 +205,12 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 			this.sendError(session, 'PARTICIPANT_MISMATCH', 'Event proposal participant does not match the authenticated connection.')
 			return
 		}
+		if (this.persistenceFailure) {
+			this.sendError(session, 'SERVER_ERROR', 'Collaboration persistence is unavailable; the room is read-only until restart.')
+			return
+		}
 		const result = this.room.submit(parsed.value.proposal)
+		if (result.ok) await this.persistState()
 		this.send(session, { wireVersion: COLLABORATION_WIRE_VERSION, type: 'submit-result', result })
 		if (result.ok && !result.duplicate) {
 			this.broadcast(
@@ -202,6 +222,7 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 
 	async start(): Promise<CollaborationServerAddress> {
 		if (this.address) return this.address
+		await this.persistState()
 		await new Promise<void>((resolve, reject) => {
 			const onError = (error: Error): void => reject(error)
 			this.httpServer.once('error', onError)
@@ -222,8 +243,10 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 	}
 
 	async advanceStepIndex(nextStepIndex: number): Promise<void> {
-		await this.enqueue(() => {
+		await this.enqueue(async () => {
+			if (this.persistenceFailure) throw this.persistenceFailure
 			this.room.advanceStepIndex(nextStepIndex)
+			await this.persistState()
 			this.broadcast({
 				wireVersion: COLLABORATION_WIRE_VERSION,
 				type: 'authoritative-tick',
