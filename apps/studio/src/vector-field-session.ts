@@ -1,5 +1,5 @@
 import { createPhaseSpaceTransform, getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
-import type { ParameterPatch, ParameterSchema, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
+import type { ParameterPatch, ParameterSchema, RendererKind, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
 import {
 	compileVectorFieldPrograms,
 	createVectorFieldScope,
@@ -18,12 +18,14 @@ import type { FormulaProgram } from '../../../src-v2/formula/index.ts'
 import {
 	createPhasePortraitCanvasRenderer,
 } from '../../../src-v2/rendering/canvas2d/phase-portrait-renderer.ts'
+import { createPhasePortraitWebGL2Renderer } from '../../../src-v2/rendering/webgl2/phase-portrait-renderer.ts'
 import type {
 	PhasePortraitRenderView,
 	VectorFieldSample,
 } from '../../../src-v2/rendering/phase-portrait.ts'
 import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
+import { requireHtmlCanvas } from './session-renderer.ts'
 
 export interface VectorFieldProbeAxis {
 	readonly value?: number
@@ -53,6 +55,7 @@ const probeFormula = (
 
 export const createVectorFieldSession = (options: {
 	readonly canvas: HTMLCanvasElement | OffscreenCanvas
+	readonly rendererId?: RendererKind
 	readonly parameters: VectorFieldParameters
 	readonly seed: string
 	readonly viewport: Viewport
@@ -69,7 +72,9 @@ export const createVectorFieldSession = (options: {
 		evaluate: (x, y, t) => evaluateVectorField(programs, createVectorFieldScope(parameters, x, y, t)),
 	})
 	let simulation = createSimulation()
-	const renderer = createPhasePortraitCanvasRenderer(options.canvas)
+	const renderer = options.rendererId === 'webgl2'
+		? createPhasePortraitWebGL2Renderer(requireHtmlCanvas(options.canvas, 'Vector Field'))
+		: createPhasePortraitCanvasRenderer(options.canvas)
 	renderer.resize(viewport)
 	const frameTimer = createStage15FrameTimer()
 	const referencedVariables = (compiled: VectorFieldPrograms): ReadonlySet<string> => new Set([
@@ -143,7 +148,11 @@ export const createVectorFieldSession = (options: {
 			const derived = frameTimer.measure(renderView)
 			const view = derived.value
 			const rendered = frameTimer.measure(() => renderer.render(view, frame))
-			const stage15Timing = frameTimer.finish(derived.durationMs, rendered.durationMs)
+			const stage15Timing = frameTimer.finish(
+				derived.durationMs,
+				rendered.value?.renderMs ?? rendered.durationMs,
+				rendered.value?.uploadMs ?? 0,
+			)
 			telemetry = {
 				points: simulation.state.trajectories.length,
 				edges: view.field?.length ?? 0,

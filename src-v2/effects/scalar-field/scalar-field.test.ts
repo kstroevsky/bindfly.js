@@ -8,10 +8,11 @@ import { scalarFieldDefinition } from './definition.ts'
 import { scalarFieldParameters } from './parameters.ts'
 import { sampleScalarField } from './sampling.ts'
 
-test('scalar field declares main-thread and Worker Canvas2D execution', () => {
+test('scalar field declares Canvas2D main/worker and WebGL2 main execution', () => {
 	assert.deepEqual(scalarFieldDefinition.capabilities.executionProfiles, [
 		{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
 		{ rendererId: 'canvas2d', runtimeId: 'worker' },
+		{ rendererId: 'webgl2', runtimeId: 'main-thread' },
 	])
 })
 

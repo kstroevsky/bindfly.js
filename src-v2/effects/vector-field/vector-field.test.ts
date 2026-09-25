@@ -10,10 +10,11 @@ import { vectorFieldDefinition } from './definition.ts'
 
 const viewport = createViewport({ cssWidth: 400, cssHeight: 300, devicePixelRatio: 1 })
 
-test('vector field declares main-thread and Worker Canvas2D execution', () => {
+test('vector field declares Canvas2D main/worker and WebGL2 main execution', () => {
 	assert.deepEqual(vectorFieldDefinition.capabilities.executionProfiles, [
 		{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
 		{ rendererId: 'canvas2d', runtimeId: 'worker' },
+		{ rendererId: 'webgl2', runtimeId: 'main-thread' },
 	])
 })
 

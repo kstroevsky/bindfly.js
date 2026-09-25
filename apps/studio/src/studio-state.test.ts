@@ -42,6 +42,39 @@ test('current v2 Studio state migrates missing persistence epsilonMax to the dur
 	assert.equal(parsed.value.studio.analysis.epsilonMax, 1000)
 })
 
+test('current v2 Studio state preserves a supported WebGL2 main-thread renderer', () => {
+	const state = createStudioDurableState(flyingLinesPlugin, parameters, 'webgl-fixture', 'main', {
+		renderer: 'webgl2',
+	})
+	assert.equal(state.studio.renderer, 'webgl2')
+	const parsed = parseStudioDurableState(canonicalStringify(state))
+	assert.deepEqual(parsed, { ok: true, value: state })
+	const resolved = resolveStudioDurableState(state)
+	assert.equal(resolved.ok, true)
+	if (resolved.ok) assert.equal(resolved.value.studio.renderer, 'webgl2')
+})
+
+test('Studio state rejects unsupported renderer/runtime execution profiles', () => {
+	const webglState = createStudioDurableState(flyingLinesPlugin, parameters, 'webgl-fixture', 'main', {
+		renderer: 'webgl2',
+	})
+	assert.equal(parseStudioDurableState({
+		...webglState,
+		studio: { ...webglState.studio, runtime: 'worker' },
+	}).ok, false)
+
+	const droopingState = createStudioDurableState(
+		droopingLinesPlugin,
+		droopingLinesPlugin.defaultParameters,
+		droopingLinesPlugin.defaultSeed,
+		'main',
+	)
+	assert.equal(parseStudioDurableState({
+		...droopingState,
+		studio: { ...droopingState.studio, renderer: 'webgl2' },
+	}).ok, false)
+})
+
 test('URL state includes only durable choices and reproduces them', () => {
 	const plugin = parametricOriginalPlugins[0]
 	assert.ok(plugin)

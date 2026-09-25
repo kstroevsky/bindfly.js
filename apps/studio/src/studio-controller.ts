@@ -1,4 +1,5 @@
 import type { ParameterSchema } from '../../../src-v2/core/parameters.ts'
+import type { RendererKind } from '../../../src-v2/core/capabilities.ts'
 import type { Viewport } from '../../../src-v2/core/viewport.ts'
 import type { ExecutionBackend } from '../../../src-v2/runtime/execution-backend.ts'
 import { FixedStepClock } from '../../../src-v2/runtime/fixed-step-clock.ts'
@@ -38,6 +39,7 @@ export interface StudioController {
 
 export interface CreateStudioControllerOptions {
 	readonly canvas: HTMLCanvasElement
+	readonly rendererId: RendererKind
 	readonly viewport: Viewport
 	readonly plugin: StudioExperimentPlugin
 	readonly parameters: StudioParameterValues
@@ -48,6 +50,9 @@ export interface CreateStudioControllerOptions {
 }
 
 export const createMainStudioController = async (options: CreateStudioControllerOptions): Promise<StudioController> => {
+	const supportsProfile = options.plugin.executionProfiles.some(({ rendererId, runtimeId }) =>
+		rendererId === options.rendererId && runtimeId === 'main-thread')
+	if (!supportsProfile) throw new Error(`Experiment '${options.plugin.id}' does not support the ${options.rendererId} main-thread profile.`)
 	const session = options.plugin.createSession(options)
 	const loop = new FixedStepLoop<unknown, StudioParameterPatch>({
 		clock: new FixedStepClock({ stepSeconds: options.plugin.timing.fixedStepSeconds, maxCatchUpSteps: 8 }),
@@ -85,6 +90,7 @@ export const createMainStudioController = async (options: CreateStudioController
 }
 
 export const createWorkerStudioController = async (options: CreateStudioControllerOptions): Promise<StudioController> => {
+	if (options.rendererId !== 'canvas2d') throw new Error('Worker Studio runtime currently supports Canvas2D only.')
 	const supportsWorker = options.plugin.executionProfiles.some(({ rendererId, runtimeId }) =>
 		rendererId === 'canvas2d' && runtimeId === 'worker')
 	if (!supportsWorker) throw new Error(`Experiment '${options.plugin.id}' does not support the Canvas2D worker profile.`)

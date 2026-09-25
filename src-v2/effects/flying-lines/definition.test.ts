@@ -10,6 +10,7 @@ test('defines Flying Lines by stable ID and round-trips durable state', () => {
 	assert.deepEqual(definition.capabilities.executionProfiles, [
 		{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
 		{ rendererId: 'canvas2d', runtimeId: 'worker' },
+		{ rendererId: 'webgl2', runtimeId: 'main-thread' },
 	])
 	assert.equal(definition.timing.fixedStepSeconds, 1 / 120)
 

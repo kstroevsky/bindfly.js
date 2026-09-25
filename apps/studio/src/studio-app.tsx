@@ -9,6 +9,7 @@ import { RIPS_COMPLEX_ANALYZER_ID, RIPS_COMPLEX_ANALYZER_VERSION } from '../../.
 import type { RipsComplexResult } from '../../../src-v2/analysis/rips-complex.ts'
 import { countPersistenceIntervalsAt, RIPS_PERSISTENCE_ANALYZER_ID, RIPS_PERSISTENCE_ANALYZER_VERSION } from '../../../src-v2/analysis/rips-persistence.ts'
 import type { RipsPersistenceResult } from '../../../src-v2/analysis/rips-persistence.ts'
+import type { RendererKind } from '../../../src-v2/core/capabilities.ts'
 import { createViewport } from '../../../src-v2/core/viewport.ts'
 import { probeWorkerCanvasSupport } from '../../../src-v2/runtime/worker-runtime.ts'
 import type { WorkerCanvasCapability } from '../../../src-v2/runtime/worker-runtime.ts'
@@ -40,6 +41,7 @@ const INITIAL_RUNTIME: StudioRuntimeKind = INITIAL_RESOLVED_STATE?.runtime
 const INITIAL_PARAMETERS = INITIAL_RESOLVED_STATE?.parameters ?? INITIAL_PLUGIN.defaultParameters
 const INITIAL_SEED = INITIAL_RESOLVED_STATE?.seed ?? INITIAL_PLUGIN.defaultSeed
 const INITIAL_STUDIO = INITIAL_RESOLVED_STATE?.studio ?? createStudioConfiguration(INITIAL_PLUGIN, INITIAL_RUNTIME)
+const INITIAL_RENDERER = INITIAL_STUDIO.renderer
 const INITIAL_ERROR = INITIAL_URL_STATE.ok ? undefined : INITIAL_URL_STATE.error
 
 const pointFor = (event: ReactPointerEvent<HTMLCanvasElement>) => {
@@ -50,6 +52,13 @@ const pointFor = (event: ReactPointerEvent<HTMLCanvasElement>) => {
 const supportsWorker = (plugin: StudioExperimentPlugin) => plugin.executionProfiles.some(
 	({ rendererId, runtimeId }) => rendererId === 'canvas2d' && runtimeId === 'worker',
 )
+
+const supportsExecutionProfile = (
+	plugin: StudioExperimentPlugin,
+	rendererId: RendererKind,
+	runtime: StudioRuntimeKind,
+) => plugin.executionProfiles.some((profile) =>
+	profile.rendererId === rendererId && profile.runtimeId === (runtime === 'worker' ? 'worker' : 'main-thread'))
 
 const pointCloudSourceLabel = (source: PointCloudSnapshotSource) => source === 'formula-a'
 	? 'Formula A'
@@ -69,6 +78,7 @@ export const StudioApp = () => {
 	const [plugin, setPlugin] = useState(INITIAL_PLUGIN)
 	const [parameters, setParameters] = useState<StudioParameterValues>(INITIAL_PARAMETERS)
 	const [seed, setSeed] = useState(INITIAL_SEED)
+	const [rendererKind, setRendererKind] = useState<RendererKind>(INITIAL_RENDERER)
 	const [runtimeKind, setRuntimeKind] = useState<StudioRuntimeKind>(INITIAL_RUNTIME)
 	const [workerCapability, setWorkerCapability] = useState<WorkerCanvasCapability>({ supported: false, reason: 'Checking browser capability.' })
 	const [metrics, setMetrics] = useState<StudioMetrics>(EMPTY_METRICS)
@@ -155,17 +165,44 @@ export const StudioApp = () => {
 		metricsRef.current = EMPTY_METRICS
 		setMetrics(EMPTY_METRICS)
 		setInspection(undefined)
+		if (runtime === 'worker') setRendererKind('canvas2d')
 		setRuntimeKind(runtime)
+		setCanWriteUrl(true)
+	}
+
+	const selectRenderer = (renderer: RendererKind) => {
+		const nextRuntime: StudioRuntimeKind = renderer === 'canvas2d' ? runtimeKind : 'main'
+		if (!supportsExecutionProfile(plugin, renderer, nextRuntime)) {
+			setError(`Experiment '${plugin.id}' does not support the ${renderer}/${nextRuntime} profile.`)
+			return
+		}
+		resetFormulaHistory()
+		setPaused(false)
+		metricsRef.current = EMPTY_METRICS
+		setMetrics(EMPTY_METRICS)
+		setInspection(undefined)
+		setRendererKind(renderer)
+		setRuntimeKind(nextRuntime)
+		setError(undefined)
 		setCanWriteUrl(true)
 	}
 
 	const selectExperiment = (experimentId: string) => {
 		const nextPlugin = getStudioExperimentPlugin(experimentId)
 		if (!nextPlugin) { setError(`Experiment '${experimentId}' is not registered.`); return }
-		const nextRuntime = runtimeKind === 'worker' && supportsWorker(nextPlugin) ? 'worker' : 'main'
+		let nextRenderer = rendererKind
+		let nextRuntime = runtimeKind
+		if (!supportsExecutionProfile(nextPlugin, nextRenderer, nextRuntime)) {
+			if (supportsExecutionProfile(nextPlugin, nextRenderer, 'main')) nextRuntime = 'main'
+			else {
+				nextRenderer = 'canvas2d'
+				nextRuntime = runtimeKind === 'worker' && supportsWorker(nextPlugin) ? 'worker' : 'main'
+			}
+		}
 		setPlugin(nextPlugin)
 		setParameters(nextPlugin.defaultParameters)
 		setSeed(nextPlugin.defaultSeed)
+		setRendererKind(nextRenderer)
 		setRuntimeKind(nextRuntime)
 		metricsRef.current = EMPTY_METRICS
 		setMetrics(EMPTY_METRICS)
@@ -215,13 +252,14 @@ export const StudioApp = () => {
 		const artifact = createShareArtifact(
 			new URL(window.location.href),
 			createStudioDurableState(plugin, parameters, seed, runtimeKind, {
+				renderer: rendererKind,
 				workspace,
 				formulaView,
 				analysis: { source: analysisSource, epsilon: analysisEpsilon, epsilonMax: analysisEpsilonMax },
 			}),
 		)
 		if (artifact.kind === 'url') window.history.replaceState(null, '', artifact.url)
-	}, [analysisEpsilon, analysisEpsilonMax, analysisSource, canWriteUrl, formulaView, parameters, plugin, runtimeKind, seed, workspace])
+	}, [analysisEpsilon, analysisEpsilonMax, analysisSource, canWriteUrl, formulaView, parameters, plugin, rendererKind, runtimeKind, seed, workspace])
 
 	useEffect(() => {
 		const canvas = canvasRef.current
@@ -245,6 +283,10 @@ export const StudioApp = () => {
 			selectRuntime('main')
 			return
 		}
+		if (!supportsExecutionProfile(plugin, rendererKind, runtimeKind)) {
+			setError(`Experiment '${plugin.id}' does not support the ${rendererKind}/${runtimeKind} profile.`)
+			return
+		}
 
 		const resizeObserver = new ResizeObserver(() => {
 			if (resizeFrameId !== undefined) return
@@ -258,6 +300,7 @@ export const StudioApp = () => {
 			const runtimeConfiguration = runtimeConfigurationRef.current
 			const options = {
 				canvas,
+				rendererId: rendererKind,
 				viewport: measure(),
 				plugin: runtimeConfiguration.plugin,
 				parameters: runtimeConfiguration.parameters,
@@ -287,7 +330,7 @@ export const StudioApp = () => {
 			controllerRef.current = undefined
 			void controller?.dispose()
 		}
-	}, [plugin, runtimeKind, stateGeneration])
+	}, [plugin, rendererKind, runtimeKind, stateGeneration])
 
 	const updateParameter = useCallback((parameterId: string, value: unknown) => {
 		const definition = plugin.parameters[parameterId]
@@ -531,6 +574,7 @@ export const StudioApp = () => {
 
 	const copyLink = async () => {
 		const artifact = createShareArtifact(new URL(window.location.href), createStudioDurableState(plugin, parameters, seed, runtimeKind, {
+			renderer: rendererKind,
 			workspace, formulaView, analysis: { source: analysisSource, epsilon: analysisEpsilon, epsilonMax: analysisEpsilonMax },
 		}))
 		if (artifact.kind === 'json') { setShareStatus(`${artifact.reason} Use Export JSON.`); return }
@@ -540,6 +584,7 @@ export const StudioApp = () => {
 
 	const exportJson = () => {
 		const state = createStudioDurableState(plugin, parameters, seed, runtimeKind, {
+			renderer: rendererKind,
 			workspace, formulaView, analysis: { source: analysisSource, epsilon: analysisEpsilon, epsilonMax: analysisEpsilonMax },
 		})
 		const exported = canonicalStringify(createStudioExportDocument(plugin, state))
@@ -564,6 +609,7 @@ export const StudioApp = () => {
 		setPlugin(nextPlugin)
 		setParameters(resolved.value.parameters)
 		setSeed(resolved.value.seed)
+		setRendererKind(resolved.value.studio.renderer)
 		runtimeConfigurationRef.current = {
 			plugin: nextPlugin,
 			parameters: resolved.value.parameters,
@@ -599,7 +645,7 @@ export const StudioApp = () => {
 
 	return <main className="studio">
 		<aside className="panel" aria-label="Experiment controls">
-			<header><div><p className="eyebrow">Bindfly 2 · Stage 14</p><h1>{plugin.title}</h1></div><p className="description">Versioned, reproducible experiment state.</p></header>
+			<header><div><p className="eyebrow">Bindfly 2 · Stage 15</p><h1>{plugin.title}</h1></div><p className="description">Versioned, reproducible experiment state.</p></header>
 			<label className="picker"><span>Experiment</span><select value={plugin.id} aria-label="Experiment" onChange={(event) => selectExperiment(event.currentTarget.value)}>{EXPERIMENTS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
 			<nav className="workspace-tabs" aria-label="Studio workspace">
 				<button type="button" aria-pressed={workspace === 'explore'} onClick={() => selectWorkspace('explore')}>Explore</button>
@@ -609,7 +655,7 @@ export const StudioApp = () => {
 			{workspace === 'compare' ? <div className="lens-tabs" role="group" aria-label="Formula lens">{plugin.formulaViews.filter((view) => view !== 'morph').map((view) => <button type="button" key={view} aria-pressed={formulaView === view} onClick={() => selectFormulaView(view)}>{FORMULA_VIEW_LABELS[view]}</button>)}</div> : null}
 			{workspace !== 'analyze' ? <ParameterControls schema={plugin.parameters} values={parameters} onChange={updateParameter} /> : null}
 			<div className="picker-grid">
-				<label className="picker"><span>Renderer</span><select value="canvas2d" aria-label="Renderer" disabled onChange={() => {}}><option value="canvas2d">Canvas 2D</option></select></label>
+				<label className="picker"><span>Renderer</span><select value={rendererKind} aria-label="Renderer" onChange={(event) => selectRenderer(event.currentTarget.value as RendererKind)}><option value="canvas2d">Canvas 2D</option><option value="webgl2" disabled={!supportsExecutionProfile(plugin, 'webgl2', 'main')}>WebGL 2</option></select></label>
 				<label className="picker"><span>Runtime</span><select value={runtimeKind} aria-label="Runtime" onChange={(event) => selectRuntime(event.currentTarget.value as StudioRuntimeKind)}><option value="main">Main thread</option><option value="worker" disabled={!workerCapability.supported || !supportsWorker(plugin)}>Worker</option></select></label>
 			</div>
 			{plugin.temporalSemantics.kind !== 'static' ? <div className="actions"><button type="button" disabled={!paused} onClick={run}>Run</button><button type="button" disabled={paused} onClick={freeze}>Freeze</button><button type="button" disabled={!paused} onClick={step}>{plugin.temporalSemantics.stepLabel ?? 'Step'}</button><button type="button" onClick={reset}>Reset</button></div> : null}
@@ -683,12 +729,12 @@ export const StudioApp = () => {
 					return <div className="metric" data-metric-id={descriptor.id} data-metric-value={String(value)} key={descriptor.id}><dt>{descriptor.label}</dt><dd>{descriptor.format ? descriptor.format(value) : String(value)}</dd></div>
 				})}
 			</dl></section>
-			<details className="inspector"><summary>Inspector</summary><dl><div><dt>Experiment</dt><dd>{plugin.id} v{plugin.stateVersion}</dd></div><div><dt>Timing</dt><dd>{plugin.temporalSemantics.kind === 'static' ? 'Static field' : `${Math.round(1 / plugin.timing.fixedStepSeconds)} Hz · ${plugin.timing.deterministicTier}`}</dd></div><div><dt>Derivation</dt><dd>{plugin.temporalSemantics.kind === 'static' ? `${metrics.searchBackend} · ${metrics.points} samples` : `${metrics.searchBackend} · step ${metrics.step} · ${metrics.points} samples`}</dd></div><div><dt>Worker capability</dt><dd>{workerCapability.supported && supportsWorker(plugin) ? 'Supported by this experiment and browser.' : workerCapability.reason ?? 'Unavailable for this experiment.'}</dd></div></dl>{plugin.provenance.length > 0 ? <section className="provenance" aria-labelledby="provenance-heading"><h2 id="provenance-heading">Formula provenance</h2>{plugin.provenance.map((entry) => <article key={entry.id}><strong>{entry.id} · v{entry.version}</strong><span>{entry.capturedBehavior}</span><code>{entry.legacyPath}</code><code>{entry.legacyGitBlob}</code></article>)}</section> : null}</details>
+			<details className="inspector"><summary>Inspector</summary><dl><div><dt>Experiment</dt><dd>{plugin.id} v{plugin.stateVersion}</dd></div><div><dt>Renderer</dt><dd>{rendererKind} · {runtimeKind}</dd></div><div><dt>Timing</dt><dd>{plugin.temporalSemantics.kind === 'static' ? 'Static field' : `${Math.round(1 / plugin.timing.fixedStepSeconds)} Hz · ${plugin.timing.deterministicTier}`}</dd></div><div><dt>Derivation</dt><dd>{plugin.temporalSemantics.kind === 'static' ? `${metrics.searchBackend} · ${metrics.points} samples` : `${metrics.searchBackend} · step ${metrics.step} · ${metrics.points} samples`}</dd></div><div><dt>Worker capability</dt><dd>{workerCapability.supported && supportsWorker(plugin) ? 'Supported by this experiment and browser.' : workerCapability.reason ?? 'Unavailable for this experiment.'}</dd></div></dl>{plugin.provenance.length > 0 ? <section className="provenance" aria-labelledby="provenance-heading"><h2 id="provenance-heading">Formula provenance</h2>{plugin.provenance.map((entry) => <article key={entry.id}><strong>{entry.id} · v{entry.version}</strong><span>{entry.capturedBehavior}</span><code>{entry.legacyPath}</code><code>{entry.legacyGitBlob}</code></article>)}</section> : null}</details>
 		</aside>
 		<section className="viewport" ref={viewportRef}>
-			<canvas className={workspace === 'analyze' && analysisSnapshot && analysisResult ? 'simulation-canvas simulation-canvas--analysis-hidden' : 'simulation-canvas'} key={`${plugin.id}-${runtimeKind}-${stateGeneration}`} ref={canvasRef} tabIndex={0} aria-label={`Interactive ${plugin.title} simulation`} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerCancel} />
+			<canvas className={workspace === 'analyze' && analysisSnapshot && analysisResult ? 'simulation-canvas simulation-canvas--analysis-hidden' : 'simulation-canvas'} key={`${plugin.id}-${rendererKind}-${runtimeKind}-${stateGeneration}`} ref={canvasRef} tabIndex={0} aria-label={`Interactive ${plugin.title} simulation`} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerCancel} />
 			{workspace === 'analyze' && analysisSnapshot && analysisResult ? <canvas ref={analysisCanvasRef} className="analysis-canvas" aria-label={`Pinned ${pointCloudSourceLabel(analysisSnapshot.source)} Rips complex at step ${analysisSnapshot.simulationStep}`} /> : null}
-			<div className="badge">{workspace === 'analyze' && analysisSnapshot ? `pinned · step ${analysisSnapshot.simulationStep} · ε ${analysisEpsilon.toFixed(0)} px` : `seed · ${seed} · derivation ${metrics.searchBackend} · ${runtimeKind}`}</div>
+			<div className="badge">{workspace === 'analyze' && analysisSnapshot ? `pinned · step ${analysisSnapshot.simulationStep} · ε ${analysisEpsilon.toFixed(0)} px` : `seed · ${seed} · derivation ${metrics.searchBackend} · ${rendererKind} · ${runtimeKind}`}</div>
 		</section>
 	</main>
 }

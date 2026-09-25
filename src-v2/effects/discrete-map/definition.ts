@@ -58,6 +58,7 @@ export const discreteMapDefinition = defineExperiment<
 		executionProfiles: [
 			{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
 			{ rendererId: 'canvas2d', runtimeId: 'worker' },
+			{ rendererId: 'webgl2', runtimeId: 'main-thread' },
 		],
 		snapshotState: snapshotDiscreteMapState,
 	},

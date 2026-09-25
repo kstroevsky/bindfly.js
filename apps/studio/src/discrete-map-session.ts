@@ -1,5 +1,5 @@
 import { createPhaseSpaceTransform, getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
-import type { ParameterPatch, ParameterSchema, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
+import type { ParameterPatch, ParameterSchema, RendererKind, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
 import {
 	compileDiscreteMapPrograms,
 	createDiscreteMapScope,
@@ -16,9 +16,11 @@ import type {
 import { evaluateFormula, isFormulaConfigurationParameter } from '../../../src-v2/formula/index.ts'
 import type { FormulaProgram } from '../../../src-v2/formula/index.ts'
 import { createPhasePortraitCanvasRenderer } from '../../../src-v2/rendering/canvas2d/phase-portrait-renderer.ts'
+import { createPhasePortraitWebGL2Renderer } from '../../../src-v2/rendering/webgl2/phase-portrait-renderer.ts'
 import type { PhasePortraitRenderView } from '../../../src-v2/rendering/phase-portrait.ts'
 import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
+import { requireHtmlCanvas } from './session-renderer.ts'
 
 export interface DiscreteMapProbeAxis {
 	readonly value?: number
@@ -48,6 +50,7 @@ const probeFormula = (
 
 export const createDiscreteMapSession = (options: {
 	readonly canvas: HTMLCanvasElement | OffscreenCanvas
+	readonly rendererId?: RendererKind
 	readonly parameters: DiscreteMapParameters
 	readonly seed: string
 	readonly viewport: Viewport
@@ -63,7 +66,9 @@ export const createDiscreteMapSession = (options: {
 		evaluate: (x, y, n) => evaluateDiscreteMap(programs, createDiscreteMapScope(parameters, x, y, n)),
 	})
 	let simulation = createSimulation()
-	const renderer = createPhasePortraitCanvasRenderer(options.canvas)
+	const renderer = options.rendererId === 'webgl2'
+		? createPhasePortraitWebGL2Renderer(requireHtmlCanvas(options.canvas, 'Discrete Map'))
+		: createPhasePortraitCanvasRenderer(options.canvas)
 	renderer.resize(viewport)
 	const frameTimer = createStage15FrameTimer()
 	let droppedSteps = 0
@@ -101,7 +106,11 @@ export const createDiscreteMapSession = (options: {
 			const startedAt = performance.now()
 			const derived = frameTimer.measure(renderView)
 			const rendered = frameTimer.measure(() => renderer.render(derived.value, frame))
-			const stage15Timing = frameTimer.finish(derived.durationMs, rendered.durationMs)
+			const stage15Timing = frameTimer.finish(
+				derived.durationMs,
+				rendered.value?.renderMs ?? rendered.durationMs,
+				rendered.value?.uploadMs ?? 0,
+			)
 			telemetry = {
 				points: simulation.state.orbits.length,
 				edges: simulation.state.iteration,

@@ -1,6 +1,6 @@
 import { normalizeParameters } from '../../../src-v2/core/parameters.ts'
 import type { ParameterPatch, ParameterSchema, ParameterValues } from '../../../src-v2/core/parameters.ts'
-import type { ExecutionProfile } from '../../../src-v2/core/capabilities.ts'
+import type { ExecutionProfile, RendererKind } from '../../../src-v2/core/capabilities.ts'
 import type { ExperimentTiming } from '../../../src-v2/core/clock.ts'
 import type { ExperimentDefinition } from '../../../src-v2/core/experiment.ts'
 import type { Result } from '../../../src-v2/core/result.ts'
@@ -100,6 +100,7 @@ export interface StudioExperimentPlugin {
 	parseParameterPatch(value: unknown): Result<StudioParameterPatch, string>
 	createSession(options: {
 		readonly canvas: HTMLCanvasElement | OffscreenCanvas
+		readonly rendererId: RendererKind
 		readonly parameters: unknown
 		readonly formulaView: StudioFormulaView
 		readonly seed: string
@@ -140,6 +141,7 @@ export interface DefineStudioExperimentOptions<
 	}[]
 	createSession(options: {
 		readonly canvas: HTMLCanvasElement | OffscreenCanvas
+		readonly rendererId: RendererKind
 		readonly parameters: ParameterValues<Schema>
 		readonly formulaView: StudioFormulaView
 		readonly seed: string

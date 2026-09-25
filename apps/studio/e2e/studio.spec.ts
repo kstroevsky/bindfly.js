@@ -7,6 +7,7 @@ test.beforeEach(async ({ page }) => {
 	const problems: string[] = []
 	consoleProblems.set(page, problems)
 	page.on('console', (message) => {
+		if (message.type() === 'warning' && message.text().includes('GL Driver Message') && message.text().includes('ReadPixels')) return
 		if (message.type() === 'error' || message.type() === 'warning') problems.push(`${message.type()}: ${message.text()}`)
 	})
 	page.on('pageerror', (error) => problems.push(`pageerror: ${error.message}`))
@@ -237,6 +238,43 @@ test('Scalar Field samples and probes through main and worker Studio paths witho
 	await expect(page.getByRole('button', { name: 'Reset', exact: true })).toHaveCount(0)
 	await page.getByText('Inspector').click()
 	await expect(page.getByText('Static field')).toBeVisible()
+})
+
+test('WebGL2 parity renderer uses the same Studio state for all Stage 15 benchmark experiments', async ({ page }) => {
+	const experiments = [
+		{ id: 'flying-lines', title: 'Flying Lines', metric: 'Points', expected: '100' },
+		{ id: 'vector-field-2d', title: 'Vector Field Lab', metric: 'Trajectories', expected: '1' },
+		{ id: 'discrete-map-2d', title: 'Discrete Map Lab', metric: 'Orbits', expected: '1' },
+		{ id: 'scalar-field-2d', title: 'Scalar Field Lab', metric: 'Samples', expected: undefined },
+	] as const
+
+	for (const experiment of experiments) {
+		await page.goto(`/#/lab/${experiment.id}`)
+		await expect(page.getByRole('heading', { name: experiment.title })).toBeVisible()
+		const renderer = page.getByLabel('Renderer')
+		await expect(renderer.locator('option[value="webgl2"]')).toBeEnabled()
+		const experimentMetric = experiment.metric === 'Samples'
+			? page.locator('.metric').filter({ has: page.locator('dt', { hasText: /^Samples$/ }) }).locator('dd')
+			: metric(page, experiment.metric)
+		const before = experiment.expected ?? await experimentMetric.textContent()
+		await renderer.selectOption('webgl2')
+		await expect(renderer).toHaveValue('webgl2')
+		await expect(page.getByLabel('Runtime')).toHaveValue('main')
+		await expect(page.locator('.badge')).toContainText('webgl2 · main')
+		if (before !== null) await expect(experimentMetric).toHaveText(before)
+
+		await page.getByLabel('Runtime').selectOption('worker')
+		await expect(renderer).toHaveValue('canvas2d')
+		await expect(page.getByLabel('Runtime')).toHaveValue('worker')
+		await expect(page.locator('.badge')).toContainText('canvas2d · worker')
+	}
+})
+
+test('experiments without a WebGL2 profile keep the renderer unavailable', async ({ page }) => {
+	await page.goto('/#/lab/drooping-lines')
+	const renderer = page.getByLabel('Renderer')
+	await expect(renderer).toHaveValue('canvas2d')
+	await expect(renderer.locator('option[value="webgl2"]')).toHaveAttribute('disabled', '')
 })
 
 test('Freeze keeps simulation state fixed while formula perturbations remain inspectable', async ({ page }) => {

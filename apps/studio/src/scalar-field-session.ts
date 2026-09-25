@@ -1,5 +1,5 @@
 import { createPhaseSpaceTransform, getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
-import type { ParameterPatch, ParameterSchema, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
+import type { ParameterPatch, ParameterSchema, RendererKind, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
 import {
 	compileScalarFieldProgram,
 	createScalarFieldScope,
@@ -17,8 +17,10 @@ import type {
 import { evaluateFormula, isFormulaConfigurationParameter } from '../../../src-v2/formula/index.ts'
 import type { FormulaProgram } from '../../../src-v2/formula/index.ts'
 import { createScalarFieldCanvasRenderer } from '../../../src-v2/rendering/canvas2d/scalar-field-renderer.ts'
+import { createScalarFieldWebGL2Renderer } from '../../../src-v2/rendering/webgl2/scalar-field-renderer.ts'
 import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
+import { requireHtmlCanvas } from './session-renderer.ts'
 
 export interface ScalarFieldProbe {
 	readonly kind: 'scalar-field-probe'
@@ -42,6 +44,7 @@ const probeFormula = (
 
 export const createScalarFieldSession = (options: {
 	readonly canvas: HTMLCanvasElement | OffscreenCanvas
+	readonly rendererId?: RendererKind
 	readonly parameters: ScalarFieldParameters
 	readonly seed: string
 	readonly viewport: Viewport
@@ -53,7 +56,9 @@ export const createScalarFieldSession = (options: {
 	let program: FormulaProgram = initialProgram.value
 	const createSimulation = (): Simulation<ScalarFieldState, ScalarFieldInput> => createScalarFieldSimulation()
 	const simulation = createSimulation()
-	const renderer = createScalarFieldCanvasRenderer(options.canvas)
+	const renderer = options.rendererId === 'webgl2'
+		? createScalarFieldWebGL2Renderer(requireHtmlCanvas(options.canvas, 'Scalar Field'))
+		: createScalarFieldCanvasRenderer(options.canvas)
 	renderer.resize(viewport)
 	const frameTimer = createStage15FrameTimer()
 	let sampled: ScalarFieldSampleGrid | undefined
@@ -102,7 +107,11 @@ export const createScalarFieldSession = (options: {
 				contourLevel: parameters.contourLevel,
 				valueScale: parameters.valueScale,
 			}, frame))
-			const stage15Timing = frameTimer.finish(derived.durationMs, rendered.durationMs)
+			const stage15Timing = frameTimer.finish(
+				derived.durationMs,
+				rendered.value?.renderMs ?? rendered.durationMs,
+				rendered.value?.uploadMs ?? 0,
+			)
 			telemetry = {
 				points: currentGrid.validCount,
 				edges: currentGrid.invalidCount,

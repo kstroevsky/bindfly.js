@@ -35,7 +35,7 @@ const initialize = async (value: unknown) => {
 	const supportsWorker = plugin.executionProfiles.some(({ rendererId, runtimeId }) =>
 		rendererId === 'canvas2d' && runtimeId === 'worker')
 	if (!supportsWorker) throw new Error(`Experiment '${plugin.id}' does not support the Canvas2D worker profile.`)
-	session = plugin.createSession(payload)
+	session = plugin.createSession({ ...payload, rendererId: 'canvas2d' })
 	loop = new FixedStepLoop<unknown, StudioParameterPatch>({
 		clock: new FixedStepClock({ stepSeconds: plugin.timing.fixedStepSeconds, maxCatchUpSteps: 8 }),
 		scheduler,

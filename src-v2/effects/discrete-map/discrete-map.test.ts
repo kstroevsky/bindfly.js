@@ -10,10 +10,11 @@ import { createDiscreteMapSimulation } from './simulation.ts'
 
 const viewport = createViewport({ cssWidth: 400, cssHeight: 300, devicePixelRatio: 1 })
 
-test('discrete map declares main-thread and Worker Canvas2D execution', () => {
+test('discrete map declares Canvas2D main/worker and WebGL2 main execution', () => {
 	assert.deepEqual(discreteMapDefinition.capabilities.executionProfiles, [
 		{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
 		{ rendererId: 'canvas2d', runtimeId: 'worker' },
+		{ rendererId: 'webgl2', runtimeId: 'main-thread' },
 	])
 })
 

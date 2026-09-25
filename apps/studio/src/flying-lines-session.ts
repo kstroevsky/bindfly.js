@@ -1,17 +1,20 @@
 import { createAdaptiveProximityDerivation } from '../../../src-v2/analysis/adaptive-proximity-derivation.ts'
 import { createSeededRandom, getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
-import type { ParameterPatch, ParameterValues, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
+import type { ParameterPatch, ParameterValues, RendererKind, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
 import { flyingLinesDefinition, snapshotFlyingLinesState } from '../../../src-v2/effects/flying-lines/definition.ts'
 import { flyingLinesParameters } from '../../../src-v2/effects/flying-lines/parameters.ts'
 import type { FlyingLinesInput, FlyingLinesState } from '../../../src-v2/effects/flying-lines/types.ts'
 import { MAXIMUM_MOVING_POINT_COUNT } from '../../../src-v2/effects/moving-points/parameters.ts'
 import { createFlyingLinesCanvasRenderer } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
 import type { FlyingLinesRenderView } from '../../../src-v2/rendering/flying-lines.ts'
+import { createFlyingLinesWebGL2Renderer } from '../../../src-v2/rendering/webgl2/flying-lines-renderer.ts'
 import { createStage15FrameTimer } from './experiment-session.ts'
 import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
+import { requireHtmlCanvas } from './session-renderer.ts'
 
 export interface CreateFlyingLinesSessionOptions {
 	readonly canvas: HTMLCanvasElement | OffscreenCanvas
+	readonly rendererId?: RendererKind
 	readonly parameters: ParameterValues<typeof flyingLinesParameters>
 	readonly seed: string
 	readonly viewport: Viewport
@@ -31,7 +34,9 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 		random: createSeededRandom(options.seed),
 		viewport,
 	}, parameters)
-	const renderer = createFlyingLinesCanvasRenderer(options.canvas)
+	const renderer = options.rendererId === 'webgl2'
+		? createFlyingLinesWebGL2Renderer(requireHtmlCanvas(options.canvas, 'Flying Lines'))
+		: createFlyingLinesCanvasRenderer(options.canvas)
 	const proximity = createAdaptiveProximityDerivation(MAXIMUM_MOVING_POINT_COUNT)
 	const frameTimer = createStage15FrameTimer()
 	let view: FlyingLinesRenderView = {
@@ -84,7 +89,11 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 			const edges = derived.value
 			if (view.edges !== edges) view = { ...view, edges }
 			const rendered = frameTimer.measure(() => renderer.render(view, frame))
-			const stage15Timing = frameTimer.finish(derived.durationMs, rendered.durationMs)
+			const stage15Timing = frameTimer.finish(
+				derived.durationMs,
+				rendered.value?.renderMs ?? rendered.durationMs,
+				rendered.value?.uploadMs ?? 0,
+			)
 			telemetry = {
 				points: simulation.state.particles.count,
 				edges: edges.edgeCount,

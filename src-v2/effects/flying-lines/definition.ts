@@ -66,6 +66,7 @@ export const flyingLinesDefinition = defineExperiment<
 		executionProfiles: [
 			{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
 			{ rendererId: 'canvas2d', runtimeId: 'worker' },
+			{ rendererId: 'webgl2', runtimeId: 'main-thread' },
 		],
 		snapshotState: snapshotFlyingLinesState,
 	},

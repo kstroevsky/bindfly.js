@@ -1,4 +1,5 @@
 import type { Result } from '../../../src-v2/core/result.ts'
+import type { RendererKind } from '../../../src-v2/core/capabilities.ts'
 import { createVersionedStateEnvelope, parseVersionedStateEnvelope } from '../../../src-v2/core/state-codec.ts'
 import type { PointCloudSnapshotSource } from '../../../src-v2/analysis/point-cloud-snapshot.ts'
 import { getStudioExperimentPlugin, listStudioExperimentPlugins } from './studio-experiment-registry.ts'
@@ -16,7 +17,7 @@ export const DEFAULT_ANALYSIS_EPSILON_MAX = 1000
 export type StudioWorkspace = 'explore' | 'compare' | 'analyze'
 
 export interface StudioConfiguration {
-	readonly renderer: 'canvas2d'
+	readonly renderer: RendererKind
 	readonly runtime: StudioRuntimeKind
 	readonly workspace: StudioWorkspace
 	readonly formulaView: StudioFormulaView
@@ -133,6 +134,22 @@ const decodeBase64Url = (value: string): Result<string, string> => {
 const runtimeFrom = (value: unknown): StudioRuntimeKind | undefined =>
 	value === 'worker' ? 'worker' : value === 'main' ? 'main' : undefined
 
+const rendererFrom = (value: unknown): RendererKind | undefined =>
+	value === 'canvas2d' || value === 'webgl2' || value === 'webgpu' ? value : undefined
+
+const runtimeProfileId = (runtime: StudioRuntimeKind) => runtime === 'worker' ? 'worker' : 'main-thread'
+
+const supportsExecutionProfile = (
+	plugin: StudioExperimentPlugin,
+	renderer: RendererKind,
+	runtime: StudioRuntimeKind,
+) => plugin.executionProfiles.some(({ rendererId, runtimeId }) =>
+	rendererId === renderer && runtimeId === runtimeProfileId(runtime))
+
+type StudioConfigurationOverrides = Partial<Omit<StudioConfiguration, 'analysis' | 'runtime'>> & {
+	readonly analysis?: Partial<StudioConfiguration['analysis']>
+}
+
 const isWorkspace = (value: unknown): value is StudioWorkspace =>
 	value === 'explore' || value === 'compare' || value === 'analyze'
 
@@ -170,10 +187,15 @@ const formulaViewFromLegacyPayload = (plugin: StudioExperimentPlugin, payload: s
 export const createStudioConfiguration = (
 	plugin: StudioExperimentPlugin,
 	runtime: StudioRuntimeKind,
-	overrides: Partial<Omit<StudioConfiguration, 'analysis' | 'renderer' | 'runtime'>> & {
-		readonly analysis?: Partial<StudioConfiguration['analysis']>
-	} = {},
+	overrides: StudioConfigurationOverrides = {},
 ): StudioConfiguration => {
+	const requestedRenderer = overrides.renderer ?? 'canvas2d'
+	const renderer = supportsExecutionProfile(plugin, requestedRenderer, runtime)
+		? requestedRenderer
+		: supportsExecutionProfile(plugin, 'canvas2d', runtime)
+			? 'canvas2d'
+			: plugin.executionProfiles.find(({ runtimeId }) => runtimeId === runtimeProfileId(runtime))?.rendererId
+	if (!renderer) throw new Error(`Experiment '${plugin.id}' does not support the ${runtime} runtime.`)
 	const formulaView = overrides.formulaView && plugin.formulaViews.includes(overrides.formulaView)
 		? overrides.formulaView
 		: plugin.formulaViews[0] ?? 'morph'
@@ -188,12 +210,12 @@ export const createStudioConfiguration = (
 	if (epsilon > epsilonMax) throw new RangeError('Studio analysis epsilon must not exceed epsilonMax.')
 	const workspace = overrides.workspace ?? 'explore'
 	if (workspace === 'compare' && plugin.formulaViews.length <= 1) {
-		return { renderer: 'canvas2d', runtime, workspace: 'explore', formulaView, analysis: { source, epsilon, epsilonMax } }
+		return { renderer, runtime, workspace: 'explore', formulaView, analysis: { source, epsilon, epsilonMax } }
 	}
 	if (workspace === 'analyze' && plugin.pointCloudSources.length === 0) {
-		return { renderer: 'canvas2d', runtime, workspace: 'explore', formulaView, analysis: { source, epsilon, epsilonMax } }
+		return { renderer, runtime, workspace: 'explore', formulaView, analysis: { source, epsilon, epsilonMax } }
 	}
-	return { renderer: 'canvas2d', runtime, workspace, formulaView, analysis: { source, epsilon, epsilonMax } }
+	return { renderer, runtime, workspace, formulaView, analysis: { source, epsilon, epsilonMax } }
 }
 
 export const createStudioDurableState = (
@@ -201,11 +223,10 @@ export const createStudioDurableState = (
 	parameters: unknown,
 	seed: string,
 	runtime: StudioRuntimeKind,
-	studioOverrides: Partial<Omit<StudioConfiguration, 'analysis' | 'renderer' | 'runtime'>> & {
-		readonly analysis?: Partial<StudioConfiguration['analysis']>
-	} = {},
+	studioOverrides: StudioConfigurationOverrides = {},
 ): StudioDurableState => {
 	const studio = createStudioConfiguration(plugin, runtime, {
+		...(studioOverrides.renderer ? { renderer: studioOverrides.renderer } : {}),
 		formulaView: studioOverrides.formulaView ?? plugin.formulaViews[0] ?? 'morph',
 		...(studioOverrides.workspace ? { workspace: studioOverrides.workspace } : {}),
 		...(studioOverrides.analysis ? { analysis: studioOverrides.analysis } : {}),
@@ -226,9 +247,14 @@ const parseStudioConfiguration = (
 	plugin: StudioExperimentPlugin,
 	value: unknown,
 ): Result<StudioConfiguration, string> => {
-	if (!isRecord(value) || value.renderer !== 'canvas2d') return { ok: false, error: 'Studio configuration renderer is unsupported.' }
+	if (!isRecord(value)) return { ok: false, error: 'Studio configuration is malformed.' }
+	const renderer = rendererFrom(value.renderer)
+	if (!renderer) return { ok: false, error: 'Studio configuration renderer is unsupported.' }
 	const runtime = runtimeFrom(value.runtime)
 	if (!runtime) return { ok: false, error: 'Studio configuration runtime is unsupported.' }
+	if (!supportsExecutionProfile(plugin, renderer, runtime)) {
+		return { ok: false, error: `Studio execution profile '${renderer}/${runtime}' is unsupported by this experiment.` }
+	}
 	if (!isWorkspace(value.workspace)) return { ok: false, error: 'Studio workspace is unsupported.' }
 	if (!isFormulaView(value.formulaView) || !plugin.formulaViews.includes(value.formulaView)) {
 		return { ok: false, error: 'Studio formula view is unsupported by this experiment.' }
@@ -250,6 +276,7 @@ const parseStudioConfiguration = (
 	return {
 		ok: true,
 		value: createStudioConfiguration(plugin, runtime, {
+			renderer,
 			workspace: value.workspace,
 			formulaView: value.formulaView,
 			analysis: { source: value.analysis.source, epsilon: value.analysis.epsilon, epsilonMax },

@@ -15,6 +15,7 @@ test('typed plugin is erased only at the heterogeneous registry boundary', async
 	assert.deepEqual(plugin.executionProfiles, [
 		{ rendererId: 'canvas2d', runtimeId: 'main-thread' },
 		{ rendererId: 'canvas2d', runtimeId: 'worker' },
+		{ rendererId: 'webgl2', runtimeId: 'main-thread' },
 	])
 	assert.deepEqual(plugin.temporalSemantics, { kind: 'continuous' })
 	assert.equal(plugin.defaultParameters.particleCount, 100)

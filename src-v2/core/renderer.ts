@@ -6,8 +6,13 @@ export interface RenderFrame {
 	readonly interpolationAlpha: number
 }
 
+export interface RendererFrameTiming {
+	readonly uploadMs: number
+	readonly renderMs: number
+}
+
 export interface Renderer<State> {
 	resize(viewport: Viewport): void
-	render(state: Readonly<State>, frame: RenderFrame): void
+	render(state: Readonly<State>, frame: RenderFrame): void | RendererFrameTiming
 	dispose(): void
 }
