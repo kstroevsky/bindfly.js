@@ -79,6 +79,6 @@ The moving-point integration test adds a real reconnect sequence. One replica fi
 
 ## Current boundary and next slice
 
-Stage 16 remains **in progress**. The collaboration domain now defines ordering, scheduled application, log/applied watermarks, snapshots, divergence recovery, replay/snapshot reconnect behavior, size limits and a first rate-limit policy without depending on a network transport.
+Stage 16B established the collaboration-domain scheduling/reconnect contract independently of transport. The collaboration domain defines ordering, scheduled application, log/applied watermarks, snapshots, divergence recovery, replay/snapshot reconnect behavior, size limits and a first rate-limit policy.
 
-Stage 16C now places a real WebSocket server boundary around these contracts without changing their mathematical semantics; see `docs/v2/stage-16c-report.md`. Before exposing a production shared Flying Lines room, its collaboration adapter must replace the integration fixture's marker configuration bytes with canonical bytes for every future-affecting room configuration value. Persistent room storage and the dedicated privacy/security/operations review remain open Stage 16 work.
+Stage 16C places a real WebSocket server boundary around these contracts, Stage 16D adds durable recovery plus canonical Flying Lines collaboration configuration bytes, and Stage 16E records the required privacy/security/operations review. See `docs/v2/stage-16c-report.md` through `docs/v2/stage-16e-report.md`.

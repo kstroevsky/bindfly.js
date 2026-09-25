@@ -52,6 +52,6 @@ The test intentionally uses the existing deterministic moving-point fixture and 
 
 ## Current boundary and next slice
 
-Stage 16 remains **in progress**. A real transport now exists, but the server is still an in-memory room host. Restarting the process loses the event log and checkpoint state, and the moving-point WebSocket fixture still supplies marker configuration bytes rather than a production canonical Flying Lines room configuration encoding.
+Stage 16C established the real transport boundary. Stage 16D subsequently adds durable authoritative room recovery and replaces the fixture marker with a versioned canonical Flying Lines collaboration configuration encoding.
 
-The next architectural slice is persistent authoritative room storage: durable room metadata, ordered accepted events and authoritative checkpoints with explicit protocol/state-version identity and deterministic recovery after process restart. The dedicated privacy/security/operations review remains required before Stage 16 can close.
+The durable recovery evidence is recorded in `docs/v2/stage-16d-report.md`; the dedicated privacy/security/operations review and deployment boundary are recorded in `docs/v2/stage-16e-report.md`.
