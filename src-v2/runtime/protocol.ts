@@ -1,4 +1,4 @@
-export const RUNTIME_PROTOCOL_VERSION = 5
+export const RUNTIME_PROTOCOL_VERSION = 6
 
 export type RuntimeFormulaView =
 	| 'morph'
@@ -61,7 +61,6 @@ export type RuntimeEvent =
 	| { readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION; readonly type: 'telemetry'; readonly payload: unknown }
 	| { readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION; readonly type: 'inspection-result'; readonly requestId: string; readonly payload: unknown }
 	| { readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION; readonly type: 'point-cloud-snapshot'; readonly requestId: string; readonly payload: unknown }
-	| { readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION; readonly type: 'analysis-result'; readonly payload: unknown }
 	| { readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION; readonly type: 'error'; readonly requestId?: string; readonly error: RuntimeErrorPayload }
 	| { readonly protocolVersion: typeof RUNTIME_PROTOCOL_VERSION; readonly type: 'disposed' }
 
@@ -109,4 +108,4 @@ export const isRuntimeEvent = (value: unknown): value is RuntimeEvent =>
 	isRecord(value)
 	&& value.protocolVersion === RUNTIME_PROTOCOL_VERSION
 	&& typeof value.type === 'string'
-	&& ['ready', 'ack', 'telemetry', 'inspection-result', 'point-cloud-snapshot', 'analysis-result', 'error', 'disposed'].includes(value.type)
+	&& ['ready', 'ack', 'telemetry', 'inspection-result', 'point-cloud-snapshot', 'error', 'disposed'].includes(value.type)

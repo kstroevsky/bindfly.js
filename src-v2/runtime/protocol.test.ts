@@ -5,6 +5,7 @@ import {
 	RUNTIME_PROTOCOL_VERSION,
 	createRuntimeCommand,
 	isRuntimeCommand,
+	isRuntimeEvent,
 	runtimeCommandTypes,
 } from './protocol.ts'
 
@@ -61,5 +62,13 @@ test('rejects wrong versions, unknown commands and missing request identity', ()
 		requestId: '',
 		sequence: 0,
 		type: 'pause',
+	}), false)
+})
+
+test('rejects the retired main-runtime analysis result event', () => {
+	assert.equal(isRuntimeEvent({
+		protocolVersion: RUNTIME_PROTOCOL_VERSION,
+		type: 'analysis-result',
+		payload: {},
 	}), false)
 })
