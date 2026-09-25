@@ -301,12 +301,16 @@ export const StudioApp = () => {
 		setParameters(normalized.value)
 		runtimeConfigurationRef.current = { plugin, parameters: normalized.value, formulaView, seed }
 		const update = controllerRef.current?.updateParameters(patch.value)
-		const isFormulaChange = definition.kind === 'string' && definition.control === 'formula' || parameterId === 'formulaMorph'
+		const isFormulaChange = definition.kind === 'string' && definition.control === 'formula'
+			|| parameterId === 'formulaMorph'
+			|| definition.kind === 'number' && definition.semantic === 'formula-parameter'
 		if (paused && frozenSimulationSnapshotId && parameters[parameterId] !== normalized.value[parameterId]) {
 			if (isFormulaChange) {
 				const label = parameterId === 'formulaMorph'
 					? `Morph → ${String(normalized.value[parameterId])}`
-					: `${parameterId.replace(/([A-Z])/g, ' $1')} changed`
+					: definition.kind === 'number' && definition.semantic === 'formula-parameter'
+						? `${parameterId} → ${String(normalized.value[parameterId])}`
+						: `${parameterId.replace(/([A-Z])/g, ' $1')} changed`
 				const node = createFormulaPerturbationNode({
 					id: `${frozenSimulationSnapshotId}:node-${++formulaHistoryCounterRef.current}`,
 					label,

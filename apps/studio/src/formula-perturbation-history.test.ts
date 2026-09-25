@@ -7,12 +7,13 @@ import { appendFormulaPerturbation, createFormulaPerturbationNode, extractFormul
 const schema = defineParameterSchema({
 	formulaAX: { kind: 'string', default: 'x', control: 'formula', invalidation: 'hot-update' },
 	formulaMorph: { kind: 'number', default: 0, invalidation: 'hot-update' },
+	k: { kind: 'number', default: 1, semantic: 'formula-parameter', invalidation: 'hot-update' },
 	background: { kind: 'string', default: '#000', invalidation: 'hot-update' },
 })
 
 test('formula perturbation nodes keep only formula configuration plus frozen-state identity and metrics', () => {
-	const parameters = { formulaAX: 'sin(x)', formulaMorph: 0.5, background: '#fff' }
-	assert.deepEqual(extractFormulaConfiguration(schema, parameters), { formulaAX: 'sin(x)', formulaMorph: 0.5 })
+	const parameters = { formulaAX: 'sin(x)', formulaMorph: 0.5, k: 2, background: '#fff' }
+	assert.deepEqual(extractFormulaConfiguration(schema, parameters), { formulaAX: 'sin(x)', formulaMorph: 0.5, k: 2 })
 	const node = createFormulaPerturbationNode({
 		id: 'node-1', label: 'Formula AX changed', simulationSnapshotId: 'snapshot-1', schema, parameters,
 		metrics: { step: 42, points: 100, edges: 20, components: 3 },
@@ -25,7 +26,7 @@ test('formula perturbation nodes keep only formula configuration plus frozen-sta
 test('formula perturbation history is bounded and preserves chronological order', () => {
 	const node = (index: number) => createFormulaPerturbationNode({
 		id: `node-${index}`, label: `Node ${index}`, simulationSnapshotId: 'snapshot', schema,
-		parameters: { formulaAX: String(index), formulaMorph: index, background: '#000' },
+		parameters: { formulaAX: String(index), formulaMorph: index, k: index, background: '#000' },
 		metrics: { step: 1, points: 1, edges: 0, components: 1 },
 	})
 	let history: readonly ReturnType<typeof node>[] = []

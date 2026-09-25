@@ -58,6 +58,7 @@ export const createFormulaParameterSchema = <const Declarations extends readonly
 		min: declaration.min,
 		max: declaration.max,
 		step: declaration.step,
+		semantic: 'formula-parameter' as const,
 		invalidation: 'hot-update' as const,
 	},
 ])) as FormulaParameterSchema<Declarations>

@@ -11,6 +11,7 @@ export interface NumberParameterDefinition extends ParameterDefinitionBase<'numb
 	readonly min?: number
 	readonly max?: number
 	readonly step?: number
+	readonly semantic?: 'formula-parameter'
 }
 
 export interface BooleanParameterDefinition extends ParameterDefinitionBase<'boolean', boolean> {}

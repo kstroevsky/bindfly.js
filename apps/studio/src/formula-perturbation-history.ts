@@ -26,6 +26,7 @@ export const extractFormulaConfiguration = (
 	for (const [parameterId, definition] of Object.entries(schema)) {
 		const isFormulaSource = definition.kind === 'string' && definition.control === 'formula'
 		const isFormulaControl = parameterId === 'formulaMorph'
+			|| definition.kind === 'number' && definition.semantic === 'formula-parameter'
 		if (isFormulaSource || isFormulaControl) configuration[parameterId] = values[parameterId]
 	}
 	return Object.freeze(configuration)

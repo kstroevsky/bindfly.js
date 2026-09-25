@@ -72,7 +72,10 @@ test('declared formula parameters extend scope without colliding with system sym
 		{ id: 'k', default: 1, min: -2, max: 2, step: 0.1 },
 		{ id: 'b', default: 0, min: -10, max: 10, step: 0.5 },
 	] as const, ['x', 'y', 'angle'])
-	assert.deepEqual(Object.keys(createFormulaParameterSchema(declarations)), ['k', 'b'])
+	const schema = createFormulaParameterSchema(declarations)
+	assert.deepEqual(Object.keys(schema), ['k', 'b'])
+	assert.equal(schema.k.semantic, 'formula-parameter')
+	assert.equal(schema.b.semantic, 'formula-parameter')
 	assert.throws(() => defineFormulaParameterDeclarations([
 		{ id: 'sin', default: 1, min: 0, max: 2, step: 0.1 },
 	], ['x']), /collides/)
