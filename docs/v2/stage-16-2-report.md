@@ -91,4 +91,18 @@ Final local verification on 2026-09-26:
 - `pnpm run build`: passed;
 - `git diff --check`: passed.
 
-Stage 16.2 changes no simulation, formula, renderer, analyzer or generic experiment ownership boundary. It completes the single-authority repository milestone with explicit handling for checkpoint rollback, retained future WAL events, ambiguous client acknowledgements and crash-torn WAL tails. Production identity, TLS/WSS, retention/backup policy and horizontally scaled transactional storage/leadership remain deployment concerns.
+## Remaining deployment clock ownership
+
+The reference WebSocket server serializes collaboration mutations, resume requests, sync-point creation and checkpoint work, but it does not call the authoritative simulation's `step()` itself. Reference hosts and tests currently perform `simulation.step(...)` immediately before `server.advanceStepIndex(...)`.
+
+That ordering is part of the deployment contract. A production host must not allow snapshot/resume work to observe the interval after the simulation has stepped but before the collaboration boundary has advanced. The preferred later hardening is an authoritative-step runner that executes:
+
+```text
+simulate fixed step
++ advance collaboration boundary
++ checkpoint / sync-point work
+```
+
+inside the same server/room transaction queue. This is intentionally recorded as deployment hardening rather than folded into Stage 16.2's repository acceptance boundary.
+
+Stage 16.2 changes no simulation, formula, renderer, analyzer or generic experiment ownership boundary. It completes the single-authority repository milestone with explicit handling for checkpoint rollback, retained future WAL events, ambiguous client acknowledgements and crash-torn WAL tails. Production authoritative-clock hosting, identity, TLS/WSS, retention/backup policy and horizontally scaled transactional storage/leadership remain deployment concerns.
