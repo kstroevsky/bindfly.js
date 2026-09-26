@@ -59,6 +59,23 @@ const harness = (page: import('@playwright/test').Page) => ({
 		const api = (window as unknown as { __bindflyCollaborationTest: { reconnect(): Promise<void> } }).__bindflyCollaborationTest
 		await api.reconnect()
 	}),
+	startConnectivityGame: (startSequence: number) => page.evaluate((value) => {
+		const api = (window as unknown as { __bindflyCollaborationTest: { startConnectivityGame(sequence: number): void } }).__bindflyCollaborationTest
+		api.startConnectivityGame(value)
+	}, startSequence),
+	submitConnectivityGame: (input: unknown) => page.evaluate(async (value) => {
+		const api = (window as unknown as { __bindflyCollaborationTest: { submitConnectivityGame(gameInput: unknown): Promise<unknown> } }).__bindflyCollaborationTest
+		return api.submitConnectivityGame(value)
+	}, input),
+	connectivityGameStatus: () => page.evaluate(() => {
+		const api = (window as unknown as { __bindflyCollaborationTest: { connectivityGameStatus(): {
+			acceptedEdits: number
+			maximumAcceptedEdits: number
+			complete: boolean
+			exhausted: boolean
+		} } }).__bindflyCollaborationTest
+		return api.connectivityGameStatus()
+	}),
 	status: () => page.evaluate(() => {
 		const api = (window as unknown as { __bindflyCollaborationTest: { status(): {
 			connected: boolean
@@ -69,6 +86,74 @@ const harness = (page: import('@playwright/test').Page) => ({
 		} } }).__bindflyCollaborationTest
 		return api.status()
 	}),
+})
+
+test('two browser clients score the connectivity challenge from shared authoritative history', async ({ browser, baseURL }) => {
+	const simulation = createMovingPointSimulation({
+		environment: { random: createSeededRandom(configuration.seed), viewport },
+		parameters: configuration.parameters,
+	})
+	const adapter = {
+		parseInput: (value: unknown) => {
+			try { return { ok: true as const, value: parseMovingPointInput(value) } } catch (error) {
+				return { ok: false as const, error: error instanceof Error ? error.message : 'Invalid moving-point input.' }
+			}
+		},
+		encodeInput: encodeMovingPointInputV1,
+		decodeInput: (bytes: Uint8Array) => {
+			try { return { ok: true as const, value: decodeMovingPointInputV1(bytes) } } catch (error) {
+				return { ok: false as const, error: error instanceof Error ? error.message : 'Invalid moving-point input bytes.' }
+			}
+		},
+		applyInput: (input: ReturnType<typeof parseMovingPointInput>) => simulation.applyInput(input),
+		captureConfigurationBytes: () => configurationBytes.slice(),
+		captureStateBytes: () => encodeMovingPointCheckpointV1(simulation.captureCheckpoint()),
+		restoreStateBytes: (bytes: Uint8Array) => simulation.restoreCheckpoint(decodeMovingPointCheckpointV1(bytes)),
+	}
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'connectivity-game-room', experimentId: 'flying-lines', stateVersion: 1, configurationVersion: 1,
+		adapter, authorizeInput: () => ({ ok: true, value: undefined }),
+	})
+	const server = new AuthoritativeRoomWebSocketServer({
+		room,
+		authenticate: (request) => {
+			const participantId = new URL(request.url ?? '/', 'http://localhost').searchParams.get('participant')
+			return participantId ? { ok: true, value: { participantId } } : { ok: false, error: 'Missing participant.' }
+		},
+	})
+	const address = await server.start()
+	const context = await browser.newContext()
+	const alicePage = await context.newPage()
+	const bobPage = await context.newPage()
+	try {
+		await Promise.all([
+			alicePage.goto(`${baseURL}/?collaborationTestHarness=1#/lab/flying-lines`),
+			bobPage.goto(`${baseURL}/?collaborationTestHarness=1#/lab/flying-lines`),
+		])
+		const alice = harness(alicePage)
+		const bob = harness(bobPage)
+		await Promise.all([
+			alice.connect({ url: `${address.url}?participant=alice`, roomId: 'connectivity-game-room', participantId: 'alice' }),
+			bob.connect({ url: `${address.url}?participant=bob`, roomId: 'connectivity-game-room', participantId: 'bob' }),
+		])
+		alice.startConnectivityGame(0)
+		bob.startConnectivityGame(0)
+
+		for (let index = 0; index < 5; index++) {
+			await bob.submitConnectivityGame({ type: 'move-point', id: index % 3, x: 100 + index * 10, y: 140 + index * 5 })
+			await server.runAuthoritativeStep(({ stepIndex, nextStepIndex }) => simulation.step({
+				index: stepIndex,
+				dtSeconds: configuration.fixedStepSeconds,
+				elapsedSeconds: nextStepIndex * configuration.fixedStepSeconds,
+			}))
+		}
+		await expect.poll(async () => (await alice.connectivityGameStatus()).acceptedEdits).toBe(5)
+		await expect.poll(async () => (await bob.connectivityGameStatus()).acceptedEdits).toBe(5)
+	} finally {
+		await context.close()
+		await server.stop()
+		simulation.dispose()
+	}
 })
 
 test('browser replicas detect divergence and recover through authoritative snapshots and reconnect replay', async ({ browser, baseURL }) => {
