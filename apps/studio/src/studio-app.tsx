@@ -362,6 +362,11 @@ export const StudioApp = () => {
 			cssHeight: Math.max(1, viewportElement.clientHeight),
 			devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
 		})
+		let measuredViewport = measure()
+		const viewportMatches = (left: typeof measuredViewport, right: typeof measuredViewport) =>
+			left.cssWidth === right.cssWidth
+			&& left.cssHeight === right.cssHeight
+			&& left.devicePixelRatio === right.devicePixelRatio
 		const handleFailure = (failure: unknown) => {
 			if (sweepActiveRef.current) {
 				invalidateSweepRun()
@@ -381,20 +386,42 @@ export const StudioApp = () => {
 			return
 		}
 
-		const resizeObserver = new ResizeObserver(() => {
+		const applyResizeAfterSweep = () => {
+			if (cancelled) return
+			if (sweepActiveRef.current) {
+				resizeFrameId = window.requestAnimationFrame(applyResizeAfterSweep)
+				return
+			}
+			resizeFrameId = undefined
+			measuredViewport = measure()
+			if (controller) void controller.resize(measuredViewport).catch(handleFailure)
+		}
+		const scheduleResize = () => {
 			if (resizeFrameId !== undefined) return
 			resizeFrameId = window.requestAnimationFrame(() => {
 				resizeFrameId = undefined
-				if (controller) void controller.resize(measure()).catch(handleFailure)
+				const nextViewport = measure()
+				if (viewportMatches(measuredViewport, nextViewport)) return
+				measuredViewport = nextViewport
+				if (sweepActiveRef.current) {
+					setError('Sweep cancelled because the experiment viewport changed.')
+					cancelSweep()
+					resizeFrameId = window.requestAnimationFrame(applyResizeAfterSweep)
+					return
+				}
+				if (controller) void controller.resize(nextViewport).catch(handleFailure)
 			})
-		})
+		}
+		const resizeObserver = new ResizeObserver(scheduleResize)
 		resizeObserver.observe(viewportElement)
+		window.addEventListener('resize', scheduleResize)
 		const initialize = async () => {
 			const runtimeConfiguration = runtimeConfigurationRef.current
+			measuredViewport = measure()
 			const options = {
 				canvas,
 				rendererId: rendererKind,
-				viewport: measure(),
+				viewport: measuredViewport,
 				plugin: runtimeConfiguration.plugin,
 				parameters: runtimeConfiguration.parameters,
 				formulaView: runtimeConfiguration.formulaView,
@@ -422,6 +449,7 @@ export const StudioApp = () => {
 			if (controllerRef.current === controller && sweepActiveRef.current) invalidateSweepRun()
 			cancelled = true
 			resizeObserver.disconnect()
+			window.removeEventListener('resize', scheduleResize)
 			if (resizeFrameId !== undefined) window.cancelAnimationFrame(resizeFrameId)
 			controllerRef.current = undefined
 			void controller?.dispose()

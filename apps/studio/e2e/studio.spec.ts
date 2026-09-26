@@ -434,6 +434,33 @@ test('Stage 17 frozen sweep locks live mutations and restores the captured state
 	await expect(page.getByRole('alert')).toHaveCount(0)
 })
 
+test('Stage 17 frozen sweep cancels and restores before applying a viewport resize', async ({ page }) => {
+	await page.setViewportSize({ width: 1365, height: 760 })
+	await page.goto('/#/lab/pulse-2023')
+	const formula = page.locator('#parameter-formulaAX')
+	await formula.fill('positionX + distance * cos(a) * k * -1')
+	await page.getByRole('button', { name: 'Apply Formula AX' }).click()
+	await expect.poll(async () => Number(await metric(page, 'Step').textContent())).toBeGreaterThan(0)
+	await page.getByRole('button', { name: 'Freeze' }).click()
+	const frozenStep = await metric(page, 'Step').textContent()
+	await page.getByLabel('Sweep start').fill('0.6')
+	await page.getByLabel('Sweep end').fill('1.4')
+	await page.getByLabel('Sweep step', { exact: true }).fill('0.1')
+
+	await page.getByRole('button', { name: 'Execute parameter sweep' }).click()
+	await expect(page.getByRole('button', { name: 'Cancel sweep' })).toBeVisible()
+	await page.setViewportSize({ width: 1180, height: 760 })
+
+	await expect(page.getByRole('alert')).toContainText('Sweep cancelled because the experiment viewport changed.')
+	await expect(page.getByRole('button', { name: 'Execute parameter sweep' })).toBeVisible()
+	await expect(page.locator('.sweep-card')).toHaveCount(0)
+	await expect(metric(page, 'Step')).toHaveText(frozenStep ?? '')
+	await expect(page.locator('#parameter-k')).toHaveValue('1')
+	await expect(page.locator('#parameter-k')).toBeEnabled()
+	await expect(page.getByLabel('Experiment', { exact: true })).toBeEnabled()
+	await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeEnabled()
+})
+
 test('Stage 17 saved experiments restore canonical state and guided challenges read live evidence', async ({ page }) => {
 	await page.goto('/')
 	await expect(page.getByRole('heading', { name: 'Guided learning & challenges' })).toBeVisible()
