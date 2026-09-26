@@ -1,0 +1,93 @@
+import type { Result } from '../../../src-v2/core/result.ts'
+import { flyingLinesDefinition } from '../../../src-v2/effects/flying-lines/definition.ts'
+import {
+	FLYING_LINES_COLLABORATION_CONFIGURATION_VERSION,
+	decodeFlyingLinesCollaborationConfigurationV1,
+	encodeFlyingLinesCollaborationConfigurationV1,
+} from '../../../src-v2/effects/flying-lines/collaboration-configuration.ts'
+import type { FlyingLinesInput, FlyingLinesParameters } from '../../../src-v2/effects/flying-lines/types.ts'
+import { decodeMovingPointInputV1, encodeMovingPointInputV1, parseMovingPointInput } from '../../../src-v2/effects/moving-points/input.ts'
+import { createFlyingLinesSession } from './flying-lines-session.ts'
+import { createMovingPointInteractionController } from './moving-point-interaction.ts'
+import { defineStudioExperiment } from './studio-experiment-plugin.ts'
+import { STAGE_15_PERFORMANCE_METRICS } from './stage-15-performance.ts'
+
+const parseInput = (value: unknown): Result<FlyingLinesInput, string> => {
+	try {
+		return { ok: true, value: parseMovingPointInput(value) }
+	} catch (error) {
+		return { ok: false, error: error instanceof Error ? error.message : 'Flying Lines input is invalid.' }
+	}
+}
+
+const legacyPresets: Readonly<Record<string, FlyingLinesParameters>> = {
+	Simple: { particleCount: 100, maxSpeed: 60, connectionRadius: 250, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(0, 0, 0, 0.7)' },
+	SwitchColor: { particleCount: 100, maxSpeed: 120, connectionRadius: 150, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(255, 255, 0, 0.7)' },
+	'Monochrome&Clickable': { particleCount: 100, maxSpeed: 120, connectionRadius: 150, particleLifetimeSeconds: 20, margin: 20, background: 'rgb(255, 255, 255)' },
+	AddByClick: { particleCount: 100, maxSpeed: 120, connectionRadius: 200, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(0, 0, 0, 0.7)' },
+	Blank: { particleCount: 1, maxSpeed: 120, connectionRadius: 200, particleLifetimeSeconds: 20, margin: 20, background: 'rgba(0, 0, 0, 0.7)' },
+}
+
+export const flyingLinesPlugin = defineStudioExperiment({
+	definition: flyingLinesDefinition,
+	title: 'Flying Lines',
+	defaultSeed: 'bindfly-flying-lines-simple-v1',
+	collaboration: {
+		configurationVersion: FLYING_LINES_COLLABORATION_CONFIGURATION_VERSION,
+		encodeConfiguration: (configuration) => encodeFlyingLinesCollaborationConfigurationV1({
+			seed: configuration.seed,
+			parameters: configuration.parameters as FlyingLinesParameters,
+			simulationWidth: configuration.simulationWidth,
+			simulationHeight: configuration.simulationHeight,
+			fixedStepSeconds: configuration.fixedStepSeconds,
+		}),
+		decodeConfiguration: (bytes) => {
+			try {
+				const configuration = decodeFlyingLinesCollaborationConfigurationV1(bytes)
+				if (configuration.fixedStepSeconds !== flyingLinesDefinition.timing.fixedStepSeconds) {
+					return { ok: false, error: 'Flying Lines collaboration fixed timestep does not match this build.' }
+				}
+				return {
+					ok: true,
+					value: {
+						...configuration,
+						parameters: configuration.parameters,
+					},
+				}
+			} catch (error) {
+				return { ok: false, error: error instanceof Error ? error.message : 'Flying Lines collaboration configuration is invalid.' }
+			}
+		},
+		encodeInput: (input) => encodeMovingPointInputV1(parseMovingPointInput(input)),
+		decodeInput: (bytes) => {
+			try { return { ok: true, value: decodeMovingPointInputV1(bytes) } } catch (error) {
+				return { ok: false, error: error instanceof Error ? error.message : 'Flying Lines collaboration input bytes are invalid.' }
+			}
+		},
+	},
+	metrics: [
+		{ id: 'points', label: 'Points' },
+		{ id: 'edges', label: 'Edges' },
+		{ id: 'components', label: 'β₀' },
+		{ id: 'step', label: 'Step' },
+		{ id: 'frameMs', label: 'Frame', format: (value) => `${Number(value).toFixed(1)} ms` },
+		...STAGE_15_PERFORMANCE_METRICS,
+		{ id: 'droppedSteps', label: 'Dropped' },
+	],
+	createSession: createFlyingLinesSession,
+	createInteractionController: createMovingPointInteractionController,
+	parseInput,
+	toDurableState: (parameters, seed) => ({ parameters, seed }),
+	fromDurableState: (state) => state,
+	migrateLegacyUrl: (url) => {
+		const match = /^#\/FlyingLines-([^?]+)(?:\?.*)?$/.exec(url.hash)
+		if (!match) return undefined
+		const presetId = match[1]
+		const parameters = presetId ? legacyPresets[presetId] : undefined
+		return parameters
+			? { ok: true, value: { parameters, seed: `legacy-flying-lines-${presetId}` } }
+			: { ok: false, error: `Legacy Flying Lines preset '${presetId ?? ''}' is unsupported.` }
+	},
+})
+
+export default flyingLinesPlugin

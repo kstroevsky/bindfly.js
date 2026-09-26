@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "base": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/plan-evolution/revision-5/base.md",
+    "sha256": "b6ebd42c1b8015a88187f313a6e4a216519385bf90ad144a9c86513078212f5e"
+  },
+  "candidate": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/bindfly_2_implementation_plan.md",
+    "sha256": "da39c962809699778a9e59995faff883e792f921364af9cd6d82142a27cd78bc"
+  },
+  "delta": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/plan-evolution/revision-5/delta.json",
+    "feedback_ids": [
+      "DOC-STATUS-01"
+    ]
+  },
+  "changed_sections": [
+    "Bindfly 2 Implementation Plan",
+    "Bindfly 2 Implementation Plan / Source request",
+    "Bindfly 2 Implementation Plan — Candidate",
+    "Bindfly 2 Implementation Plan — Candidate / Source request"
+  ],
+  "added_sections": [
+    "Bindfly 2 Implementation Plan",
+    "Bindfly 2 Implementation Plan / Source request"
+  ],
+  "removed_sections": [
+    "Bindfly 2 Implementation Plan — Candidate",
+    "Bindfly 2 Implementation Plan — Candidate / Source request"
+  ],
+  "allowed_sections": [
+    "Bindfly 2 Implementation Plan",
+    "Bindfly 2 Implementation Plan / Source request",
+    "Bindfly 2 Implementation Plan — Candidate",
+    "Bindfly 2 Implementation Plan — Candidate / Source request"
+  ],
+  "contract_signal_deltas": {},
+  "ledger_counts": {
+    "active": 89,
+    "deferred": 60,
+    "superseded": 1,
+    "other": 0
+  },
+  "base_ledger": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/plan-evolution/revision-5/base-ledger.json",
+  "errors": [],
+  "warnings": []
+}

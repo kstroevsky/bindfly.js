@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "base_sha256": "8a2bda7188e5d5fd571b5eee533f6759944cb9cd325320d9077651aa520e79b6",
+  "closed_world": true,
+  "source_feedback": [
+    "User Milestone B review dated 2026-09-12; complete approved normative projection: docs/plan-evolution/revision-2/approved-feedback-payload.md; SHA-256 258812e4e6bde191b12a221445f05c2e4849d08064998fa9e644627a85221620."
+  ],
+  "changes": [
+    {
+      "feedback_id": "MBR-01",
+      "operation": "AMEND",
+      "requirement_ids": ["DOC-001", "MILE-001", "TARGET-001"],
+      "allowed_sections": [["45. Migration phases for Codex"], ["50. Delivery milestones, dependencies and stop rules"], ["56. Verified external assumptions"], ["57. Accepted Milestone B review and revised execution roadmap"]],
+      "required_literals": ["section 57 supersedes its execution order after Phase 9", "The immediate sequence is:", "create a fresh PR for Stage 10A"],
+      "forbidden_literals": ["the old Phase 10–25 sequence remains the active execution order"],
+      "allowed_new_numeric_tokens": ["9", "9.5", "10", "11", "12", "13", "14", "15", "16", "17", "33", "57"],
+      "allowed_new_versioned_tokens": ["10A", "10B"],
+      "reason": "Accept Milestone B with conditions and supersede only the post-Phase-9 execution schedule."
+    },
+    {
+      "feedback_id": "MBR-01S",
+      "operation": "SUPERSEDE",
+      "requirement_ids": ["ROAD-001"],
+      "allowed_sections": [["45. Migration phases for Codex"], ["57. Accepted Milestone B review and revised execution roadmap"]],
+      "required_literals": ["section 57 supersedes its execution order after Phase 9"],
+      "forbidden_literals": ["the old Phase 10–25 sequence remains the active execution order"],
+      "allowed_new_numeric_tokens": ["9", "57"],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Record the old Phase 0–25 execution order as preserved but inactive after Phase 9."
+    },
+    {
+      "feedback_id": "MBR-01A",
+      "operation": "ADD",
+      "requirement_ids": ["ROAD-002", "PR-001", "STAGE-10B", "STAGE-11", "STAGE-12", "STAGE-13", "STAGE-14", "STAGE-15", "STAGE-16", "STAGE-17"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap"]],
+      "required_literals": ["The immediate sequence is:", "create a fresh PR for Stage 10A", "allowlisted `atan` operation"],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": ["9.5", "10", "11", "12", "13", "14", "15", "16", "17", "33", "57"],
+      "allowed_new_versioned_tokens": ["10A", "10B"],
+      "reason": "Add the accepted replacement execution schedule and bounded PR sequence."
+    },
+    {
+      "feedback_id": "MBR-02",
+      "operation": "ADD",
+      "requirement_ids": ["STAB-001", "PARAM-002", "CAP-TRUTH-001", "CI-001"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap", "Stage 9.5 — Stabilize PR #33"]],
+      "required_literals": ["PR #33 has no knowingly false parameter/capability behavior", "maintaining and reporting dropped steps", "stores capability support as a boolean separate from its display reason", "performance artifacts remain informational on shared CI hardware"],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": ["9.5", "33"],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Add bounded correctness, telemetry, capability, validation and automatic-gate stabilization before merge."
+    },
+    {
+      "feedback_id": "MBR-02A",
+      "operation": "AMEND",
+      "requirement_ids": ["PERF-001"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap", "Stage 9.5 — Stabilize PR #33"]],
+      "required_literals": ["Preserve the benchmark-driven adaptive proximity selector"],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": ["9.5", "33"],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Preserve the accepted measured grid/brute selection instead of treating the uniform grid as unconditionally faster."
+    },
+    {
+      "feedback_id": "MBR-03",
+      "operation": "AMEND",
+      "requirement_ids": ["EXP-001", "ANAL-002"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap", "Stage 10A — Generic composition and Drooping Lines"]],
+      "required_literals": ["The current `ExperimentDefinition.analyzers` field is provisional", "The old 10 Hz graph example applies to scheduled graph statistics/inspection"],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": ["2", "10"],
+      "allowed_new_versioned_tokens": ["10A"],
+      "reason": "Amend the existing experiment and analysis contracts to distinguish provisional analyzer binding and frame-critical derivations."
+    },
+    {
+      "feedback_id": "MBR-03A",
+      "operation": "ADD",
+      "requirement_ids": ["SESS-001", "PLUG-001", "CAP-001", "DERIV-001", "ANAL-004"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap", "Stage 10A — Generic composition and Drooping Lines"]],
+      "required_literals": ["Main and worker runtimes determine **where** a session executes", {"text": "StudioExperimentPlugin", "section_count": 2}, "strongly typed `defineStudioExperiment(...)` helper", "`snapshotState(): unknown` must not remain the apparent analyzer contract"],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": ["2", "10"],
+      "allowed_new_versioned_tokens": ["10A"],
+      "reason": "Add the second-experiment pressure test and the session/plugin/profile/derivation/snapshot boundaries it must prove."
+    },
+    {
+      "feedback_id": "MBR-04",
+      "operation": "ADD",
+      "requirement_ids": ["SCALE-001"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap", "Complete-graph output scaling boundary"]],
+      "required_literals": ["Spatial indexing improves search; it does not remove worst-case edge-output complexity."],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": ["1", "2", "500"],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Record the complete-edge output constraint before any particle-ceiling increase."
+    },
+    {
+      "feedback_id": "MBR-05",
+      "operation": "AMEND",
+      "requirement_ids": ["STATE-003"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap", "Durable-state terminology"]],
+      "required_literals": ["Use three exhaustive ownership groups:"],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": ["9"],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Amend the existing durable-state classification with exhaustive experiment, Studio and session ownership groups."
+    },
+    {
+      "feedback_id": "MBR-05A",
+      "operation": "ADD",
+      "requirement_ids": ["STATE-004"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap", "Durable-state terminology"]],
+      "required_literals": ["Do not call configuration-only URLs complete live-session replay."],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": ["9"],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Add the future live-session replay composition without overstating current URL durability."
+    },
+    {
+      "feedback_id": "MBR-06",
+      "operation": "ADD",
+      "requirement_ids": ["SCOPE-002"],
+      "allowed_sections": [["57. Accepted Milestone B review and revised execution roadmap", "Explicit non-goals for the next PR"]],
+      "required_literals": ["Keep the Float64 CPU deterministic tier"],
+      "forbidden_literals": [],
+      "allowed_new_numeric_tokens": ["32", "64"],
+      "allowed_new_versioned_tokens": [],
+      "reason": "Preserve explicit non-goals while composition is pressure-tested."
+    }
+  ]
+}

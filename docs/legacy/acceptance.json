@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "status": "PHASE_0_ACCEPTED",
+  "accepted_at": "2026-08-31T09:24:16+02:00",
+  "accepted_by": "user",
+  "canonical_plan_sha256": "8a2bda7188e5d5fd571b5eee533f6759944cb9cd325320d9077651aa520e79b6",
+  "source_commit": "9f2a83d3996207bf6886d80949561c96e1bc175d",
+  "classifications": {
+    "intentional_fix": [
+      "FlyingLines",
+      "DroopingLines",
+      "Pulse",
+      "Spiral",
+      "Spiral2",
+      "Spiral3",
+      "SpiralFlyingLines"
+    ],
+    "archive_only": [
+      "FlyingLinesGL",
+      "FlyingCubesGL"
+    ]
+  },
+  "evidence_manifest": "docs/legacy/legacy-manifest.json",
+  "note": "User responded Continue after the Phase 0 review gate and explicitly requested commits."
+}

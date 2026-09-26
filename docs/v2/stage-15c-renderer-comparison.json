@@ -1,0 +1,4444 @@
+{
+  "benchmark": "Stage 15C controlled renderer comparison",
+  "version": 1,
+  "measuredAt": "2026-09-25T18:03:59.345Z",
+  "runtime": "main-thread",
+  "browser": "Chromium 153.0.8010.12",
+  "platform": "darwin 24.6.0 arm64",
+  "cpu": "Apple M1 Max",
+  "logicalCpuCount": 10,
+  "gitCommit": "8f2e5b1150985c5664867d2c33a7da378fc708d1",
+  "trackedWorkingTreeDirty": false,
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "parityProtocol": {
+    "dynamicExperiments": "Start paused at step 0, apply identical parameters and inputs, advance to identical fixed-step indices, then measure one exact step per sample.",
+    "staticExperiment": "Scalar Field keeps its ordinary render loop because the sampled mathematical state is static; sample/invalid counts must match.",
+    "stateCheck": "Canvas2D and WebGL2 samples must match every state metric exposed by the experiment: step/points/edges/components for Flying Lines, step/points/edges for Vector Field and Discrete Map, and points/edges for Scalar Field."
+  },
+  "timingSemantics": {
+    "simulationMs": "Fixed-step CPU simulation work for the sampled step.",
+    "derivationMs": "CPU derivation/sampling performed by the shared experiment session before renderer submission.",
+    "uploadMs": "CPU representation conversion and CPU-to-GPU API upload/submission work; zero for Canvas2D.",
+    "renderMs": "Synchronous renderer draw-call submission time on the CPU.",
+    "gpuRenderMs": "Latest asynchronously completed EXT_disjoint_timer_query_webgl2 draw query; excluded from totalFrameMs because GPU work overlaps CPU execution.",
+    "totalFrameMs": "CPU simulationMs + derivationMs + uploadMs + renderMs."
+  },
+  "results": [
+    {
+      "workload": {
+        "id": "flying-lines-dense-500",
+        "experimentId": "flying-lines",
+        "seed": "bindfly-flying-lines-simple-v1",
+        "parameters": {
+          "particleCount": 500,
+          "connectionRadius": 120
+        },
+        "initialConditions": [],
+        "minimumSimulationStep": 240,
+        "warmupMilliseconds": 500,
+        "sampleCount": 40
+      },
+      "canvas2d": {
+        "renderer": "canvas2d",
+        "workload": {
+          "id": "flying-lines-dense-500",
+          "experimentId": "flying-lines",
+          "seed": "bindfly-flying-lines-simple-v1",
+          "parameters": {
+            "particleCount": 500,
+            "connectionRadius": 120
+          },
+          "initialConditions": [],
+          "minimumSimulationStep": 240,
+          "warmupMilliseconds": 500,
+          "sampleCount": 40
+        },
+        "canvasCssSize": {
+          "width": 1060,
+          "height": 900
+        },
+        "gpuTimerSupported": false,
+        "gpuTimingSampleCount": 0,
+        "gpuRenderMs": null,
+        "summary": {
+          "simulationMs": {
+            "mean": 0.0025000002235174177,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0.10000000894069672
+          },
+          "derivationMs": {
+            "mean": 0.44500000067055223,
+            "median": 0.4000000059604645,
+            "p95": 0.5999999940395355,
+            "min": 0.29999999701976776,
+            "max": 0.6000000089406967
+          },
+          "uploadMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "mean": 1.044999999552965,
+            "median": 1,
+            "p95": 1.199999988079071,
+            "min": 0.9000000059604645,
+            "max": 1.2999999970197678
+          },
+          "totalFrameMs": {
+            "mean": 1.4925000004470348,
+            "median": 1.5,
+            "p95": 1.6000000089406967,
+            "min": 1.2999999970197678,
+            "max": 1.7000000029802322
+          }
+        },
+        "samples": [
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 0.9000000059604645,
+            "totalFrameMs": 1.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 241,
+            "points": 500,
+            "edges": 5718,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 0.9000000059604645,
+            "totalFrameMs": 1.300000011920929,
+            "gpuRenderMs": 0,
+            "step": 242,
+            "points": 500,
+            "edges": 5713,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1.2999999970197678,
+            "totalFrameMs": 1.7000000029802322,
+            "gpuRenderMs": 0,
+            "step": 243,
+            "points": 500,
+            "edges": 5715,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 244,
+            "points": 500,
+            "edges": 5717,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.6000000089406967,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.7000000029802322,
+            "gpuRenderMs": 0,
+            "step": 245,
+            "points": 500,
+            "edges": 5715,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 246,
+            "points": 500,
+            "edges": 5716,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 1.1000000089406967,
+            "totalFrameMs": 1.6000000089406967,
+            "gpuRenderMs": 0,
+            "step": 247,
+            "points": 500,
+            "edges": 5711,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 248,
+            "points": 500,
+            "edges": 5711,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0,
+            "renderMs": 0.9000000059604645,
+            "totalFrameMs": 1.2999999970197678,
+            "gpuRenderMs": 0,
+            "step": 249,
+            "points": 500,
+            "edges": 5711,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 250,
+            "points": 500,
+            "edges": 5714,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 251,
+            "points": 500,
+            "edges": 5716,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 252,
+            "points": 500,
+            "edges": 5720,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5999999940395355,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 253,
+            "points": 500,
+            "edges": 5730,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 254,
+            "points": 500,
+            "edges": 5728,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 255,
+            "points": 500,
+            "edges": 5729,
+            "components": 1
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0.29999999701976776,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 256,
+            "points": 500,
+            "edges": 5719,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 257,
+            "points": 500,
+            "edges": 5713,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 258,
+            "points": 500,
+            "edges": 5717,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 259,
+            "points": 500,
+            "edges": 5714,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 260,
+            "points": 500,
+            "edges": 5716,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 261,
+            "points": 500,
+            "edges": 5715,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 262,
+            "points": 500,
+            "edges": 5713,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 263,
+            "points": 500,
+            "edges": 5715,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1.2000000029802322,
+            "totalFrameMs": 1.6000000089406967,
+            "gpuRenderMs": 0,
+            "step": 264,
+            "points": 500,
+            "edges": 5718,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 265,
+            "points": 500,
+            "edges": 5725,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 1.1000000089406967,
+            "totalFrameMs": 1.6000000089406967,
+            "gpuRenderMs": 0,
+            "step": 266,
+            "points": 500,
+            "edges": 5731,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 267,
+            "points": 500,
+            "edges": 5737,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 268,
+            "points": 500,
+            "edges": 5738,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 269,
+            "points": 500,
+            "edges": 5747,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 270,
+            "points": 500,
+            "edges": 5749,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 1.1000000089406967,
+            "totalFrameMs": 1.6000000089406967,
+            "gpuRenderMs": 0,
+            "step": 271,
+            "points": 500,
+            "edges": 5753,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 0.9000000059604645,
+            "totalFrameMs": 1.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 272,
+            "points": 500,
+            "edges": 5755,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.29999999701976776,
+            "uploadMs": 0,
+            "renderMs": 1.0999999940395355,
+            "totalFrameMs": 1.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 273,
+            "points": 500,
+            "edges": 5755,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0,
+            "renderMs": 1.1000000089406967,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 274,
+            "points": 500,
+            "edges": 5758,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 0.9000000059604645,
+            "totalFrameMs": 1.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 275,
+            "points": 500,
+            "edges": 5754,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 276,
+            "points": 500,
+            "edges": 5754,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 277,
+            "points": 500,
+            "edges": 5761,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0,
+            "renderMs": 1.199999988079071,
+            "totalFrameMs": 1.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 278,
+            "points": 500,
+            "edges": 5764,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5999999940395355,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 279,
+            "points": 500,
+            "edges": 5765,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0,
+            "renderMs": 1,
+            "totalFrameMs": 1.5,
+            "gpuRenderMs": 0,
+            "step": 280,
+            "points": 500,
+            "edges": 5771,
+            "components": 1
+          }
+        ]
+      },
+      "webgl2": {
+        "renderer": "webgl2",
+        "workload": {
+          "id": "flying-lines-dense-500",
+          "experimentId": "flying-lines",
+          "seed": "bindfly-flying-lines-simple-v1",
+          "parameters": {
+            "particleCount": 500,
+            "connectionRadius": 120
+          },
+          "initialConditions": [],
+          "minimumSimulationStep": 240,
+          "warmupMilliseconds": 500,
+          "sampleCount": 40
+        },
+        "canvasCssSize": {
+          "width": 1060,
+          "height": 900
+        },
+        "gpuTimerSupported": false,
+        "gpuTimingSampleCount": 0,
+        "gpuRenderMs": null,
+        "summary": {
+          "simulationMs": {
+            "mean": 0.009999999776482582,
+            "median": 0,
+            "p95": 0.09999999403953552,
+            "min": 0,
+            "max": 0.10000000894069672
+          },
+          "derivationMs": {
+            "mean": 0.4624999985098839,
+            "median": 0.5,
+            "p95": 0.5,
+            "min": 0.29999999701976776,
+            "max": 0.6000000089406967
+          },
+          "uploadMs": {
+            "mean": 0.4825000002980232,
+            "median": 0.5,
+            "p95": 0.6000000089406967,
+            "min": 0.3999999910593033,
+            "max": 0.6000000089406967
+          },
+          "renderMs": {
+            "mean": 0.032500000298023225,
+            "median": 0,
+            "p95": 0.10000000894069672,
+            "min": 0,
+            "max": 0.10000000894069672
+          },
+          "totalFrameMs": {
+            "mean": 0.9874999988824129,
+            "median": 1,
+            "p95": 1.1000000089406967,
+            "min": 0.7999999970197678,
+            "max": 1.1000000089406967
+          }
+        },
+        "samples": [
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.6000000089406967,
+            "renderMs": 0,
+            "totalFrameMs": 1.1000000089406967,
+            "gpuRenderMs": 0,
+            "step": 241,
+            "points": 500,
+            "edges": 5718,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 1.0999999940395355,
+            "gpuRenderMs": 0,
+            "step": 242,
+            "points": 500,
+            "edges": 5713,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 243,
+            "points": 500,
+            "edges": 5715,
+            "components": 1
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0.5,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 1.0999999940395355,
+            "gpuRenderMs": 0,
+            "step": 244,
+            "points": 500,
+            "edges": 5717,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0.6000000089406967,
+            "renderMs": 0,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 245,
+            "points": 500,
+            "edges": 5715,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.29999999701976776,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.7999999970197678,
+            "gpuRenderMs": 0,
+            "step": 246,
+            "points": 500,
+            "edges": 5716,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 247,
+            "points": 500,
+            "edges": 5711,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 248,
+            "points": 500,
+            "edges": 5711,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 249,
+            "points": 500,
+            "edges": 5711,
+            "components": 1
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 1.1000000089406967,
+            "gpuRenderMs": 0,
+            "step": 250,
+            "points": 500,
+            "edges": 5714,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 251,
+            "points": 500,
+            "edges": 5716,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.8999999910593033,
+            "gpuRenderMs": 0,
+            "step": 252,
+            "points": 500,
+            "edges": 5720,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.8999999910593033,
+            "gpuRenderMs": 0,
+            "step": 253,
+            "points": 500,
+            "edges": 5730,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.9000000059604645,
+            "gpuRenderMs": 0,
+            "step": 254,
+            "points": 500,
+            "edges": 5728,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 255,
+            "points": 500,
+            "edges": 5729,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 256,
+            "points": 500,
+            "edges": 5719,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.6000000089406967,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 257,
+            "points": 500,
+            "edges": 5713,
+            "components": 1
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 1.0999999940395355,
+            "gpuRenderMs": 0,
+            "step": 258,
+            "points": 500,
+            "edges": 5717,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.8999999910593033,
+            "gpuRenderMs": 0,
+            "step": 259,
+            "points": 500,
+            "edges": 5714,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.6000000089406967,
+            "renderMs": 0,
+            "totalFrameMs": 1.1000000089406967,
+            "gpuRenderMs": 0,
+            "step": 260,
+            "points": 500,
+            "edges": 5716,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 261,
+            "points": 500,
+            "edges": 5715,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0.5,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 262,
+            "points": 500,
+            "edges": 5713,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 263,
+            "points": 500,
+            "edges": 5715,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.8999999910593033,
+            "gpuRenderMs": 0,
+            "step": 264,
+            "points": 500,
+            "edges": 5718,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.9000000059604645,
+            "gpuRenderMs": 0,
+            "step": 265,
+            "points": 500,
+            "edges": 5725,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.8999999910593033,
+            "gpuRenderMs": 0,
+            "step": 266,
+            "points": 500,
+            "edges": 5731,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.6000000089406967,
+            "renderMs": 0,
+            "totalFrameMs": 1.1000000089406967,
+            "gpuRenderMs": 0,
+            "step": 267,
+            "points": 500,
+            "edges": 5737,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 268,
+            "points": 500,
+            "edges": 5738,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0.5999999940395355,
+            "renderMs": 0,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 269,
+            "points": 500,
+            "edges": 5747,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 270,
+            "points": 500,
+            "edges": 5749,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.8999999910593033,
+            "gpuRenderMs": 0,
+            "step": 271,
+            "points": 500,
+            "edges": 5753,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 1.1000000089406967,
+            "gpuRenderMs": 0,
+            "step": 272,
+            "points": 500,
+            "edges": 5755,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 273,
+            "points": 500,
+            "edges": 5755,
+            "components": 1
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 1.0999999940395355,
+            "gpuRenderMs": 0,
+            "step": 274,
+            "points": 500,
+            "edges": 5758,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0.5,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 275,
+            "points": 500,
+            "edges": 5754,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.7999999970197678,
+            "gpuRenderMs": 0,
+            "step": 276,
+            "points": 500,
+            "edges": 5754,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.8999999910593033,
+            "gpuRenderMs": 0,
+            "step": 277,
+            "points": 500,
+            "edges": 5761,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.3999999910593033,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.8999999910593033,
+            "gpuRenderMs": 0,
+            "step": 278,
+            "points": 500,
+            "edges": 5764,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.4000000059604645,
+            "uploadMs": 0.5,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 279,
+            "points": 500,
+            "edges": 5765,
+            "components": 1
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0.5,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 1,
+            "gpuRenderMs": 0,
+            "step": 280,
+            "points": 500,
+            "edges": 5771,
+            "components": 1
+          }
+        ]
+      }
+    },
+    {
+      "workload": {
+        "id": "vector-field-glyphs-and-trails",
+        "experimentId": "vector-field-2d",
+        "seed": "vector-field-hopf-v1",
+        "parameters": {
+          "fieldDensity": 31,
+          "trailLength": 1024
+        },
+        "initialConditions": [
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.5,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.5,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.8
+          }
+        ],
+        "minimumSimulationStep": 240,
+        "warmupMilliseconds": 500,
+        "sampleCount": 40
+      },
+      "canvas2d": {
+        "renderer": "canvas2d",
+        "workload": {
+          "id": "vector-field-glyphs-and-trails",
+          "experimentId": "vector-field-2d",
+          "seed": "vector-field-hopf-v1",
+          "parameters": {
+            "fieldDensity": 31,
+            "trailLength": 1024
+          },
+          "initialConditions": [
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.5,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.5,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.8
+            }
+          ],
+          "minimumSimulationStep": 240,
+          "warmupMilliseconds": 500,
+          "sampleCount": 40
+        },
+        "canvasCssSize": {
+          "width": 1060,
+          "height": 900
+        },
+        "gpuTimerSupported": false,
+        "gpuTimingSampleCount": 0,
+        "gpuRenderMs": null,
+        "summary": {
+          "simulationMs": {
+            "mean": 0.1675000011920929,
+            "median": 0.20000000298023224,
+            "p95": 0.20000000298023224,
+            "min": 0.09999999403953552,
+            "max": 0.30000001192092896
+          },
+          "derivationMs": {
+            "mean": 0.0025000002235174177,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0.10000000894069672
+          },
+          "uploadMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "mean": 0.2549999989569187,
+            "median": 0.29999999701976776,
+            "p95": 0.30000001192092896,
+            "min": 0.19999998807907104,
+            "max": 0.3999999910593033
+          },
+          "totalFrameMs": {
+            "mean": 0.42500000037252905,
+            "median": 0.4000000059604645,
+            "p95": 0.5,
+            "min": 0.29999999701976776,
+            "max": 0.5
+          }
+        },
+        "samples": [
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 241,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.19999998807907104,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 242,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 243,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 244,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 245,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.19999998807907104,
+            "totalFrameMs": 0.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 246,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 247,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 248,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 249,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.19999998807907104,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 250,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0.10000000894069672,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 251,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 252,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 253,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.30000001192092896,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 254,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.29999999701976776,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 255,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 256,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 257,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 258,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.3999999910593033,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 259,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.29999999701976776,
+            "gpuRenderMs": 0,
+            "step": 260,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 261,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 262,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 263,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 264,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 265,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 266,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.19999998807907104,
+            "totalFrameMs": 0.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 267,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 268,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.19999998807907104,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 269,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 270,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.30000001192092896,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.19999998807907104,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 271,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.19999998807907104,
+            "totalFrameMs": 0.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 272,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.19999998807907104,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.3999999910593033,
+            "gpuRenderMs": 0,
+            "step": 273,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.29999999701976776,
+            "gpuRenderMs": 0,
+            "step": 274,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 275,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.30000001192092896,
+            "gpuRenderMs": 0,
+            "step": 276,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 277,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 278,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 279,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.30000001192092896,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 280,
+            "points": 15,
+            "edges": 1147
+          }
+        ]
+      },
+      "webgl2": {
+        "renderer": "webgl2",
+        "workload": {
+          "id": "vector-field-glyphs-and-trails",
+          "experimentId": "vector-field-2d",
+          "seed": "vector-field-hopf-v1",
+          "parameters": {
+            "fieldDensity": 31,
+            "trailLength": 1024
+          },
+          "initialConditions": [
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.5,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.5,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.8
+            }
+          ],
+          "minimumSimulationStep": 240,
+          "warmupMilliseconds": 500,
+          "sampleCount": 40
+        },
+        "canvasCssSize": {
+          "width": 1060,
+          "height": 900
+        },
+        "gpuTimerSupported": false,
+        "gpuTimingSampleCount": 0,
+        "gpuRenderMs": null,
+        "summary": {
+          "simulationMs": {
+            "mean": 0.16500000059604644,
+            "median": 0.19999998807907104,
+            "p95": 0.20000000298023224,
+            "min": 0.09999999403953552,
+            "max": 0.29999999701976776
+          },
+          "derivationMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "uploadMs": {
+            "mean": 0.4024999998509884,
+            "median": 0.4000000059604645,
+            "p95": 0.5,
+            "min": 0.29999999701976776,
+            "max": 0.5
+          },
+          "renderMs": {
+            "mean": 0.01249999925494194,
+            "median": 0,
+            "p95": 0.09999999403953552,
+            "min": 0,
+            "max": 0.09999999403953552
+          },
+          "totalFrameMs": {
+            "mean": 0.5799999997019768,
+            "median": 0.5999999940395355,
+            "p95": 0.7000000029802322,
+            "min": 0.4000000059604645,
+            "max": 0.7000000029802322
+          }
+        },
+        "samples": [
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.7000000029802322,
+            "gpuRenderMs": 0,
+            "step": 241,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 242,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.29999999701976776,
+            "renderMs": 0,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 243,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.6000000089406967,
+            "gpuRenderMs": 0,
+            "step": 244,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.7000000029802322,
+            "gpuRenderMs": 0,
+            "step": 245,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 246,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.19999998807907104,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 247,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 248,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.6000000089406967,
+            "gpuRenderMs": 0,
+            "step": 249,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0.30000001192092896,
+            "renderMs": 0,
+            "totalFrameMs": 0.4000000059604645,
+            "gpuRenderMs": 0,
+            "step": 250,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.6000000089406967,
+            "gpuRenderMs": 0,
+            "step": 251,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.19999998807907104,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 252,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.6000000089406967,
+            "gpuRenderMs": 0,
+            "step": 253,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 254,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.7000000029802322,
+            "gpuRenderMs": 0,
+            "step": 255,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.29999999701976776,
+            "renderMs": 0,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 256,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.7000000029802322,
+            "gpuRenderMs": 0,
+            "step": 257,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 258,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 259,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0.30000001192092896,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 260,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0.29999999701976776,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 261,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 262,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 263,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0.5,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.7000000029802322,
+            "gpuRenderMs": 0,
+            "step": 264,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 265,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 266,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 267,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.29999999701976776,
+            "derivationMs": 0,
+            "uploadMs": 0.29999999701976776,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 268,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.29999999701976776,
+            "renderMs": 0,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 269,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 270,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.5,
+            "gpuRenderMs": 0,
+            "step": 271,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.6000000089406967,
+            "gpuRenderMs": 0,
+            "step": 272,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.19999998807907104,
+            "derivationMs": 0,
+            "uploadMs": 0.5,
+            "renderMs": 0,
+            "totalFrameMs": 0.699999988079071,
+            "gpuRenderMs": 0,
+            "step": 273,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 274,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.19999998807907104,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 275,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.3999999910593033,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 276,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.5000000149011612,
+            "gpuRenderMs": 0,
+            "step": 277,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.6000000089406967,
+            "gpuRenderMs": 0,
+            "step": 278,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.19999998807907104,
+            "derivationMs": 0,
+            "uploadMs": 0.30000001192092896,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 279,
+            "points": 15,
+            "edges": 1147
+          },
+          {
+            "simulationMs": 0.19999998807907104,
+            "derivationMs": 0,
+            "uploadMs": 0.4000000059604645,
+            "renderMs": 0,
+            "totalFrameMs": 0.5999999940395355,
+            "gpuRenderMs": 0,
+            "step": 280,
+            "points": 15,
+            "edges": 1147
+          }
+        ]
+      }
+    },
+    {
+      "workload": {
+        "id": "discrete-map-many-orbit-points",
+        "experimentId": "discrete-map-2d",
+        "seed": "henon-map-v1",
+        "parameters": {
+          "trailLength": 2048
+        },
+        "initialConditions": [
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.5,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.2
+          },
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.5
+          },
+          {
+            "xFraction": 0.2,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.35,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.5,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.65,
+            "yFraction": 0.8
+          },
+          {
+            "xFraction": 0.8,
+            "yFraction": 0.8
+          }
+        ],
+        "minimumSimulationStep": 72,
+        "warmupMilliseconds": 500,
+        "sampleCount": 40
+      },
+      "canvas2d": {
+        "renderer": "canvas2d",
+        "workload": {
+          "id": "discrete-map-many-orbit-points",
+          "experimentId": "discrete-map-2d",
+          "seed": "henon-map-v1",
+          "parameters": {
+            "trailLength": 2048
+          },
+          "initialConditions": [
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.5,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.5,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.8
+            }
+          ],
+          "minimumSimulationStep": 72,
+          "warmupMilliseconds": 500,
+          "sampleCount": 40
+        },
+        "canvasCssSize": {
+          "width": 1060,
+          "height": 900
+        },
+        "gpuTimerSupported": false,
+        "gpuTimingSampleCount": 0,
+        "gpuRenderMs": null,
+        "summary": {
+          "simulationMs": {
+            "mean": 0.02750000059604645,
+            "median": 0,
+            "p95": 0.10000000894069672,
+            "min": 0,
+            "max": 0.10000000894069672
+          },
+          "derivationMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "uploadMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "mean": 0.1274999998509884,
+            "median": 0.10000000894069672,
+            "p95": 0.20000000298023224,
+            "min": 0,
+            "max": 0.20000000298023224
+          },
+          "totalFrameMs": {
+            "mean": 0.15500000044703482,
+            "median": 0.19999998807907104,
+            "p95": 0.20000000298023224,
+            "min": 0,
+            "max": 0.20000000298023224
+          }
+        },
+        "samples": [
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 73,
+            "points": 15,
+            "edges": 73
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 74,
+            "points": 15,
+            "edges": 74
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 75,
+            "points": 15,
+            "edges": 75
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.19999998807907104,
+            "totalFrameMs": 0.19999998807907104,
+            "gpuRenderMs": 0,
+            "step": 76,
+            "points": 15,
+            "edges": 76
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 77,
+            "points": 15,
+            "edges": 77
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 78,
+            "points": 15,
+            "edges": 78
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 79,
+            "points": 15,
+            "edges": 79
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.19999998807907104,
+            "totalFrameMs": 0.19999998807907104,
+            "gpuRenderMs": 0,
+            "step": 80,
+            "points": 15,
+            "edges": 80
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 81,
+            "points": 15,
+            "edges": 81
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 82,
+            "points": 15,
+            "edges": 82
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 83,
+            "points": 15,
+            "edges": 83
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 84,
+            "points": 15,
+            "edges": 84
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 85,
+            "points": 15,
+            "edges": 85
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 86,
+            "points": 15,
+            "edges": 86
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 87,
+            "points": 15,
+            "edges": 87
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 88,
+            "points": 15,
+            "edges": 88
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 89,
+            "points": 15,
+            "edges": 89
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 90,
+            "points": 15,
+            "edges": 90
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.19999998807907104,
+            "totalFrameMs": 0.19999998807907104,
+            "gpuRenderMs": 0,
+            "step": 91,
+            "points": 15,
+            "edges": 91
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 92,
+            "points": 15,
+            "edges": 92
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 93,
+            "points": 15,
+            "edges": 93
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 94,
+            "points": 15,
+            "edges": 94
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 95,
+            "points": 15,
+            "edges": 95
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 96,
+            "points": 15,
+            "edges": 96
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.19999998807907104,
+            "totalFrameMs": 0.19999998807907104,
+            "gpuRenderMs": 0,
+            "step": 97,
+            "points": 15,
+            "edges": 97
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 98,
+            "points": 15,
+            "edges": 98
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "step": 99,
+            "points": 15,
+            "edges": 99
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 100,
+            "points": 15,
+            "edges": 100
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 101,
+            "points": 15,
+            "edges": 101
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 102,
+            "points": 15,
+            "edges": 102
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 103,
+            "points": 15,
+            "edges": 103
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.19999998807907104,
+            "totalFrameMs": 0.19999998807907104,
+            "gpuRenderMs": 0,
+            "step": 104,
+            "points": 15,
+            "edges": 104
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.19999998807907104,
+            "gpuRenderMs": 0,
+            "step": 105,
+            "points": 15,
+            "edges": 105
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 106,
+            "points": 15,
+            "edges": 106
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 107,
+            "points": 15,
+            "edges": 107
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 108,
+            "points": 15,
+            "edges": 108
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 109,
+            "points": 15,
+            "edges": 109
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 110,
+            "points": 15,
+            "edges": 110
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 111,
+            "points": 15,
+            "edges": 111
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 112,
+            "points": 15,
+            "edges": 112
+          }
+        ]
+      },
+      "webgl2": {
+        "renderer": "webgl2",
+        "workload": {
+          "id": "discrete-map-many-orbit-points",
+          "experimentId": "discrete-map-2d",
+          "seed": "henon-map-v1",
+          "parameters": {
+            "trailLength": 2048
+          },
+          "initialConditions": [
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.5,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.2
+            },
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.5
+            },
+            {
+              "xFraction": 0.2,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.35,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.5,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.65,
+              "yFraction": 0.8
+            },
+            {
+              "xFraction": 0.8,
+              "yFraction": 0.8
+            }
+          ],
+          "minimumSimulationStep": 72,
+          "warmupMilliseconds": 500,
+          "sampleCount": 40
+        },
+        "canvasCssSize": {
+          "width": 1060,
+          "height": 900
+        },
+        "gpuTimerSupported": false,
+        "gpuTimingSampleCount": 0,
+        "gpuRenderMs": null,
+        "summary": {
+          "simulationMs": {
+            "mean": 0.03749999962747097,
+            "median": 0,
+            "p95": 0.10000000894069672,
+            "min": 0,
+            "max": 0.20000000298023224
+          },
+          "derivationMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "uploadMs": {
+            "mean": 0.07500000037252903,
+            "median": 0.09999999403953552,
+            "p95": 0.20000000298023224,
+            "min": 0,
+            "max": 0.20000000298023224
+          },
+          "renderMs": {
+            "mean": 0.015000000223517418,
+            "median": 0,
+            "p95": 0.10000000894069672,
+            "min": 0,
+            "max": 0.10000000894069672
+          },
+          "totalFrameMs": {
+            "mean": 0.12750000022351743,
+            "median": 0.10000000894069672,
+            "p95": 0.20000000298023224,
+            "min": 0,
+            "max": 0.30000001192092896
+          }
+        },
+        "samples": [
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.19999998807907104,
+            "gpuRenderMs": 0,
+            "step": 73,
+            "points": 15,
+            "edges": 73
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 74,
+            "points": 15,
+            "edges": 74
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 75,
+            "points": 15,
+            "edges": 75
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "step": 76,
+            "points": 15,
+            "edges": 76
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 77,
+            "points": 15,
+            "edges": 77
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.10000000894069672,
+            "renderMs": 0,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 78,
+            "points": 15,
+            "edges": 78
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "step": 79,
+            "points": 15,
+            "edges": 79
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.20000000298023224,
+            "renderMs": 0,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 80,
+            "points": 15,
+            "edges": 80
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 81,
+            "points": 15,
+            "edges": 81
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 82,
+            "points": 15,
+            "edges": 82
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 83,
+            "points": 15,
+            "edges": 83
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 84,
+            "points": 15,
+            "edges": 84
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 85,
+            "points": 15,
+            "edges": 85
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0.10000000894069672,
+            "renderMs": 0,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 86,
+            "points": 15,
+            "edges": 86
+          },
+          {
+            "simulationMs": 0.20000000298023224,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 87,
+            "points": 15,
+            "edges": 87
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.20000000298023224,
+            "renderMs": 0,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 88,
+            "points": 15,
+            "edges": 88
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.10000000894069672,
+            "renderMs": 0,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 89,
+            "points": 15,
+            "edges": 89
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.30000001192092896,
+            "gpuRenderMs": 0,
+            "step": 90,
+            "points": 15,
+            "edges": 90
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 91,
+            "points": 15,
+            "edges": 91
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0.10000000894069672,
+            "renderMs": 0,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 92,
+            "points": 15,
+            "edges": 92
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.20000000298023224,
+            "renderMs": 0,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 93,
+            "points": 15,
+            "edges": 93
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.20000000298023224,
+            "renderMs": 0,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 94,
+            "points": 15,
+            "edges": 94
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 95,
+            "points": 15,
+            "edges": 95
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.10000000894069672,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "step": 96,
+            "points": 15,
+            "edges": 96
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.10000000894069672,
+            "renderMs": 0,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 97,
+            "points": 15,
+            "edges": 97
+          },
+          {
+            "simulationMs": 0.10000000894069672,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 98,
+            "points": 15,
+            "edges": 98
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.10000000894069672,
+            "renderMs": 0,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 99,
+            "points": 15,
+            "edges": 99
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "step": 100,
+            "points": 15,
+            "edges": 100
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 101,
+            "points": 15,
+            "edges": 101
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0,
+            "totalFrameMs": 0.19999998807907104,
+            "gpuRenderMs": 0,
+            "step": 102,
+            "points": 15,
+            "edges": 102
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "step": 103,
+            "points": 15,
+            "edges": 103
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 104,
+            "points": 15,
+            "edges": 104
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "step": 105,
+            "points": 15,
+            "edges": 105
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.10000000894069672,
+            "renderMs": 0,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 106,
+            "points": 15,
+            "edges": 106
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 107,
+            "points": 15,
+            "edges": 107
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "step": 108,
+            "points": 15,
+            "edges": 108
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 109,
+            "points": 15,
+            "edges": 109
+          },
+          {
+            "simulationMs": 0.09999999403953552,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0,
+            "totalFrameMs": 0.19999998807907104,
+            "gpuRenderMs": 0,
+            "step": 110,
+            "points": 15,
+            "edges": 110
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.10000000894069672,
+            "renderMs": 0,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "step": 111,
+            "points": 15,
+            "edges": 111
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0.09999999403953552,
+            "renderMs": 0,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "step": 112,
+            "points": 15,
+            "edges": 112
+          }
+        ]
+      }
+    },
+    {
+      "workload": {
+        "id": "scalar-field-dense-grid",
+        "experimentId": "scalar-field-2d",
+        "seed": "scalar-field-radial-v1",
+        "parameters": {
+          "sampleDensity": 96
+        },
+        "initialConditions": [],
+        "minimumSimulationStep": 0,
+        "warmupMilliseconds": 1000,
+        "sampleCount": 40
+      },
+      "canvas2d": {
+        "renderer": "canvas2d",
+        "workload": {
+          "id": "scalar-field-dense-grid",
+          "experimentId": "scalar-field-2d",
+          "seed": "scalar-field-radial-v1",
+          "parameters": {
+            "sampleDensity": 96
+          },
+          "initialConditions": [],
+          "minimumSimulationStep": 0,
+          "warmupMilliseconds": 1000,
+          "sampleCount": 40
+        },
+        "canvasCssSize": {
+          "width": 1060,
+          "height": 900
+        },
+        "gpuTimerSupported": false,
+        "gpuTimingSampleCount": 0,
+        "gpuRenderMs": null,
+        "summary": {
+          "simulationMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "derivationMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "uploadMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "mean": 0.08500000126659871,
+            "median": 0.09999999403953552,
+            "p95": 0.20000000298023224,
+            "min": 0,
+            "max": 0.29999999701976776
+          },
+          "totalFrameMs": {
+            "mean": 0.08500000126659871,
+            "median": 0.09999999403953552,
+            "p95": 0.20000000298023224,
+            "min": 0,
+            "max": 0.29999999701976776
+          }
+        },
+        "samples": [
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.29999999701976776,
+            "totalFrameMs": 0.29999999701976776,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.20000000298023224,
+            "totalFrameMs": 0.20000000298023224,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          }
+        ]
+      },
+      "webgl2": {
+        "renderer": "webgl2",
+        "workload": {
+          "id": "scalar-field-dense-grid",
+          "experimentId": "scalar-field-2d",
+          "seed": "scalar-field-radial-v1",
+          "parameters": {
+            "sampleDensity": 96
+          },
+          "initialConditions": [],
+          "minimumSimulationStep": 0,
+          "warmupMilliseconds": 1000,
+          "sampleCount": 40
+        },
+        "canvasCssSize": {
+          "width": 1060,
+          "height": 900
+        },
+        "gpuTimerSupported": false,
+        "gpuTimingSampleCount": 0,
+        "gpuRenderMs": null,
+        "summary": {
+          "simulationMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "derivationMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "uploadMs": {
+            "mean": 0,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "mean": 0.04749999940395355,
+            "median": 0,
+            "p95": 0.10000000894069672,
+            "min": 0,
+            "max": 0.19999998807907104
+          },
+          "totalFrameMs": {
+            "mean": 0.04749999940395355,
+            "median": 0,
+            "p95": 0.10000000894069672,
+            "min": 0,
+            "max": 0.19999998807907104
+          }
+        },
+        "samples": [
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.19999998807907104,
+            "totalFrameMs": 0.19999998807907104,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.09999999403953552,
+            "totalFrameMs": 0.09999999403953552,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0.10000000894069672,
+            "totalFrameMs": 0.10000000894069672,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          },
+          {
+            "simulationMs": 0,
+            "derivationMs": 0,
+            "uploadMs": 0,
+            "renderMs": 0,
+            "totalFrameMs": 0,
+            "gpuRenderMs": 0,
+            "points": 11058,
+            "edges": 0
+          }
+        ]
+      }
+    }
+  ]
+}

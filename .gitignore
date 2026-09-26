@@ -7,10 +7,13 @@ node_modules
 
 # testing
 /coverage
+/playwright-report
+/test-results
 
 # production
 build
 dist
+dist-v2
 
 # misc
 .DS_Store
@@ -26,6 +29,6 @@ yarn-error.log*
 
 yarn.lock
 package-lock.json
-pnpm-lock.yaml
 
 .codegraph
+graphify-out/

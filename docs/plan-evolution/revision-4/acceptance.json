@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "accepted": true,
+  "accepted_at": "2026-09-25",
+  "accepted_candidate_sha256": "543d85c6f142799b582ddeb6c14a2ce1e58b8d7a183cfa9836a7666c88b85b7a",
+  "evidence": "User instructed Codex to create the Stage 13.1 hardening change, finalize Revision 4 independent verification at the same time, and stated that after this they would consider Stage 13 closed and move to Stage 14 without another architecture review."
+}
