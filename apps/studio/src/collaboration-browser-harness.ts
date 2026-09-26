@@ -17,7 +17,7 @@ interface BrowserHarnessStatus {
 	readonly stateBase64Url: string
 }
 
-export interface Stage16CollaborationBrowserHarness {
+export interface CollaborationBrowserTestHarness {
 	connect(options: BrowserHarnessConnectionOptions): Promise<void>
 	submit(input: unknown): Promise<unknown>
 	diverge(input: unknown): void
@@ -34,14 +34,14 @@ const bytesToBase64Url = (bytes: Uint8Array): string => {
 	return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/u, '')
 }
 
-export const installStage16CollaborationBrowserHarness = (): Stage16CollaborationBrowserHarness => {
+export const installCollaborationBrowserTestHarness = (): CollaborationBrowserTestHarness => {
 	let client: SharedExperimentClient | undefined
 	let canvas: HTMLCanvasElement | undefined
 	const requireClient = (): SharedExperimentClient => {
-		if (!client) throw new Error('Stage 16 collaboration browser harness is not connected.')
+		if (!client) throw new Error('Collaboration browser test harness is not connected.')
 		return client
 	}
-	const harness: Stage16CollaborationBrowserHarness = {
+	const harness: CollaborationBrowserTestHarness = {
 		connect: async (options) => {
 			if (client) await client.dispose()
 			canvas?.remove()

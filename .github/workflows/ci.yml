@@ -28,5 +28,6 @@ jobs:
       - run: pnpm run v2:check
       - run: pnpm run v2:build
       - run: pnpm run build
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm run v2:e2e
+      - run: pnpm run v2:e2e:stage16-cross-browser

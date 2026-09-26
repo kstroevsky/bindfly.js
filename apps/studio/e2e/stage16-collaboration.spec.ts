@@ -40,33 +40,33 @@ const stateBase64Url = (simulation: ReturnType<typeof createMovingPointSimulatio
 
 const harness = (page: import('@playwright/test').Page) => ({
 	connect: (options: { url: string; roomId: string; participantId: string }) => page.evaluate(async (value) => {
-		const api = (window as unknown as { __bindflyStage16Collaboration: { connect(input: typeof value): Promise<void> } }).__bindflyStage16Collaboration
+		const api = (window as unknown as { __bindflyCollaborationTest: { connect(input: typeof value): Promise<void> } }).__bindflyCollaborationTest
 		await api.connect(value)
 	}, options),
 	submit: (input: unknown) => page.evaluate(async (value) => {
-		const api = (window as unknown as { __bindflyStage16Collaboration: { submit(input: unknown): Promise<unknown> } }).__bindflyStage16Collaboration
+		const api = (window as unknown as { __bindflyCollaborationTest: { submit(input: unknown): Promise<unknown> } }).__bindflyCollaborationTest
 		return api.submit(value)
 	}, input),
 	diverge: (input: unknown) => page.evaluate((value) => {
-		const api = (window as unknown as { __bindflyStage16Collaboration: { diverge(input: unknown): void } }).__bindflyStage16Collaboration
+		const api = (window as unknown as { __bindflyCollaborationTest: { diverge(input: unknown): void } }).__bindflyCollaborationTest
 		api.diverge(value)
 	}, input),
 	disconnect: () => page.evaluate(async () => {
-		const api = (window as unknown as { __bindflyStage16Collaboration: { disconnect(): Promise<void> } }).__bindflyStage16Collaboration
+		const api = (window as unknown as { __bindflyCollaborationTest: { disconnect(): Promise<void> } }).__bindflyCollaborationTest
 		await api.disconnect()
 	}),
 	reconnect: () => page.evaluate(async () => {
-		const api = (window as unknown as { __bindflyStage16Collaboration: { reconnect(): Promise<void> } }).__bindflyStage16Collaboration
+		const api = (window as unknown as { __bindflyCollaborationTest: { reconnect(): Promise<void> } }).__bindflyCollaborationTest
 		await api.reconnect()
 	}),
 	status: () => page.evaluate(() => {
-		const api = (window as unknown as { __bindflyStage16Collaboration: { status(): {
+		const api = (window as unknown as { __bindflyCollaborationTest: { status(): {
 			connected: boolean
 			currentStepIndex: number
 			lastAppliedSequence: number
 			requiresResynchronization: boolean
 			stateBase64Url: string
-		} } }).__bindflyStage16Collaboration
+		} } }).__bindflyCollaborationTest
 		return api.status()
 	}),
 })
@@ -117,8 +117,8 @@ test('browser replicas detect divergence and recover through authoritative snaps
 	const bobPage = await context.newPage()
 	try {
 		await Promise.all([
-			alicePage.goto(`${baseURL}/?stage16CollaborationHarness=1#/lab/flying-lines`),
-			bobPage.goto(`${baseURL}/?stage16CollaborationHarness=1#/lab/flying-lines`),
+			alicePage.goto(`${baseURL}/?collaborationTestHarness=1#/lab/flying-lines`),
+			bobPage.goto(`${baseURL}/?collaborationTestHarness=1#/lab/flying-lines`),
 		])
 		const alice = harness(alicePage)
 		const bob = harness(bobPage)
