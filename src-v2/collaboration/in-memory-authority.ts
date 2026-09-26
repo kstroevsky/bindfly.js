@@ -70,7 +70,7 @@ export class InMemoryAuthoritativeRoom<Input> {
 	private readonly configurationVersion: number
 	private readonly events: AuthoritativeEvent<Input>[] = []
 	private readonly acceptedByClientId = new Map<string, { event: AuthoritativeEvent<Input>; inputBytes: Uint8Array }>()
-	private readonly participantStepUsage = new Map<string, { stepIndex: number; count: number }>()
+	private readonly participantScheduledStepUsage = new Map<string, { stepIndex: number; count: number }>()
 	private readonly syncPoints = new Map<string, AuthoritativeSyncPoint>()
 	private stepIndex = 0
 	private appliedSequenceValue = 0
@@ -234,11 +234,16 @@ export class InMemoryAuthoritativeRoom<Input> {
 				event: recovered.event,
 				inputBytes: recovered.inputBytes.slice(),
 			})
-			if (recovered.event.stepIndex === room.stepIndex + room.inputLeadSteps) {
-				const usage = room.participantStepUsage.get(recovered.event.participantId)
-				room.participantStepUsage.set(recovered.event.participantId, {
-					stepIndex: room.stepIndex,
-					count: (usage?.stepIndex === room.stepIndex ? usage.count : 0) + 1,
+			const usage = room.participantScheduledStepUsage.get(recovered.event.participantId)
+			if (!usage || recovered.event.stepIndex > usage.stepIndex) {
+				room.participantScheduledStepUsage.set(recovered.event.participantId, {
+					stepIndex: recovered.event.stepIndex,
+					count: 1,
+				})
+			} else if (recovered.event.stepIndex === usage.stepIndex) {
+				room.participantScheduledStepUsage.set(recovered.event.participantId, {
+					stepIndex: usage.stepIndex,
+					count: usage.count + 1,
 				})
 			}
 		}
@@ -378,19 +383,19 @@ export class InMemoryAuthoritativeRoom<Input> {
 		const authorization = this.authorizeInput(proposal.participantId, parsed.value)
 		if (!authorization.ok) return { ok: false, code: 'UNAUTHORIZED', error: authorization.error }
 
-		const usage = this.participantStepUsage.get(proposal.participantId)
-		const acceptedThisStep = usage?.stepIndex === this.stepIndex ? usage.count : 0
+		const candidateScheduledStepIndex = this.stepIndex + this.inputLeadSteps
+		if (!Number.isSafeInteger(candidateScheduledStepIndex)) {
+			return { ok: false, code: 'INVALID_SEQUENCE', error: 'Scheduled collaboration step exceeds the safe integer range.' }
+		}
+		const scheduledStepIndex = Math.max(candidateScheduledStepIndex, this.events.at(-1)?.stepIndex ?? 0)
+		const usage = this.participantScheduledStepUsage.get(proposal.participantId)
+		const acceptedThisStep = usage?.stepIndex === scheduledStepIndex ? usage.count : 0
 		if (acceptedThisStep >= this.maxInputsPerParticipantPerStep) {
 			return {
 				ok: false,
 				code: 'RATE_LIMIT_EXCEEDED',
-				error: `Participant exceeded ${this.maxInputsPerParticipantPerStep} accepted inputs for authoritative step ${this.stepIndex}.`,
+				error: `Participant exceeded ${this.maxInputsPerParticipantPerStep} accepted inputs for scheduled authoritative boundary ${scheduledStepIndex}.`,
 			}
-		}
-
-		const scheduledStepIndex = this.stepIndex + this.inputLeadSteps
-		if (!Number.isSafeInteger(scheduledStepIndex)) {
-			return { ok: false, code: 'INVALID_SEQUENCE', error: 'Scheduled collaboration step exceeds the safe integer range.' }
 		}
 		const event: AuthoritativeEvent<Input> = {
 			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
@@ -405,7 +410,7 @@ export class InMemoryAuthoritativeRoom<Input> {
 		}
 		this.events.push(event)
 		this.acceptedByClientId.set(idempotencyKey, { event, inputBytes: inputBytes.slice() })
-		this.participantStepUsage.set(proposal.participantId, { stepIndex: this.stepIndex, count: acceptedThisStep + 1 })
+		this.participantScheduledStepUsage.set(proposal.participantId, { stepIndex: scheduledStepIndex, count: acceptedThisStep + 1 })
 		return { ok: true, event, duplicate: false }
 	}
 
@@ -502,8 +507,8 @@ export class InMemoryAuthoritativeRoom<Input> {
 		if (!Number.isSafeInteger(request.stepIndex) || request.stepIndex < 0) {
 			return { ok: false, code: 'INVALID_STEP_INDEX', error: 'Resume step index must be a non-negative safe integer.' }
 		}
-		if (request.lastAppliedSequence > this.appliedSequenceValue || request.stepIndex > this.stepIndex) {
-			return { ok: false, code: 'AHEAD_OF_AUTHORITY', error: 'Resume state is ahead of authoritative applied state.' }
+		if (request.lastAppliedSequence > this.logHeadSequence) {
+			return { ok: false, code: 'AHEAD_OF_AUTHORITY', error: 'Resume sequence is ahead of the durable authoritative event log.' }
 		}
 
 		const lastAppliedEvent = request.lastAppliedSequence === 0 ? undefined : this.events[request.lastAppliedSequence - 1]
@@ -513,9 +518,11 @@ export class InMemoryAuthoritativeRoom<Input> {
 
 		const firstMissing = this.events[request.lastAppliedSequence]
 		const missedPastBoundary = firstMissing !== undefined && firstMissing.stepIndex <= request.stepIndex
-		const replayCount = this.appliedSequenceValue - request.lastAppliedSequence
-		const replaySteps = this.stepIndex - request.stepIndex
-		let snapshotRequired = missedPastBoundary
+		const replayCount = Math.max(0, this.appliedSequenceValue - request.lastAppliedSequence)
+		const replaySteps = Math.max(0, this.stepIndex - request.stepIndex)
+		const clientAheadOfCheckpoint = request.lastAppliedSequence > this.appliedSequenceValue || request.stepIndex > this.stepIndex
+		let snapshotRequired = clientAheadOfCheckpoint
+			|| missedPastBoundary
 			|| replayCount > this.maxReplayEvents
 			|| replaySteps > this.maxReplaySteps
 

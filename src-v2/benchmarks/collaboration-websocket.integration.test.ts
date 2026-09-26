@@ -441,6 +441,44 @@ test('file WAL rejects valid-but-wrong canonical event tampering through its has
 	await assert.rejects(store.load(), /event-log integrity verification failed/)
 })
 
+test('file WAL discards only an unterminated crash tail and preserves every complete hash-validated record', async (t) => {
+	const directory = await mkdtemp(join(tmpdir(), 'bindfly-collaboration-torn-wal-'))
+	t.after(async () => rm(directory, { recursive: true, force: true }))
+	const filePath = join(directory, 'shared-room.json')
+	const store = new FileAuthoritativeRoomStateStore(filePath)
+	const authority = createHarness()
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'shared-flying-lines',
+		experimentId: 'flying-lines',
+		stateVersion: 1,
+		adapter: authority.adapter,
+		authorizeInput: () => ({ ok: true, value: undefined }),
+	})
+	await store.saveCheckpoint(await room.capturePersistenceCheckpoint())
+	const accepted = room.submit({
+		protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+		roomId: 'shared-flying-lines',
+		participantId: 'alice',
+		clientEventId: 'complete-record',
+		knownSequence: 0,
+		input: { type: 'add-point', x: 120, y: 160 },
+	})
+	assert.equal(accepted.ok, true)
+	if (!accepted.ok) return
+	await store.appendEvent(room.capturePersistedEvent(accepted.event.sequence))
+
+	const eventLogPath = `${filePath}.events`
+	const completeLog = await readFile(eventLogPath)
+	await writeFile(eventLogPath, Buffer.concat([
+		completeLog,
+		Buffer.from('{"previousHash":{"algorithm":"sha-256"', 'utf8'),
+	]))
+	const recovered = await store.load()
+	assert.equal(recovered?.events.length, 1)
+	assert.equal(recovered?.events[0]?.clientEventId, 'complete-record')
+	assert.deepEqual(await readFile(eventLogPath), completeLog)
+})
+
 test('persistent WebSocket room recovers its checkpoint and pending event log after process restart', async (t) => {
 	const directory = await mkdtemp(join(tmpdir(), 'bindfly-collaboration-'))
 	t.after(async () => rm(directory, { recursive: true, force: true }))
@@ -481,6 +519,7 @@ test('persistent WebSocket room recovers its checkpoint and pending event log af
 	stepSimulation(firstAuthority.simulation, 0)
 	await firstServer.advanceStepIndex(1)
 	assert.equal((await firstInbox.next()).type, 'authoritative-tick')
+	const preCrashClientSnapshot = await firstRoom.createSnapshot()
 	const pendingSubmit = await sendProposal(
 		firstSocket,
 		firstInbox,
@@ -524,18 +563,48 @@ test('persistent WebSocket room recovers its checkpoint and pending event log af
 	const recoveredAddress = await recoveredServer.start()
 	const recoveredSocket = await openSocket(recoveredAddress.url, 'alice')
 	const recoveredInbox = createInbox(recoveredSocket)
-	const resume = await sendResume(recoveredSocket, recoveredInbox, 0, 0)
-	assert.equal(resume.ok && resume.mode, 'replay')
-	if (!resume.ok || resume.mode !== 'replay') return
+	const returningClient = createHarness()
+	const returningReplica = new CollaborationReplica({
+		roomId: 'shared-flying-lines',
+		experimentId: 'flying-lines',
+		stateVersion: 1,
+		adapter: returningClient.adapter,
+	})
+	assert.equal((await returningReplica.resynchronize(preCrashClientSnapshot)).ok, true)
+	const resume = await sendResume(
+		recoveredSocket,
+		recoveredInbox,
+		preCrashClientSnapshot.lastAppliedSequence,
+		preCrashClientSnapshot.stepIndex,
+		preCrashClientSnapshot.checksum,
+	)
+	assert.equal(resume.ok && resume.mode, 'snapshot')
+	if (!resume.ok || resume.mode !== 'snapshot') return
+	assert.equal(resume.snapshot.stepIndex, 0)
+	assert.equal(resume.snapshot.lastAppliedSequence, 0)
 	assert.equal(resume.events.length, 2)
 	assert.deepEqual(resume.events.map((event) => event.sequence), [1, 2])
+	assert.equal((await returningReplica.applyResumePlan(resume)).ok, true)
+	assert.equal(returningReplica.currentStepIndex, 0)
+	assert.equal(returningReplica.lastAppliedSequence, 0)
 	stepSimulation(recoveredAuthority.simulation, 0)
 	await recoveredServer.advanceStepIndex(1)
-	assert.equal((await recoveredInbox.next()).type, 'authoritative-tick')
+	const recoveredTickOne = await recoveredInbox.next()
+	assert.equal(recoveredTickOne.type, 'authoritative-tick')
+	if (recoveredTickOne.type !== 'authoritative-tick') return
+	assert.equal(returningReplica.receiveTick(recoveredTickOne.tick).ok, true)
+	stepSimulation(returningClient.simulation, 0)
+	assert.equal(returningReplica.advanceStepIndex(1).ok, true)
 	stepSimulation(recoveredAuthority.simulation, 1)
 	await recoveredServer.advanceStepIndex(2)
-	assert.equal((await recoveredInbox.next()).type, 'authoritative-tick')
+	const recoveredTickTwo = await recoveredInbox.next()
+	assert.equal(recoveredTickTwo.type, 'authoritative-tick')
+	if (recoveredTickTwo.type !== 'authoritative-tick') return
+	assert.equal(returningReplica.receiveTick(recoveredTickTwo.tick).ok, true)
+	stepSimulation(returningClient.simulation, 1)
+	assert.equal(returningReplica.advanceStepIndex(2).ok, true)
 	assert.deepEqual(recoveredAuthority.simulation.captureCheckpoint(), expectedAfterPendingEvent)
+	assert.deepEqual(returningClient.simulation.captureCheckpoint(), recoveredAuthority.simulation.captureCheckpoint())
 	await closeSocket(recoveredSocket)
 	await recoveredServer.stop()
 

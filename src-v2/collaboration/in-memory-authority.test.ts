@@ -149,7 +149,7 @@ test('authority rejects malformed, future-version and conflicting idempotency in
 	assert.equal(adapter.read(), 1)
 })
 
-test('authority rate limit counts accepted inputs per participant and authoritative step without penalizing retries', () => {
+test('authority rate limit counts accepted inputs per participant and scheduled boundary without penalizing retries', () => {
 	const adapter = createAdapter()
 	const room = new InMemoryAuthoritativeRoom({
 		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter, authorizeInput: allowAll,
@@ -165,6 +165,99 @@ test('authority rate limit counts accepted inputs per participant and authoritat
 
 	room.advanceStepIndex(1)
 	assert.equal(room.submit(proposal('alice', 'event-d', 2, 4)).ok, true)
+})
+
+test('recovered authority rolls a pre-crash replica back to its durable checkpoint and replays the WAL suffix', async () => {
+	const originalAdapter = createAdapter()
+	const original = new InMemoryAuthoritativeRoom({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: originalAdapter, authorizeInput: allowAll,
+	})
+	assert.equal(original.submit(proposal('alice', 'event-a', 0, 2)).ok, true)
+	original.advanceStepIndex(1)
+	const durableCheckpoint = await original.createSnapshot()
+	assert.equal(original.submit(proposal('alice', 'event-b', 1, 3)).ok, true)
+	original.advanceStepIndex(2)
+	const preCrashSnapshot = await original.createSnapshot()
+	const persistedAtCrash = await original.capturePersistenceState()
+
+	const recoveredAdapter = createAdapter()
+	const recovered = await InMemoryAuthoritativeRoom.recover({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: recoveredAdapter, authorizeInput: allowAll,
+	}, { ...persistedAtCrash, snapshot: durableCheckpoint })
+	assert.equal(recovered.currentStepIndex, 1)
+	assert.equal(recovered.appliedSequence, 1)
+	assert.equal(recovered.logHeadSequence, 2)
+
+	const replicaAdapter = createAdapter()
+	const replica = new CollaborationReplica({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: replicaAdapter,
+	})
+	assert.equal((await replica.resynchronize(preCrashSnapshot)).ok, true)
+	const plan = await recovered.createResumePlan(await replica.createResumeRequest())
+	assert.equal(plan.ok && plan.mode, 'snapshot')
+	if (!plan.ok || plan.mode !== 'snapshot') return
+	assert.equal(plan.snapshot.stepIndex, 1)
+	assert.equal(plan.snapshot.lastAppliedSequence, 1)
+	assert.deepEqual(plan.events.map((event) => event.sequence), [2])
+	assert.equal((await replica.applyResumePlan(plan)).ok, true)
+	assert.equal(replica.currentStepIndex, 1)
+	assert.equal(replica.lastAppliedSequence, 1)
+
+	recovered.advanceStepIndex(2)
+	assert.equal(replica.receiveTick(recovered.createTick()).ok, true)
+	assert.equal(replica.advanceStepIndex(2).ok, true)
+	assert.equal(replicaAdapter.read(), recoveredAdapter.read())
+})
+
+test('recovered authority never schedules a new sequence before a durable future WAL event', async () => {
+	const original = new InMemoryAuthoritativeRoom({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
+		maxInputsPerParticipantPerStep: 2,
+	})
+	const durableCheckpoint = await original.createSnapshot()
+	for (let step = 1; step <= 5; step++) original.advanceStepIndex(step)
+	const future = original.submit(proposal('alice', 'future', 0, 2))
+	assert.equal(future.ok, true)
+	if (!future.ok) return
+	assert.equal(future.event.stepIndex, 6)
+	const persistedAtCrash = await original.capturePersistenceState()
+
+	const recovered = await InMemoryAuthoritativeRoom.recover({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
+		maxInputsPerParticipantPerStep: 2,
+	}, { ...persistedAtCrash, snapshot: durableCheckpoint })
+	assert.equal(recovered.currentStepIndex, 0)
+	const acceptedAfterRollback = recovered.submit(proposal('alice', 'after-rollback', 1, 3))
+	assert.equal(acceptedAfterRollback.ok, true)
+	if (!acceptedAfterRollback.ok) return
+	assert.equal(acceptedAfterRollback.event.sequence, 2)
+	assert.equal(acceptedAfterRollback.event.stepIndex, 6)
+	assert.deepEqual(recovered.eventLog.map((event) => event.stepIndex), [6, 6])
+
+	const persistedAgain = await recovered.capturePersistenceState()
+	await assert.doesNotReject(InMemoryAuthoritativeRoom.recover({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
+		maxInputsPerParticipantPerStep: 2,
+	}, persistedAgain))
+})
+
+test('replica can preflight a boundary before the Studio mutates mathematical state', () => {
+	const replicaAdapter = createAdapter()
+	const replica = new CollaborationReplica({ roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: replicaAdapter })
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
+	})
+	const first = room.submit(proposal('alice', 'event-a', 0, 2))
+	const second = room.submit(proposal('bob', 'event-b', 0, 3))
+	assert.equal(first.ok && second.ok, true)
+	if (!first.ok || !second.ok) return
+	room.advanceStepIndex(1)
+	assert.equal(replica.receive(second.event).status, 'buffered-gap')
+	assert.equal(replica.receiveTick(room.createTick()).ok, true)
+	assert.equal(replica.canAdvanceStepIndex(1).ok, false)
+	assert.equal(replicaAdapter.read(), 0)
+	assert.equal(replica.receive(first.event).status, 'buffered-step')
+	assert.equal(replica.canAdvanceStepIndex(1).ok, true)
 })
 
 test('idempotent retry returns the committed outcome after participant authorization is revoked', () => {

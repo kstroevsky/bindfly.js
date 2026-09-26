@@ -203,22 +203,29 @@ export class CollaborationReplica<Input> {
 		return { ok: true, value: undefined }
 	}
 
-	advanceStepIndex(nextStepIndex: number): Result<void, string> {
+	canAdvanceStepIndex(nextStepIndex: number): Result<void, string> {
 		if (this.needsResynchronization) {
 			return { ok: false, error: 'Replica requires authoritative resynchronization.' }
 		}
 		if (!Number.isSafeInteger(nextStepIndex) || nextStepIndex < this.stepIndex || nextStepIndex > this.stepIndex + 1) {
 			return { ok: false, error: 'Replica step index must advance monotonically one boundary at a time.' }
 		}
-		if (nextStepIndex === this.stepIndex) {
-			this.drain()
-			return { ok: true, value: undefined }
-		}
+		if (nextStepIndex === this.stepIndex) return { ok: true, value: undefined }
 		if (!this.authoritativeTick || this.authoritativeTick.stepIndex < nextStepIndex) {
 			return { ok: false, error: 'Replica cannot advance beyond the latest authoritative tick.' }
 		}
 		const prefix = this.validatePendingPrefix(this.authoritativeTick.appliedSequence, this.authoritativeTick.stepIndex)
 		if (!prefix.ok) return prefix
+		return { ok: true, value: undefined }
+	}
+
+	advanceStepIndex(nextStepIndex: number): Result<void, string> {
+		const allowed = this.canAdvanceStepIndex(nextStepIndex)
+		if (!allowed.ok) return allowed
+		if (nextStepIndex === this.stepIndex) {
+			this.drain()
+			return { ok: true, value: undefined }
+		}
 		this.stepIndex = nextStepIndex
 		this.drain()
 		return { ok: true, value: undefined }

@@ -241,6 +241,16 @@ const fileSize = async (path: string): Promise<number> => {
 	}
 }
 
+const fileExists = async (path: string): Promise<boolean> => {
+	try {
+		await stat(path)
+		return true
+	} catch (error) {
+		if (isEnoent(error)) return false
+		throw error
+	}
+}
+
 export class FileAuthoritativeRoomStateStore implements AuthoritativeRoomStateStore {
 	private readonly checkpointPath: string
 	private readonly eventLogPath: string
@@ -263,7 +273,7 @@ export class FileAuthoritativeRoomStateStore implements AuthoritativeRoomStateSt
 	private async readEventLog(): Promise<EventLogReadResult> {
 		let handle: Awaited<ReturnType<typeof open>>
 		try {
-			handle = await open(this.eventLogPath, 'r')
+			handle = await open(this.eventLogPath, 'r+')
 		} catch (error) {
 			if (isEnoent(error)) {
 				return { events: [], prefixHashes: [EVENT_LOG_GENESIS_HASH], headHash: EVENT_LOG_GENESIS_HASH, byteLength: 0 }
@@ -275,7 +285,10 @@ export class FileAuthoritativeRoomStateStore implements AuthoritativeRoomStateSt
 			if (fileStat.size > this.maxStoreBytes) throw new Error(`Authoritative room store exceeds ${this.maxStoreBytes} bytes.`)
 			const bytes = await handle.readFile()
 			if (bytes.byteLength > this.maxStoreBytes) throw new Error(`Authoritative room store exceeds ${this.maxStoreBytes} bytes.`)
-			const text = bytes.toString('utf8')
+			const completeByteLength = bytes.byteLength === 0 || bytes[bytes.byteLength - 1] === 0x0a
+				? bytes.byteLength
+				: bytes.lastIndexOf(0x0a) + 1
+			const text = bytes.subarray(0, completeByteLength).toString('utf8')
 			const lines = text.length === 0 ? [] : text.split('\n').filter((line) => line.length > 0)
 			const events: PersistedAuthoritativeEvent[] = []
 			const prefixHashes: EventLogHash[] = [EVENT_LOG_GENESIS_HASH]
@@ -297,7 +310,11 @@ export class FileAuthoritativeRoomStateStore implements AuthoritativeRoomStateSt
 				previousHash = expectedHash
 				prefixHashes.push(expectedHash)
 			}
-			return { events, prefixHashes, headHash: previousHash, byteLength: bytes.byteLength }
+			if (completeByteLength !== bytes.byteLength) {
+				await handle.truncate(completeByteLength)
+				await handle.sync()
+			}
+			return { events, prefixHashes, headHash: previousHash, byteLength: completeByteLength }
 		} finally {
 			await handle.close()
 		}
@@ -367,13 +384,19 @@ export class FileAuthoritativeRoomStateStore implements AuthoritativeRoomStateSt
 		if (checkpointBytes + eventBytes + Buffer.byteLength(line) > this.maxStoreBytes) {
 			throw new Error(`Authoritative room store exceeds ${this.maxStoreBytes} bytes.`)
 		}
-		await mkdir(dirname(this.eventLogPath), { recursive: true })
+		const directory = dirname(this.eventLogPath)
+		await mkdir(directory, { recursive: true })
+		const eventLogExisted = await fileExists(this.eventLogPath)
 		const handle = await open(this.eventLogPath, 'a', 0o600)
 		try {
 			await handle.writeFile(line, 'utf8')
 			await handle.sync()
 		} finally {
 			await handle.close()
+		}
+		if (!eventLogExisted) {
+			const directoryHandle = await open(directory, 'r')
+			try { await directoryHandle.sync() } finally { await directoryHandle.close() }
 		}
 		this.eventCount = eventCount + 1
 		this.eventLogHeadHash = hash
