@@ -1,6 +1,6 @@
 # Stage 16E — privacy, security and operations review
 
-This review covers the Stage 16 collaboration boundary as implemented through Stage 16D. Its acceptance target is the current single-authority shared-experiment architecture. It is not a claim that the repository now contains a production identity provider, TLS terminator or multi-region collaboration service.
+This review covers the Stage 16 collaboration boundary as maintained through the Stage 16.1 correctness/integration hardening pass. Its acceptance target is the current single-authority shared-experiment architecture. It is not a claim that the repository now contains a production identity provider, TLS terminator or multi-region collaboration service.
 
 ## Authentication, authorization and room permissions
 
@@ -23,6 +23,7 @@ Untrusted collaboration input crosses several independent limits:
 - per-participant accepted-input limit per authoritative step (64 by default);
 - total concurrent connection limit (128 by default);
 - concurrent connection limit per authenticated participant (4 by default).
+- outbound WebSocket buffering hard limit (512 KiB by default), after which the slow client is disconnected and must recover through resume.
 
 Exact idempotent retries remain safe and do not consume additional per-step input quota. Room mutations are serialized by the server operation queue.
 
@@ -36,7 +37,9 @@ This is a deployment requirement, not something the deterministic collaboration 
 
 ## Snapshot and persisted-state integrity
 
-Snapshot checksum v1 remains SHA-256 over canonical snapshot bytes. It is a protocol identity/divergence primitive, not a signature or MAC. It detects accidental/cross-client state mismatch and file corruption when the checksum is not also maliciously rewritten; it does not authenticate an attacker who already controls the room-state file.
+Snapshot checksum v1 remains SHA-256 over canonical snapshot bytes. It is a protocol identity/divergence primitive, not a signature or MAC. Periodic authoritative synchronization points carry that identity into active sessions, so a connected replica can detect numerical/state divergence and request snapshot recovery instead of assuming indefinite bitwise lockstep.
+
+Persisted events additionally use a SHA-256 hash chain over the previous hash and canonical event bytes. The checkpoint records the event-log prefix hash, so valid-but-wrong canonical event corruption is detected during recovery. Like the snapshot checksum, this is an integrity primitive rather than authentication: an attacker able to rewrite both data and hashes is outside its threat model.
 
 The file store therefore relies on host/storage access control, creates replacement files with mode `0600`, uses atomic replacement and fails closed after a durable write failure. Production backups/volumes should apply the deployment's encryption and access-control policy.
 
@@ -50,14 +53,16 @@ Performance telemetry remains local-only by default and must not include formula
 
 ## Failure and recovery operations
 
-The current server is one authoritative process per room. Persistence is written before accepted events or ticks are acknowledged/broadcast. If storage becomes unavailable after a mutation, the unpersisted mutation stays local and unacknowledged, further mutations stop, and restart returns to the last durable record.
+The current server is one authoritative process per room. Every newly accepted event is appended to the event WAL and fsynced before the submit is acknowledged/broadcast. Authoritative simulation ticks are not individually fsynced; the file adapter writes periodic atomic checkpoints (120 steps by default). A crash can therefore roll simulation time back to the latest checkpoint, but every acknowledged event remains in the WAL and is deterministically reapplied at its original scheduled boundary as the authority advances again.
+
+If either WAL append or checkpoint persistence fails, the room is poisoned for authoritative reads and writes, connected sockets are terminated, new upgrades are rejected, and restart/recovery is required. Clients are never given resume state from a known non-durable in-memory authority.
 
 The file adapter is not a high-availability store. Running multiple writers against the same file is unsupported. A multi-instance service needs a transactional/shared persistence implementation plus an explicit single-writer/leader rule per room.
 
-The 16 MiB default store ceiling turns unchecked history growth into an explicit failure instead of silent disk consumption. Long-lived rooms will need measured checkpoint/log compaction and an idempotency-retention policy before this limit is raised.
+The 16 MiB default combined checkpoint/WAL ceiling turns unchecked history growth into an explicit failure instead of silent disk consumption. Long-lived rooms will need measured checkpoint/log compaction and an idempotency-retention policy before this limit is raised.
 
 ## Review result
 
-The Stage 16 architecture satisfies its shared-experiment acceptance boundary: authenticated/authorized ordered input, deterministic scheduling, duplicate/out-of-order handling, cryptographic snapshot identity, divergence recovery, reconnect, real WebSocket delivery, durable restart recovery, bounded transport/input pressure and explicit deletion/failure semantics.
+The Stage 16 architecture satisfies its shared-experiment acceptance boundary: authenticated/authorized ordered input, deterministic scheduling, duplicate/out-of-order handling, periodic cryptographic state verification, automatic divergence recovery, bounded-cost reconnect, real WebSocket delivery, WAL-backed acknowledged-event durability, bounded transport/input pressure, explicit deletion/failure semantics and a real Studio/Flying Lines collaboration client vertical slice. A 32-client reconnect fixture and Chromium/Firefox/WebKit recovery test exercise the operational and cross-engine assumptions.
 
 Stage 16 can therefore close for the repository's current single-authority scope. A production Internet deployment still has mandatory environment decisions: real identity/room-membership verification, TLS/WSS, browser Origin policy where applicable, retention duration, backup/encryption policy, monitoring/alerting and a transactional store/leader design before horizontal scaling.

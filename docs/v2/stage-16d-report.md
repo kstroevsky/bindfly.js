@@ -2,6 +2,8 @@
 
 Stage 16D makes the authoritative collaboration state recoverable after a server-process restart without changing the Stage 16A–16C ordering, scheduling or simulation semantics.
 
+> **Current-storage note (2026-09-26):** Stage 16.1 supersedes Stage 16D's original full-record/per-step file-write strategy with an fsynced event WAL plus periodic checkpoints. This report preserves the Stage 16D milestone history; `stage-16-1-report.md` is the canonical description of the current persistence behavior.
+
 ## Persistence contract
 
 The collaboration domain now defines a versioned `AuthoritativeRoomPersistenceState` containing:
@@ -34,13 +36,13 @@ Only after those checks succeed does `InMemoryAuthoritativeRoom.recover()` resto
 
 Writes use a temporary file in the destination directory, mode `0600`, `fsync`, atomic rename and directory sync. The JSON storage envelope contains only versioned metadata plus canonical base64url byte payloads. The default file-size ceiling is 16 MiB, and `delete()` provides an explicit room-deletion primitive for retention policy.
 
-The WebSocket server persists:
+The original Stage 16D WebSocket server persisted:
 
 1. initial authoritative state before it starts listening;
 2. every successful submit before returning/broadcasting the accepted event;
 3. every authoritative step transition before broadcasting its tick.
 
-If persistence fails after an in-memory mutation, that mutation is not acknowledged or broadcast. The server latches the persistence failure and becomes read-only until restart, preventing a longer non-durable history from accumulating. Restart recovers from the last successfully persisted record.
+Stage 16.1 tightens this contract: accepted events are appended and fsynced in the WAL before acknowledgement, ticks no longer require a filesystem transaction, checkpoints are periodic, and any persistence failure poisons authoritative reads as well as writes and terminates connected collaboration sockets.
 
 ## Canonical Flying Lines collaboration configuration
 
