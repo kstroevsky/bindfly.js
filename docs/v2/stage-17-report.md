@@ -66,14 +66,14 @@ The Stage 17 Studio UI adds:
 - the shared connectivity-game rule on collaboration-capable experiments;
 - extended performance evidence without changing mathematical execution.
 
-The browser fixtures prove that a frozen sweep locks live mutation, ignores pointer mutation attempts, restores its coefficient/captured-state fingerprint before publication and can be cancelled without a stale result; a dynamic sweep reruns a declared fixed-step count with timing/determinism provenance; two real collaboration clients observe the same shared game edit budget; saved experiments restore canonical state after a local mutation; guided challenge completion follows live evidence; and the existing Stage 13/15/16 workflows continue to operate.
+The browser fixtures prove that a frozen sweep locks live mutation, ignores pointer mutation attempts, cancels on a real viewport change before resize can mutate experiment state, restores its coefficient/captured-state fingerprint before publication and cannot publish a stale result; a dynamic sweep reruns a declared fixed-step count with timing/determinism provenance; two real collaboration clients distinguish accepted authoritative history from applied state while observing the same shared game edit budget; saved experiments restore canonical state after a local mutation; guided challenge completion follows live evidence; and the existing Stage 13/15/16 workflows continue to operate.
 
 ## Verification
 
 Final local verification on 2026-09-26:
 
 - `pnpm run v2:check`: dependency boundaries, TypeScript and ESLint clean; **235/235 tests passed**;
-- `pnpm run v2:e2e`: **20/20 Chromium Studio E2E tests passed** without retry;
+- `pnpm run v2:e2e`: **21/21 Chromium Studio E2E tests passed** without retry;
 - `pnpm run v2:e2e:stage16-cross-browser`: **6/6** collaboration game/recovery tests passed across Chromium, Firefox and WebKit;
 - `pnpm run v2:build`: passed;
 - `pnpm run build`: passed;
