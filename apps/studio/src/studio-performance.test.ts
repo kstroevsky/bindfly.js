@@ -18,7 +18,7 @@ test('performance snapshot reports local runtime timing and explicit typed analy
 		telemetry: { points: 2, edges: 1, components: 1, step: 2, frameMs: 10, simulationMs: 2, renderMs: 3, droppedSteps: 0, searchBackend: 'brute' },
 		renderer: 'canvas2d', runtime: 'main', dpr: 2, analysisMs: 4, analysisSnapshot: snapshot, analysisResult: analysis,
 	})
-	assert.equal(performance.fps, 100)
+	assert.equal(performance.estimatedMaxFps, 100)
 	assert.equal(performance.analysisBufferBytes, bytes)
 	assert.equal(performance.analysisMs, 4)
 })

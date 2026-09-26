@@ -386,6 +386,52 @@ test('Stage 17 frozen and dynamic sweeps keep their reproducibility semantics di
 	await expect(page.locator('.sweep-card')).toHaveCount(3)
 	await expect(page.locator('.sweep-provenance')).toContainText('dynamic fixed-step reruns')
 	await expect(page.locator('.sweep-provenance')).toContainText('same initial state · 12 steps/sample')
+	await expect(page.locator('.sweep-provenance')).toContainText('same-build-cpu')
+})
+
+test('Stage 17 frozen sweep locks live mutations and restores the captured state before publishing', async ({ page }) => {
+	await page.goto('/#/lab/pulse-2023')
+	const formula = page.locator('#parameter-formulaAX')
+	await formula.fill('positionX + distance * cos(a) * k * -1')
+	await page.getByRole('button', { name: 'Apply Formula AX' }).click()
+	await expect.poll(async () => Number(await metric(page, 'Step').textContent())).toBeGreaterThan(0)
+	await page.getByRole('button', { name: 'Freeze' }).click()
+	const frozenStep = await metric(page, 'Step').textContent()
+	await page.getByLabel('Sweep start').fill('0.6')
+	await page.getByLabel('Sweep end').fill('1.4')
+	await page.getByLabel('Sweep step', { exact: true }).fill('0.1')
+
+	await page.getByRole('button', { name: 'Execute parameter sweep' }).click()
+	await expect(page.getByRole('button', { name: 'Cancel sweep' })).toBeVisible()
+	await Promise.all([
+		expect(page.getByLabel('Experiment', { exact: true })).toBeDisabled(),
+		expect(page.getByLabel('Runtime')).toBeDisabled(),
+		expect(page.locator('#parameter-k')).toBeDisabled(),
+		expect(page.getByRole('button', { name: 'Run', exact: true })).toBeDisabled(),
+		expect(page.getByRole('button', { name: 'Step', exact: true })).toBeDisabled(),
+		expect(page.getByRole('button', { name: 'Reset' })).toBeDisabled(),
+	])
+
+	await expect(page.getByRole('button', { name: 'Cancel sweep' })).toBeVisible()
+	const simulation = page.getByLabel('Interactive Pulse 2023 simulation')
+	await simulation.click({ position: { x: 500, y: 300 } })
+	await expect(page.locator('.sweep-card')).toHaveCount(9)
+	await expect(page.locator('.sweep-provenance')).toContainText('SHA-256')
+	await expect(metric(page, 'Step')).toHaveText(frozenStep ?? '')
+	await expect(page.locator('#parameter-k')).toHaveValue('1')
+	await expect(page.getByRole('alert')).toHaveCount(0)
+
+	await page.getByLabel('Sweep semantics').selectOption('dynamic-simulation')
+	await page.getByLabel('Sweep start').fill('0.6')
+	await page.getByLabel('Sweep end').fill('1.4')
+	await page.getByLabel('Sweep step', { exact: true }).fill('0.1')
+	await page.getByLabel('Dynamic sweep step count').fill('600')
+	await page.getByRole('button', { name: 'Execute parameter sweep' }).click()
+	await page.getByRole('button', { name: 'Cancel sweep' }).click()
+	await expect(page.getByRole('button', { name: 'Execute parameter sweep' })).toBeVisible()
+	await expect(page.locator('.sweep-card')).toHaveCount(0)
+	await expect(page.getByLabel('Experiment', { exact: true })).toBeEnabled()
+	await expect(page.getByRole('alert')).toHaveCount(0)
 })
 
 test('Stage 17 saved experiments restore canonical state and guided challenges read live evidence', async ({ page }) => {
@@ -405,7 +451,7 @@ test('Stage 17 saved experiments restore canonical state and guided challenges r
 	await page.getByRole('button', { name: 'Freeze' }).click()
 	await page.getByRole('button', { name: 'Step', exact: true }).click()
 	await expect(page.locator('.learning-module[data-learning-status="complete"]')).toContainText('Causality: freeze one mathematical moment')
-	await expect(page.locator('.performance-evidence')).toContainText('FPS')
+	await expect(page.locator('.performance-evidence')).toContainText('Est. max FPS')
 	await expect(page.locator('.performance-evidence')).toContainText('Backend')
 })
 

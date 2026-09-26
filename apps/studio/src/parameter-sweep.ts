@@ -1,9 +1,12 @@
-import { analyzeRipsComplex, DEFAULT_RIPS_ANALYSIS_BUDGET, RIPS_COMPLEX_ANALYZER_ID, RIPS_COMPLEX_ANALYZER_VERSION } from '../../../src-v2/analysis/rips-complex.ts'
+import { RIPS_COMPLEX_ANALYZER_ID, RIPS_COMPLEX_ANALYZER_VERSION } from '../../../src-v2/analysis/rips-complex.ts'
+import type { RipsComplexResult } from '../../../src-v2/analysis/rips-complex.ts'
 import type { PointCloudSnapshot, PointCloudSnapshotSource } from '../../../src-v2/analysis/point-cloud-snapshot.ts'
+import type { DeterminismTier } from '../../../src-v2/core/clock.ts'
 import type { NumberParameterDefinition, ParameterSchema } from '../../../src-v2/core/parameters.ts'
 
 export const PARAMETER_SWEEP_FORMAT = 'bindfly-parameter-sweep'
-export const PARAMETER_SWEEP_VERSION = 1
+export const PARAMETER_SWEEP_VERSION = 2
+export const PARAMETER_SWEEP_STATE_FINGERPRINT_ENCODING_VERSION = 1
 export const MAX_SWEEP_SAMPLES = 9
 export const MAX_DYNAMIC_SWEEP_STEPS = 600
 
@@ -13,6 +16,12 @@ export interface ParameterSweepRange {
 	readonly start: number
 	readonly end: number
 	readonly step: number
+}
+
+export interface ParameterSweepStateFingerprint {
+	readonly algorithm: 'sha-256'
+	readonly encodingVersion: typeof PARAMETER_SWEEP_STATE_FINGERPRINT_ENCODING_VERSION
+	readonly value: string
 }
 
 export interface ParameterSweepPlan {
@@ -32,9 +41,12 @@ export interface ParameterSweepPlan {
 		readonly kind: 'frozen-simulation'
 		readonly simulationSnapshotId: string
 		readonly simulationStep: number
+		readonly stateFingerprint: ParameterSweepStateFingerprint
 	} | {
 		readonly kind: 'initial-conditions'
 		readonly stepCount: number
+		readonly fixedStepSeconds: number
+		readonly deterministicTier: DeterminismTier
 	}
 }
 
@@ -85,6 +97,53 @@ const roundForStep = (value: number, step: number): number => {
 
 const assertFinite = (label: string, value: number): void => {
 	if (!Number.isFinite(value)) throw new RangeError(`${label} must be finite.`)
+}
+
+const SWEEP_STATE_MAGIC = new TextEncoder().encode('bindfly-sweep-state-v1')
+
+const encodeLengthPrefixedText = (value: string): Uint8Array => {
+	const encoded = new TextEncoder().encode(value)
+	const bytes = new Uint8Array(4 + encoded.byteLength)
+	new DataView(bytes.buffer).setUint32(0, encoded.byteLength, false)
+	bytes.set(encoded, 4)
+	return bytes
+}
+
+export const encodeParameterSweepStateFingerprintV1 = (snapshot: PointCloudSnapshot): Uint8Array => {
+	const experimentId = encodeLengthPrefixedText(snapshot.experimentId)
+	const source = encodeLengthPrefixedText(snapshot.source)
+	const formulaHash = encodeLengthPrefixedText(snapshot.formulaConfigurationHash)
+	const pointBytes = snapshot.ids.length * (4 + 8 + 8)
+	const bytes = new Uint8Array(
+		SWEEP_STATE_MAGIC.byteLength + experimentId.byteLength + source.byteLength + formulaHash.byteLength + 20 + pointBytes,
+	)
+	let offset = 0
+	bytes.set(SWEEP_STATE_MAGIC, offset); offset += SWEEP_STATE_MAGIC.byteLength
+	bytes.set(experimentId, offset); offset += experimentId.byteLength
+	bytes.set(source, offset); offset += source.byteLength
+	bytes.set(formulaHash, offset); offset += formulaHash.byteLength
+	const view = new DataView(bytes.buffer)
+	view.setFloat64(offset, snapshot.stateVersion, false); offset += 8
+	view.setFloat64(offset, snapshot.simulationStep, false); offset += 8
+	view.setUint32(offset, snapshot.ids.length, false); offset += 4
+	for (let index = 0; index < snapshot.ids.length; index++) {
+		view.setUint32(offset, snapshot.ids[index] ?? 0, false); offset += 4
+		view.setFloat64(offset, snapshot.x[index] ?? 0, false); offset += 8
+		view.setFloat64(offset, snapshot.y[index] ?? 0, false); offset += 8
+	}
+	return bytes
+}
+
+export const createParameterSweepStateFingerprint = async (
+	snapshot: PointCloudSnapshot,
+): Promise<ParameterSweepStateFingerprint> => {
+	const digest = await globalThis.crypto.subtle.digest('SHA-256', encodeParameterSweepStateFingerprintV1(snapshot))
+	const value = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('')
+	return Object.freeze({
+		algorithm: 'sha-256' as const,
+		encodingVersion: PARAMETER_SWEEP_STATE_FINGERPRINT_ENCODING_VERSION,
+		value,
+	})
 }
 
 export const getSweepableFormulaParameters = (
@@ -138,19 +197,37 @@ export const createParameterSweepPlan = (input: Omit<ParameterSweepPlan, 'format
 	assertFinite('Sweep epsilon', input.epsilon)
 	if (input.epsilon <= 0) throw new RangeError('Sweep epsilon must be positive.')
 	if (!(input.viewport.width > 0) || !(input.viewport.height > 0)) throw new RangeError('Sweep viewport must be positive.')
+	if (input.mode === 'frozen-formula' && input.anchor.kind !== 'frozen-simulation'
+		|| input.mode === 'dynamic-simulation' && input.anchor.kind !== 'initial-conditions') {
+		throw new Error(`Sweep mode '${input.mode}' does not match anchor '${input.anchor.kind}'.`)
+	}
 	if (input.anchor.kind === 'initial-conditions'
 		&& (!Number.isInteger(input.anchor.stepCount) || input.anchor.stepCount < 0 || input.anchor.stepCount > MAX_DYNAMIC_SWEEP_STEPS)) {
 		throw new RangeError(`Dynamic sweep step count must be between 0 and ${MAX_DYNAMIC_SWEEP_STEPS}.`)
+	}
+	if (input.anchor.kind === 'initial-conditions') {
+		assertFinite('Dynamic sweep fixed step', input.anchor.fixedStepSeconds)
+		if (input.anchor.fixedStepSeconds <= 0) throw new RangeError('Dynamic sweep fixed step must be positive.')
+		if (input.anchor.deterministicTier !== 'same-build-cpu') throw new Error('Dynamic sweep determinism tier is unsupported.')
 	}
 	if (input.anchor.kind === 'frozen-simulation'
 		&& (!input.anchor.simulationSnapshotId || !Number.isInteger(input.anchor.simulationStep) || input.anchor.simulationStep < 0)) {
 		throw new Error('Frozen sweep requires a named non-negative simulation step.')
 	}
+	if (input.anchor.kind === 'frozen-simulation'
+		&& (input.anchor.stateFingerprint.algorithm !== 'sha-256'
+			|| input.anchor.stateFingerprint.encodingVersion !== PARAMETER_SWEEP_STATE_FINGERPRINT_ENCODING_VERSION
+			|| !/^[0-9a-f]{64}$/u.test(input.anchor.stateFingerprint.value))) {
+		throw new Error('Frozen sweep requires a valid versioned SHA-256 state fingerprint.')
+	}
 	return Object.freeze({ format: PARAMETER_SWEEP_FORMAT, version: PARAMETER_SWEEP_VERSION, ...input })
 }
 
-export const analyzeSweepSnapshot = (snapshot: PointCloudSnapshot, parameterValue: number, epsilon: number): ParameterSweepSample => {
-	const result = analyzeRipsComplex(snapshot, epsilon, DEFAULT_RIPS_ANALYSIS_BUDGET)
+export const createParameterSweepSample = (
+	snapshot: PointCloudSnapshot,
+	parameterValue: number,
+	result: RipsComplexResult,
+): ParameterSweepSample => {
 	return Object.freeze({
 		parameterValue,
 		snapshotId: snapshot.snapshotId,
@@ -170,15 +247,32 @@ export const analyzeSweepSnapshot = (snapshot: PointCloudSnapshot, parameterValu
 	})
 }
 
+export type ParameterSweepAnalyzer = (
+	snapshot: PointCloudSnapshot,
+	epsilon: number,
+	signal?: AbortSignal,
+) => Promise<RipsComplexResult>
+
+const throwIfSweepAborted = (signal: AbortSignal | undefined): void => {
+	if (!signal?.aborted) return
+	const error = new Error('Parameter sweep cancelled.')
+	error.name = 'AbortError'
+	throw error
+}
+
 export const runParameterSweep = async (
 	plan: ParameterSweepPlan,
 	evaluate: (parameterValue: number, sampleIndex: number) => Promise<PointCloudSnapshot>,
+	analyze: ParameterSweepAnalyzer,
+	signal?: AbortSignal,
 ): Promise<ParameterSweepResult> => {
 	const samples: ParameterSweepSample[] = []
 	for (let index = 0; index < plan.values.length; index++) {
+		throwIfSweepAborted(signal)
 		const parameterValue = plan.values[index]
 		if (parameterValue === undefined) continue
 		const snapshot = await evaluate(parameterValue, index)
+		throwIfSweepAborted(signal)
 		if (snapshot.experimentId !== plan.experimentId || snapshot.stateVersion !== plan.experimentStateVersion) {
 			throw new Error('Sweep sample belongs to a different experiment/state version.')
 		}
@@ -191,7 +285,9 @@ export const runParameterSweep = async (
 		if (plan.anchor.kind === 'initial-conditions' && snapshot.simulationStep !== plan.anchor.stepCount) {
 			throw new Error('Dynamic simulation sweep did not run the declared step count.')
 		}
-		samples.push(analyzeSweepSnapshot(snapshot, parameterValue, plan.epsilon))
+		const analysis = await analyze(snapshot, plan.epsilon, signal)
+		throwIfSweepAborted(signal)
+		samples.push(createParameterSweepSample(snapshot, parameterValue, analysis))
 	}
 	return Object.freeze({
 		format: PARAMETER_SWEEP_FORMAT,

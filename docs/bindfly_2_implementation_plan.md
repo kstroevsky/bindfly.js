@@ -2858,7 +2858,7 @@ Begin with the simplest shared interaction: two users add/move points in one det
 
 ## Stage 17 — Educational and product layer
 
-**Status (2026-09-26): complete.** See `docs/v2/stage-17-report.md` and ADR 0021 for the implemented educational/product contracts, bounded reproducible parameter sweeps, local saved experiments, validated learning/challenge evidence, collaborative connectivity game and performance evidence.
+**Status (2026-09-26): complete, including Stage 17.1 correctness hardening.** See `docs/v2/stage-17-report.md` and ADR 0021 for the implemented educational/product contracts, transactionally isolated/cancellable parameter sweeps, local saved experiments, validated learning/challenge evidence, authoritative-history connectivity-game primitive and local performance evidence.
 
 Add guided lessons, parameter sweeps, saved experiments, explanations, topology/dynamics challenges and collaborative mathematical games only after their engine/analyzer contracts are validated.
 

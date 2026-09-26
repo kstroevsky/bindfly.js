@@ -17,6 +17,7 @@ import { AnalysisWorkerClient } from './analysis-worker-client.ts'
 import { ParameterControls } from './parameter-controls.tsx'
 import {
 	createParameterSweepPlan,
+	createParameterSweepStateFingerprint,
 	createSweepValues,
 	getSweepableFormulaParameters,
 	runParameterSweep,
@@ -129,6 +130,8 @@ const sweepPreviewPoints = (sample: ParameterSweepResult['samples'][number], max
 	return { points, total }
 }
 
+const yieldToBrowser = (): Promise<void> => new Promise((resolve) => window.setTimeout(resolve, 0))
+
 export const StudioApp = () => {
 	const [plugin, setPlugin] = useState(INITIAL_PLUGIN)
 	const [parameters, setParameters] = useState<StudioParameterValues>(INITIAL_PARAMETERS)
@@ -178,9 +181,23 @@ export const StudioApp = () => {
 	const persistenceSchedulerRef = useRef<AnalysisScheduler>()
 	const persistenceWorkerRef = useRef<AnalysisWorkerClient>()
 	const persistenceRunCounterRef = useRef(0)
+	const sweepAnalysisWorkerRef = useRef<AnalysisWorkerClient>()
+	const sweepAbortControllerRef = useRef<AbortController>()
+	const sweepRunCounterRef = useRef(0)
+	const sweepActiveRef = useRef(false)
 	const formulaHistoryCounterRef = useRef(0)
 	const frozenSnapshotCounterRef = useRef(0)
 	const savedExperimentCounterRef = useRef(0)
+	const invalidateSweepRun = () => {
+		sweepRunCounterRef.current += 1
+		sweepAbortControllerRef.current?.abort()
+		sweepAbortControllerRef.current = undefined
+		sweepActiveRef.current = false
+	}
+	const cancelSweep = () => {
+		if (!sweepActiveRef.current) return
+		sweepAbortControllerRef.current?.abort()
+	}
 
 	const hasFormulaHistory = Object.values(plugin.parameters).some(
 		(definition) => definition.kind === 'string' && definition.control === 'formula',
@@ -223,6 +240,7 @@ export const StudioApp = () => {
 	}
 
 	const selectRuntime = (runtime: StudioRuntimeKind) => {
+		if (sweepActiveRef.current) return
 		resetFormulaHistory()
 		setPaused(false)
 		metricsRef.current = EMPTY_METRICS
@@ -234,6 +252,7 @@ export const StudioApp = () => {
 	}
 
 	const selectRenderer = (renderer: RendererKind) => {
+		if (sweepActiveRef.current) return
 		const nextRuntime: StudioRuntimeKind = renderer === 'canvas2d' ? runtimeKind : 'main'
 		if (!supportsExecutionProfile(plugin, renderer, nextRuntime)) {
 			setError(`Experiment '${plugin.id}' does not support the ${renderer}/${nextRuntime} profile.`)
@@ -251,6 +270,7 @@ export const StudioApp = () => {
 	}
 
 	const selectExperiment = (experimentId: string) => {
+		if (sweepActiveRef.current) return
 		const nextPlugin = getStudioExperimentPlugin(experimentId)
 		if (!nextPlugin) { setError(`Experiment '${experimentId}' is not registered.`); return }
 		let nextRenderer = rendererKind
@@ -297,10 +317,12 @@ export const StudioApp = () => {
 	}, [plugin])
 
 	useEffect(() => () => {
+		invalidateSweepRun()
 		analysisSchedulerRef.current?.dispose()
 		analysisWorkerRef.current?.dispose()
 		persistenceSchedulerRef.current?.dispose()
 		persistenceWorkerRef.current?.dispose()
+		sweepAnalysisWorkerRef.current?.dispose()
 	}, [])
 
 	useEffect(() => {
@@ -341,6 +363,10 @@ export const StudioApp = () => {
 			devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
 		})
 		const handleFailure = (failure: unknown) => {
+			if (sweepActiveRef.current) {
+				invalidateSweepRun()
+				setSweepPending(false)
+			}
 			setError(failure instanceof Error ? failure.message : 'Runtime failed.')
 			if (runtimeKind === 'worker') selectRuntime('main')
 		}
@@ -393,6 +419,7 @@ export const StudioApp = () => {
 			if (runtimeKind === 'worker') selectRuntime('main')
 		})
 		return () => {
+			if (controllerRef.current === controller && sweepActiveRef.current) invalidateSweepRun()
 			cancelled = true
 			resizeObserver.disconnect()
 			if (resizeFrameId !== undefined) window.cancelAnimationFrame(resizeFrameId)
@@ -402,6 +429,7 @@ export const StudioApp = () => {
 	}, [plugin, rendererKind, runtimeKind, stateGeneration])
 
 	const updateParameter = useCallback((parameterId: string, value: unknown) => {
+		if (sweepActiveRef.current) return
 		const definition = plugin.parameters[parameterId]
 		if (!definition) { setError(`Unknown parameter '${parameterId}'.`); return }
 		const normalized = plugin.normalizeParameters({ ...parameters, [parameterId]: value })
@@ -542,6 +570,7 @@ export const StudioApp = () => {
 	}
 
 	const selectFormulaView = (nextView: StudioFormulaView) => {
+		if (sweepActiveRef.current) return
 		if (!plugin.formulaViews.includes(nextView) || nextView === formulaView) return
 		setFormulaView(nextView)
 		setCanWriteUrl(true)
@@ -552,6 +581,7 @@ export const StudioApp = () => {
 	}
 
 	const selectWorkspace = (nextWorkspace: StudioWorkspace) => {
+		if (sweepActiveRef.current) return
 		if (nextWorkspace === 'compare' && plugin.formulaViews.length <= 1) return
 		if (nextWorkspace === 'analyze' && plugin.pointCloudSources.length === 0) return
 		setWorkspace(nextWorkspace)
@@ -563,6 +593,7 @@ export const StudioApp = () => {
 	}
 
 	const dispatchPointer = (phase: StudioPointerEvent['phase'], event: ReactPointerEvent<HTMLCanvasElement>) => {
+		if (sweepActiveRef.current) return
 		const pointerEvent: StudioPointerEvent = {
 			phase,
 			...pointFor(event),
@@ -572,6 +603,7 @@ export const StudioApp = () => {
 		for (const input of interactionRef.current?.handle(pointerEvent) ?? []) void controllerRef.current?.applyInput(input)
 	}
 	const pointerDown = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+		if (sweepActiveRef.current) return
 		if (probeEnabled && plugin.formatPointInspection) {
 			const point = pointFor(event)
 			void controllerRef.current?.inspectPoint({ ...point, maxDistance: 18 }).then((result) => {
@@ -590,6 +622,7 @@ export const StudioApp = () => {
 	const pointerCancel = (event: ReactPointerEvent<HTMLCanvasElement>) => dispatchPointer('cancel', event)
 
 	const restoreFormulaPerturbation = (node: FormulaPerturbationNode) => {
+		if (sweepActiveRef.current) return
 		if (!paused || !frozenSimulationSnapshotId || node.simulationSnapshotId !== frozenSimulationSnapshotId) {
 			setError('That formula perturbation belongs to a simulation state that is no longer frozen.')
 			return
@@ -608,6 +641,7 @@ export const StudioApp = () => {
 	}
 
 	const freeze = () => {
+		if (sweepActiveRef.current) return
 		if (paused) return
 		const controller = controllerRef.current
 		const snapshotId = nextFrozenSnapshotId()
@@ -619,6 +653,7 @@ export const StudioApp = () => {
 		})().catch((failure: unknown) => setError(failure instanceof Error ? failure.message : 'Unable to freeze simulation.'))
 	}
 	const run = () => {
+		if (sweepActiveRef.current) return
 		if (!paused) return
 		resetFormulaHistory()
 		setSingleStepCount(0)
@@ -626,6 +661,7 @@ export const StudioApp = () => {
 		void controllerRef.current?.resume()
 	}
 	const step = () => {
+		if (sweepActiveRef.current) return
 		if (!paused) return
 		const controller = controllerRef.current
 		resetFormulaHistory()
@@ -636,6 +672,7 @@ export const StudioApp = () => {
 		})().catch((failure: unknown) => setError(failure instanceof Error ? failure.message : 'Unable to step simulation.'))
 	}
 	const reset = () => {
+		if (sweepActiveRef.current) return
 		const controller = controllerRef.current
 		resetFormulaHistory()
 		setSingleStepCount(0)
@@ -648,7 +685,7 @@ export const StudioApp = () => {
 	}
 
 	const runSweep = async () => {
-		if (sweepPending) return
+		if (sweepActiveRef.current) return
 		const parameter = getSweepableFormulaParameters(plugin.parameters).find(({ id }) => id === sweepDraft.parameterId)
 		if (!parameter) { setError('Choose a declared formula parameter before running a sweep.'); return }
 		if (plugin.pointCloudSources.length === 0) { setError('This experiment does not expose a validated point-cloud source for sweeps.'); return }
@@ -666,15 +703,32 @@ export const StudioApp = () => {
 			height: Math.max(1, viewportElement.clientHeight),
 		}
 		const baseExperimentPayload = plugin.serializeConfiguration(parameters, seed)
+		const runId = ++sweepRunCounterRef.current
+		const abortController = new AbortController()
+		sweepAbortControllerRef.current = abortController
+		sweepActiveRef.current = true
 		setSweepPending(true)
 		setError(undefined)
+		setSweepResult(undefined)
+		const worker = sweepAnalysisWorkerRef.current ?? (sweepAnalysisWorkerRef.current = new AnalysisWorkerClient())
+		const analyze = (snapshot: PointCloudSnapshot, epsilon: number, signal?: AbortSignal) =>
+			worker.analyzeRips(snapshot, epsilon, signal ?? abortController.signal)
+		const assertCurrentRun = () => {
+			if (abortController.signal.aborted || sweepRunCounterRef.current !== runId) {
+				const cancelled = new Error('Parameter sweep cancelled.')
+				cancelled.name = 'AbortError'
+				throw cancelled
+			}
+		}
 		try {
 			if (sweepMode === 'frozen-formula') {
 				if (!paused || !frozenSimulationSnapshotId) throw new Error('Freeze the simulation before running a frozen-state formula sweep.')
 				const controller = controllerRef.current
 				if (!controller) throw new Error('Runtime is not ready for a frozen-state sweep.')
+				assertCurrentRun()
 				const baseline = await controller.capturePointCloud({ source: analysisSource })
 				if (!isPointCloudSnapshot(baseline)) throw new Error('Runtime returned an invalid sweep baseline point cloud.')
+				const stateFingerprint = await createParameterSweepStateFingerprint(baseline)
 				const baselineValue = parameters[parameter.id]
 				if (typeof baselineValue !== 'number') throw new Error('Sweep baseline parameter is not numeric.')
 				const plan = createParameterSweepPlan({
@@ -692,22 +746,51 @@ export const StudioApp = () => {
 						kind: 'frozen-simulation',
 						simulationSnapshotId: frozenSimulationSnapshotId,
 						simulationStep: baseline.simulationStep,
+						stateFingerprint,
 					},
 				})
-				try {
-					const result = await runParameterSweep(plan, async (parameterValue) => {
+					let result: ParameterSweepResult | undefined
+					let sweepFailure: unknown
+					let restorationFailure: unknown
+					try {
+						result = await runParameterSweep(plan, async (parameterValue) => {
+						assertCurrentRun()
+						if (controllerRef.current !== controller) throw new Error('Frozen sweep runtime changed during execution.')
 						const patch = plugin.parseParameterPatch({ [parameter.id]: parameterValue })
 						if (!patch.ok) throw new Error(patch.error)
 						await controller.updateParameters(patch.value)
 						const captured = await controller.capturePointCloud({ source: analysisSource })
 						if (!isPointCloudSnapshot(captured)) throw new Error('Runtime returned an invalid point cloud during the sweep.')
 						return captured
-					})
-					setSweepResult(result)
-				} finally {
-					const restore = plugin.parseParameterPatch({ [parameter.id]: baselineValue })
-					if (restore.ok) await controller.updateParameters(restore.value)
-				}
+						}, analyze, abortController.signal)
+					} catch (failure) {
+						sweepFailure = failure
+					} finally {
+						try {
+							if (controllerRef.current === controller) {
+								const restore = plugin.parseParameterPatch({ [parameter.id]: baselineValue })
+								if (!restore.ok) restorationFailure = new Error(restore.error)
+								else {
+									await controller.updateParameters(restore.value)
+									const restored = await controller.capturePointCloud({ source: analysisSource })
+									if (!isPointCloudSnapshot(restored)) restorationFailure = new Error('Runtime returned an invalid point cloud after sweep restoration.')
+									else {
+										const restoredFingerprint = await createParameterSweepStateFingerprint(restored)
+										if (restoredFingerprint.value !== stateFingerprint.value) {
+											restorationFailure = new Error('Frozen sweep did not restore the captured state exactly.')
+										}
+									}
+								}
+							}
+						} catch (failure) {
+							restorationFailure = failure
+						}
+					}
+					if (restorationFailure) throw restorationFailure
+					if (sweepFailure) throw sweepFailure
+					assertCurrentRun()
+				if (controllerRef.current !== controller) throw new Error('Frozen sweep runtime changed before result publication.')
+				if (result) setSweepResult(result)
 			} else {
 				const plan = createParameterSweepPlan({
 					mode: sweepMode,
@@ -720,14 +803,21 @@ export const StudioApp = () => {
 					source: analysisSource,
 					epsilon: analysisEpsilon,
 					viewport: sweepViewport,
-					anchor: { kind: 'initial-conditions', stepCount: sweepDraft.dynamicStepCount },
+					anchor: {
+						kind: 'initial-conditions',
+						stepCount: sweepDraft.dynamicStepCount,
+						fixedStepSeconds: plugin.timing.fixedStepSeconds,
+						deterministicTier: plugin.timing.deterministicTier,
+					},
 				})
 				const viewport = createViewport({
 					cssWidth: sweepViewport.width,
 					cssHeight: sweepViewport.height,
 					devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
 				})
-				const result = await runParameterSweep(plan, (parameterValue) => {
+				const result = await runParameterSweep(plan, async (parameterValue) => {
+					assertCurrentRun()
+					await yieldToBrowser()
 					const normalized = plugin.normalizeParameters({ ...parameters, [parameter.id]: parameterValue })
 					if (!normalized.ok) throw new Error(normalized.error)
 					const canvas = document.createElement('canvas')
@@ -742,31 +832,41 @@ export const StudioApp = () => {
 					try {
 						session.resize(viewport)
 						for (let index = 0; index < sweepDraft.dynamicStepCount; index++) {
+							assertCurrentRun()
 							session.step({
 								index,
 								dtSeconds: plugin.timing.fixedStepSeconds,
 								elapsedSeconds: (index + 1) * plugin.timing.fixedStepSeconds,
 							})
+							if ((index + 1) % 50 === 0) await yieldToBrowser()
 						}
 						session.render({ frameIndex: 0, simulationStepIndex: sweepDraft.dynamicStepCount, interpolationAlpha: 0 })
 						if (!session.capturePointCloud) throw new Error(`Experiment '${plugin.id}' cannot capture a sweep point cloud.`)
 						const captured = session.capturePointCloud({ source: analysisSource })
 						if (!isPointCloudSnapshot(captured)) throw new Error('Dynamic sweep session returned an invalid point cloud.')
-							return Promise.resolve(captured)
+						return captured
 					} finally {
 						session.dispose()
 					}
-				})
+				}, analyze, abortController.signal)
+				assertCurrentRun()
 				setSweepResult(result)
 			}
 		} catch (failure) {
-			setError(failure instanceof Error ? failure.message : 'Parameter sweep failed.')
+			if (sweepRunCounterRef.current === runId && !abortController.signal.aborted) {
+				setError(failure instanceof Error ? failure.message : 'Parameter sweep failed.')
+			}
 		} finally {
-			setSweepPending(false)
+			if (sweepRunCounterRef.current === runId) {
+				sweepActiveRef.current = false
+				if (sweepAbortControllerRef.current === abortController) sweepAbortControllerRef.current = undefined
+				setSweepPending(false)
+			}
 		}
 	}
 
 	const applyResolvedStudioState = (resolved: ResolvedStudioState, status: string) => {
+		if (sweepActiveRef.current) return
 		const nextPlugin = getStudioExperimentPlugin(resolved.experimentId)
 		if (!nextPlugin) { setError(`Experiment '${resolved.experimentId}' is not registered.`); return }
 		setError(undefined)
@@ -823,6 +923,7 @@ export const StudioApp = () => {
 	}
 
 	const loadSavedExperiment = (record: SavedExperimentCollection['records'][number]) => {
+		if (sweepActiveRef.current) return
 		const saved = resolveSavedExperiment(record)
 		if (!saved.ok) { setError(saved.error); return }
 		const resolved = resolveStudioDurableState(saved.value)
@@ -866,7 +967,7 @@ export const StudioApp = () => {
 	}
 
 	const importJson = async (file: File | undefined) => {
-		if (!file) return
+		if (!file || sweepActiveRef.current) return
 		const parsed = parseStudioImportDocument(await file.text())
 		if (!parsed.ok) { setError(parsed.error); return }
 		const resolved = resolveStudioDurableState(parsed.value)
@@ -897,35 +998,35 @@ export const StudioApp = () => {
 	return <main className="studio">
 		<aside className="panel" aria-label="Experiment controls">
 			<header><div><p className="eyebrow">Bindfly 2 · Stage 17</p><h1>{plugin.title}</h1></div><p className="description">Versioned experiments for mathematical exploration, analysis and learning.</p></header>
-			<label className="picker"><span>Experiment</span><select value={plugin.id} aria-label="Experiment" onChange={(event) => selectExperiment(event.currentTarget.value)}>{EXPERIMENTS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
+			<label className="picker"><span>Experiment</span><select value={plugin.id} aria-label="Experiment" disabled={sweepPending} onChange={(event) => selectExperiment(event.currentTarget.value)}>{EXPERIMENTS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
 			<nav className="workspace-tabs" aria-label="Studio workspace">
-				<button type="button" aria-pressed={workspace === 'explore'} onClick={() => selectWorkspace('explore')}>Explore</button>
-				<button type="button" aria-pressed={workspace === 'compare'} disabled={plugin.formulaViews.length <= 1} onClick={() => selectWorkspace('compare')}>Compare</button>
-				<button type="button" aria-pressed={workspace === 'analyze'} disabled={plugin.pointCloudSources.length === 0} onClick={() => selectWorkspace('analyze')}>Analyze</button>
+				<button type="button" aria-pressed={workspace === 'explore'} disabled={sweepPending} onClick={() => selectWorkspace('explore')}>Explore</button>
+				<button type="button" aria-pressed={workspace === 'compare'} disabled={sweepPending || plugin.formulaViews.length <= 1} onClick={() => selectWorkspace('compare')}>Compare</button>
+				<button type="button" aria-pressed={workspace === 'analyze'} disabled={sweepPending || plugin.pointCloudSources.length === 0} onClick={() => selectWorkspace('analyze')}>Analyze</button>
 			</nav>
-			{workspace === 'compare' ? <div className="lens-tabs" role="group" aria-label="Formula lens">{plugin.formulaViews.filter((view) => view !== 'morph').map((view) => <button type="button" key={view} aria-pressed={formulaView === view} onClick={() => selectFormulaView(view)}>{FORMULA_VIEW_LABELS[view]}</button>)}</div> : null}
-			{workspace !== 'analyze' ? <ParameterControls schema={plugin.parameters} values={parameters} onChange={updateParameter} /> : null}
+			{workspace === 'compare' ? <div className="lens-tabs" role="group" aria-label="Formula lens">{plugin.formulaViews.filter((view) => view !== 'morph').map((view) => <button type="button" key={view} aria-pressed={formulaView === view} disabled={sweepPending} onClick={() => selectFormulaView(view)}>{FORMULA_VIEW_LABELS[view]}</button>)}</div> : null}
+			{workspace !== 'analyze' ? <ParameterControls schema={plugin.parameters} values={parameters} disabled={sweepPending} onChange={updateParameter} /> : null}
 			<div className="picker-grid">
-				<label className="picker"><span>Renderer</span><select value={rendererKind} aria-label="Renderer" onChange={(event) => selectRenderer(event.currentTarget.value as RendererKind)}><option value="canvas2d">Canvas 2D</option><option value="webgl2" disabled={!supportsExecutionProfile(plugin, 'webgl2', 'main')}>WebGL 2</option></select></label>
-				<label className="picker"><span>Runtime</span><select value={runtimeKind} aria-label="Runtime" onChange={(event) => selectRuntime(event.currentTarget.value as StudioRuntimeKind)}><option value="main">Main thread</option><option value="worker" disabled={!workerCapability.supported || !supportsWorker(plugin)}>Worker</option></select></label>
+				<label className="picker"><span>Renderer</span><select value={rendererKind} aria-label="Renderer" disabled={sweepPending} onChange={(event) => selectRenderer(event.currentTarget.value as RendererKind)}><option value="canvas2d">Canvas 2D</option><option value="webgl2" disabled={!supportsExecutionProfile(plugin, 'webgl2', 'main')}>WebGL 2</option></select></label>
+				<label className="picker"><span>Runtime</span><select value={runtimeKind} aria-label="Runtime" disabled={sweepPending} onChange={(event) => selectRuntime(event.currentTarget.value as StudioRuntimeKind)}><option value="main">Main thread</option><option value="worker" disabled={!workerCapability.supported || !supportsWorker(plugin)}>Worker</option></select></label>
 			</div>
-			{plugin.temporalSemantics.kind !== 'static' ? <div className="actions"><button type="button" disabled={!paused} onClick={run}>Run</button><button type="button" disabled={paused} onClick={freeze}>Freeze</button><button type="button" disabled={!paused} onClick={step}>{plugin.temporalSemantics.stepLabel ?? 'Step'}</button><button type="button" onClick={reset}>Reset</button></div> : null}
-			{workspace !== 'analyze' && plugin.formatPointInspection ? <div className="probe-actions"><button type="button" aria-pressed={probeEnabled} onClick={() => { setProbeEnabled((enabled) => !enabled); setInspection(undefined) }}>{probeEnabled ? 'Probe on · click a point' : 'Probe point'}</button>{inspection ? <button type="button" onClick={() => setInspection(undefined)}>Clear probe</button> : null}</div> : null}
+			{plugin.temporalSemantics.kind !== 'static' ? <div className="actions"><button type="button" disabled={sweepPending || !paused} onClick={run}>Run</button><button type="button" disabled={sweepPending || paused} onClick={freeze}>Freeze</button><button type="button" disabled={sweepPending || !paused} onClick={step}>{plugin.temporalSemantics.stepLabel ?? 'Step'}</button><button type="button" disabled={sweepPending} onClick={reset}>Reset</button></div> : null}
+			{workspace !== 'analyze' && plugin.formatPointInspection ? <div className="probe-actions"><button type="button" aria-pressed={probeEnabled} disabled={sweepPending} onClick={() => { setProbeEnabled((enabled) => !enabled); setInspection(undefined) }}>{probeEnabled ? 'Probe on · click a point' : 'Probe point'}</button>{inspection ? <button type="button" disabled={sweepPending} onClick={() => setInspection(undefined)}>Clear probe</button> : null}</div> : null}
 			{inspection ? <section className="probe-panel" aria-label="Point probe"><h2>{inspection.title}</h2>{inspection.sections.map((section) => <details key={section.title} open={!section.title.startsWith('Trace')}><summary>{section.title}</summary><dl>{section.rows.map((row, index) => <div key={`${row.label}-${index}`}><dt>{row.label}</dt><dd>{row.value}</dd></div>)}</dl></details>)}</section> : null}
 			{workspace !== 'analyze' && formulaHistory.length > 0 ? <section className="formula-history" aria-labelledby="formula-history-heading">
 				<div className="formula-history-heading"><div><h2 id="formula-history-heading">Formula trail</h2><p>Recent perturbations of this frozen simulation state.</p></div><span>{formulaHistory.length}</span></div>
-				<ol>{formulaHistory.map((node) => <li key={node.id}><button type="button" onClick={() => restoreFormulaPerturbation(node)}><strong>{node.label}</strong><span>step {node.metrics.step} · {node.metrics.points} points · {node.metrics.edges} edges</span></button></li>)}</ol>
+				<ol>{formulaHistory.map((node) => <li key={node.id}><button type="button" disabled={sweepPending} onClick={() => restoreFormulaPerturbation(node)}><strong>{node.label}</strong><span>step {node.metrics.step} · {node.metrics.points} points · {node.metrics.edges} edges</span></button></li>)}</ol>
 				<p className="analysis-note">Snapshot {formulaHistory[0]?.simulationSnapshotId}</p>
 			</section> : null}
 			{workspace === 'analyze' && plugin.pointCloudSources.length > 0 ? <section className="analysis-panel" aria-labelledby="structure-heading">
 				<div className="analysis-heading"><div><h2 id="structure-heading">Structure</h2><p>Pin geometry, then vary analysis ε without changing the experiment.</p></div><span>{analysisPending || persistencePending ? 'Analyzing…' : analysisSnapshot ? 'Pinned' : 'Live'}</span></div>
 				<div className="analysis-capture">
-					<label className="picker"><span>Snapshot source</span><select value={analysisSource} aria-label="Analysis snapshot source" onChange={(event) => setAnalysisSource(event.currentTarget.value as PointCloudSnapshotSource)}>{plugin.pointCloudSources.map((source) => <option key={source} value={source}>{pointCloudSourceLabel(source)}</option>)}</select></label>
-					<button type="button" disabled={analysisPending} onClick={() => { void captureAnalysisSnapshot() }}>{analysisSnapshot ? 'Analyze this frame again' : 'Analyze this frame'}</button>
+					<label className="picker"><span>Snapshot source</span><select value={analysisSource} aria-label="Analysis snapshot source" disabled={sweepPending} onChange={(event) => setAnalysisSource(event.currentTarget.value as PointCloudSnapshotSource)}>{plugin.pointCloudSources.map((source) => <option key={source} value={source}>{pointCloudSourceLabel(source)}</option>)}</select></label>
+					<button type="button" disabled={sweepPending || analysisPending} onClick={() => { void captureAnalysisSnapshot() }}>{analysisSnapshot ? 'Analyze this frame again' : 'Analyze this frame'}</button>
 				</div>
 				<div className="analysis-scale-controls">
-					<label className="analysis-epsilon"><span>Analysis ε <output>{analysisEpsilon.toFixed(0)} px</output></span><input type="range" min="1" max={analysisEpsilonMax} step="1" value={analysisEpsilon} disabled={!analysisSnapshot} onChange={(event) => updateAnalysisEpsilon(Number(event.currentTarget.value))} /></label>
-					<label className="picker"><span>Persistence εmax</span><select value={analysisEpsilonMax} aria-label="Persistence epsilon maximum" onChange={(event) => updateAnalysisEpsilonMax(Number(event.currentTarget.value))}>{epsilonMaxOptions.map((epsilonMax) => <option key={epsilonMax} value={epsilonMax}>{epsilonMax} px</option>)}</select></label>
+					<label className="analysis-epsilon"><span>Analysis ε <output>{analysisEpsilon.toFixed(0)} px</output></span><input type="range" min="1" max={analysisEpsilonMax} step="1" value={analysisEpsilon} disabled={sweepPending || !analysisSnapshot} onChange={(event) => updateAnalysisEpsilon(Number(event.currentTarget.value))} /></label>
+					<label className="picker"><span>Persistence εmax</span><select value={analysisEpsilonMax} aria-label="Persistence epsilon maximum" disabled={sweepPending} onChange={(event) => updateAnalysisEpsilonMax(Number(event.currentTarget.value))}>{epsilonMaxOptions.map((epsilonMax) => <option key={epsilonMax} value={epsilonMax}>{epsilonMax} px</option>)}</select></label>
 				</div>
 				{analysisSnapshot ? <p className="analysis-snapshot">Pinned {pointCloudSourceLabel(analysisSnapshot.source)} · step {analysisSnapshot.simulationStep} · {analysisSnapshot.ids.length} points</p> : <p className="analysis-snapshot">No point-cloud snapshot pinned.</p>}
 				{analysisResult ? <>
@@ -995,17 +1096,19 @@ export const StudioApp = () => {
 				</article> : null}
 			</section> : null}
 			{sweepableParameters.length > 0 && plugin.pointCloudSources.length > 0 ? <section className="stage17-panel sweep-panel" aria-labelledby="sweep-heading">
-				<div className="stage17-heading"><div><h2 id="sweep-heading">Parameter sweep</h2><p>Reproducible small multiples plus validated Rips structure metrics.</p></div><span>{sweepResult ? 'Result' : 'Ready'}</span></div>
+				<div className="stage17-heading"><div><h2 id="sweep-heading">Parameter sweep</h2><p>Reproducible small multiples plus validated Rips structure metrics.</p></div><span>{sweepPending ? 'Running' : sweepResult ? 'Result' : 'Ready'}</span></div>
 				<div className="sweep-controls">
-					<label className="picker"><span>Sweep semantics</span><select aria-label="Sweep semantics" value={sweepMode} onChange={(event) => { setSweepMode(event.currentTarget.value as ParameterSweepMode); setSweepResult(undefined) }}><option value="frozen-formula">Formula sweep · frozen state</option><option value="dynamic-simulation">Dynamic simulation · fixed steps</option></select></label>
-					<label className="picker"><span>Formula parameter</span><select aria-label="Sweep formula parameter" value={sweepDraft.parameterId} onChange={(event) => { setSweepDraft(createSweepDraft(plugin, event.currentTarget.value)); setSweepResult(undefined) }}>{sweepableParameters.map(({ id }) => <option key={id} value={id}>{id}</option>)}</select></label>
+					<label className="picker"><span>Sweep semantics</span><select aria-label="Sweep semantics" value={sweepMode} disabled={sweepPending} onChange={(event) => { setSweepMode(event.currentTarget.value as ParameterSweepMode); setSweepResult(undefined) }}><option value="frozen-formula">Formula sweep · frozen state</option><option value="dynamic-simulation">Dynamic simulation · fixed steps</option></select></label>
+					<label className="picker"><span>Formula parameter</span><select aria-label="Sweep formula parameter" value={sweepDraft.parameterId} disabled={sweepPending} onChange={(event) => { setSweepDraft(createSweepDraft(plugin, event.currentTarget.value)); setSweepResult(undefined) }}>{sweepableParameters.map(({ id }) => <option key={id} value={id}>{id}</option>)}</select></label>
 					<div className="sweep-range">
-						<label><span>Start</span><input aria-label="Sweep start" type="number" value={sweepDraft.start} onChange={(event) => setSweepDraft({ ...sweepDraft, start: Number(event.currentTarget.value) })} /></label>
-						<label><span>End</span><input aria-label="Sweep end" type="number" value={sweepDraft.end} onChange={(event) => setSweepDraft({ ...sweepDraft, end: Number(event.currentTarget.value) })} /></label>
-						<label><span>Step</span><input aria-label="Sweep step" type="number" min="0" value={sweepDraft.step} onChange={(event) => setSweepDraft({ ...sweepDraft, step: Number(event.currentTarget.value) })} /></label>
+						<label><span>Start</span><input aria-label="Sweep start" type="number" value={sweepDraft.start} disabled={sweepPending} onChange={(event) => setSweepDraft({ ...sweepDraft, start: Number(event.currentTarget.value) })} /></label>
+						<label><span>End</span><input aria-label="Sweep end" type="number" value={sweepDraft.end} disabled={sweepPending} onChange={(event) => setSweepDraft({ ...sweepDraft, end: Number(event.currentTarget.value) })} /></label>
+						<label><span>Step</span><input aria-label="Sweep step" type="number" min="0" value={sweepDraft.step} disabled={sweepPending} onChange={(event) => setSweepDraft({ ...sweepDraft, step: Number(event.currentTarget.value) })} /></label>
 					</div>
-					{sweepMode === 'dynamic-simulation' ? <label className="picker"><span>Steps per sample</span><input aria-label="Dynamic sweep step count" type="number" min="0" max="600" step="1" value={sweepDraft.dynamicStepCount} onChange={(event) => setSweepDraft({ ...sweepDraft, dynamicStepCount: Number(event.currentTarget.value) })} /></label> : <p className="analysis-note">Frozen sweep requires Freeze and keeps the same simulation step and point identities while changing only the declared coefficient.</p>}
-					<button type="button" disabled={sweepPending || (sweepMode === 'frozen-formula' && !paused)} onClick={() => { void runSweep() }}>{sweepPending ? 'Executing sweep…' : 'Execute parameter sweep'}</button>
+					{sweepMode === 'dynamic-simulation' ? <label className="picker"><span>Steps per sample</span><input aria-label="Dynamic sweep step count" type="number" min="0" max="600" step="1" value={sweepDraft.dynamicStepCount} disabled={sweepPending} onChange={(event) => setSweepDraft({ ...sweepDraft, dynamicStepCount: Number(event.currentTarget.value) })} /></label> : <p className="analysis-note">Frozen sweep requires Freeze and keeps the same simulation step and point identities while changing only the declared coefficient.</p>}
+					{sweepPending
+						? <button type="button" onClick={cancelSweep}>Cancel sweep</button>
+						: <button type="button" disabled={sweepMode === 'frozen-formula' && !paused} onClick={() => { void runSweep() }}>Execute parameter sweep</button>}
 				</div>
 				{sweepResult ? <div className="sweep-result" aria-live="polite">
 					<dl className="analysis-provenance sweep-provenance">
@@ -1014,7 +1117,9 @@ export const StudioApp = () => {
 						<div><dt>Seed</dt><dd>{sweepResult.plan.seed}</dd></div>
 						<div><dt>Analyzer</dt><dd>{sweepResult.analyzer.id} v{sweepResult.analyzer.version}</dd></div>
 						<div><dt>Analysis</dt><dd>Euclidean · CSS px · ε {sweepResult.plan.epsilon} · all points</dd></div>
-						<div><dt>Anchor</dt><dd>{sweepResult.plan.anchor.kind === 'frozen-simulation' ? `${sweepResult.plan.anchor.simulationSnapshotId} · step ${sweepResult.plan.anchor.simulationStep}` : `same initial state · ${sweepResult.plan.anchor.stepCount} steps/sample`}</dd></div>
+						<div><dt>Anchor</dt><dd>{sweepResult.plan.anchor.kind === 'frozen-simulation'
+							? `${sweepResult.plan.anchor.simulationSnapshotId} · step ${sweepResult.plan.anchor.simulationStep} · SHA-256 ${sweepResult.plan.anchor.stateFingerprint.value.slice(0, 12)}…`
+							: `same initial state · ${sweepResult.plan.anchor.stepCount} steps/sample · dt ${sweepResult.plan.anchor.fixedStepSeconds}s · ${sweepResult.plan.anchor.deterministicTier}`}</dd></div>
 					</dl>
 					<div className="sweep-grid">{sweepResult.samples.map((sample) => {
 						const preview = sweepPreviewPoints(sample)
@@ -1029,14 +1134,14 @@ export const StudioApp = () => {
 			</section> : null}
 			<section className="stage17-panel saved-panel" aria-labelledby="saved-heading">
 				<div className="stage17-heading"><div><h2 id="saved-heading">Saved experiments</h2><p>Local, versioned records backed by the canonical Studio export and migration path.</p></div><span>{savedExperiments.records.length}</span></div>
-				<div className="saved-create"><input aria-label="Saved experiment name" type="text" maxLength={120} value={saveName} onChange={(event) => setSaveName(event.currentTarget.value)} /><button type="button" onClick={saveCurrentExperiment}>Save current</button></div>
-				{savedExperiments.records.length > 0 ? <ul className="saved-list">{savedExperiments.records.map((record) => <li key={record.id}><div><strong>{record.name}</strong><span>{record.document.configuration.experiment.experimentId} · {new Date(record.updatedAt).toLocaleString()}</span></div><div><button type="button" onClick={() => loadSavedExperiment(record)}>Load</button><button type="button" onClick={() => deleteSavedExperiment(record.id)}>Delete</button></div></li>)}</ul> : <p className="analysis-note">No local saved experiments yet.</p>}
+				<div className="saved-create"><input aria-label="Saved experiment name" type="text" maxLength={120} value={saveName} disabled={sweepPending} onChange={(event) => setSaveName(event.currentTarget.value)} /><button type="button" disabled={sweepPending} onClick={saveCurrentExperiment}>Save current</button></div>
+				{savedExperiments.records.length > 0 ? <ul className="saved-list">{savedExperiments.records.map((record) => <li key={record.id}><div><strong>{record.name}</strong><span>{record.document.configuration.experiment.experimentId} · {new Date(record.updatedAt).toLocaleString()}</span></div><div><button type="button" disabled={sweepPending} onClick={() => loadSavedExperiment(record)}>Load</button><button type="button" onClick={() => deleteSavedExperiment(record.id)}>Delete</button></div></li>)}</ul> : <p className="analysis-note">No local saved experiments yet.</p>}
 			</section>
-			<div className="state-actions"><button type="button" onClick={() => { void copyLink() }}>Copy link</button><button type="button" onClick={exportJson}>Export JSON</button><label className="file-button" htmlFor="state-import">Import JSON<input id="state-import" type="file" accept="application/json,.json" onChange={(event) => { void importJson(event.currentTarget.files?.[0]) }} /></label></div>
+			<div className="state-actions"><button type="button" onClick={() => { void copyLink() }}>Copy link</button><button type="button" onClick={exportJson}>Export JSON</button><label className="file-button" htmlFor="state-import">Import JSON<input id="state-import" type="file" accept="application/json,.json" disabled={sweepPending} onChange={(event) => { void importJson(event.currentTarget.files?.[0]) }} /></label></div>
 			<p className="share-status" role="status">{shareStatus}</p>
 			{error ? <p className="error-message" role="alert">{error}</p> : null}
 			<section aria-labelledby="performance-heading"><h2 id="performance-heading">Performance</h2><dl className="metrics performance-evidence">
-				<div className="metric"><dt>FPS</dt><dd>{performanceSnapshot.fps.toFixed(1)}</dd></div>
+				<div className="metric"><dt>Est. max FPS</dt><dd>{performanceSnapshot.estimatedMaxFps.toFixed(1)}</dd></div>
 				<div className="metric"><dt>DPR</dt><dd>{performanceSnapshot.dpr.toFixed(2)}</dd></div>
 				<div className="metric"><dt>Backend</dt><dd>{performanceSnapshot.renderer} · {performanceSnapshot.runtime}</dd></div>
 				{performanceSnapshot.analysisMs === undefined ? null : <div className="metric"><dt>Analysis</dt><dd>{performanceSnapshot.analysisMs.toFixed(1)} ms</dd></div>}

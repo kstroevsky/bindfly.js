@@ -5,7 +5,7 @@ import type { ExperimentTelemetry } from './experiment-session.ts'
 import type { StudioRuntimeKind } from './studio-controller.ts'
 
 export interface StudioPerformanceSnapshot {
-	readonly fps: number
+	readonly estimatedMaxFps: number
 	readonly renderer: RendererKind
 	readonly runtime: StudioRuntimeKind
 	readonly dpr: number
@@ -44,10 +44,10 @@ export const createStudioPerformanceSnapshot = (options: {
 	readonly analysisResult?: RipsComplexResult
 }): StudioPerformanceSnapshot => {
 	const frameMs = options.telemetry.totalFrameMs ?? options.telemetry.frameMs
-	const fps = frameMs > 0 ? 1000 / frameMs : 0
+	const estimatedMaxFps = frameMs > 0 ? 1000 / frameMs : 0
 	const analysisBufferBytes = estimateAnalysisBufferBytes(options.analysisSnapshot, options.analysisResult)
 	return Object.freeze({
-		fps,
+		estimatedMaxFps,
 		renderer: options.renderer,
 		runtime: options.runtime,
 		dpr: options.dpr,

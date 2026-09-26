@@ -9,6 +9,7 @@ interface ParameterControlsProps {
 	readonly schema: ParameterSchema
 	readonly values: StudioParameterValues
 	readonly hiddenIds?: readonly string[]
+	readonly disabled?: boolean
 	readonly onChange: (parameterId: string, value: unknown) => void
 }
 
@@ -19,10 +20,11 @@ interface FormulaControlProps {
 	readonly descriptionId: string
 	readonly label: string
 	readonly value: string
+	readonly disabled: boolean
 	readonly onCommit: (parameterId: string, value: string) => void
 }
 
-const FormulaControl = ({ definition, id, inputId, descriptionId, label, value, onCommit }: FormulaControlProps) => {
+const FormulaControl = ({ definition, id, inputId, descriptionId, label, value, disabled, onCommit }: FormulaControlProps) => {
 	const [draft, setDraft] = useState(value)
 	const commit = () => onCommit(id, draft)
 	const restoreDefault = () => {
@@ -40,6 +42,7 @@ const FormulaControl = ({ definition, id, inputId, descriptionId, label, value, 
 
 	return <>
 		<textarea
+			disabled={disabled}
 			id={inputId}
 			className="formula-editor"
 			value={draft}
@@ -53,14 +56,14 @@ const FormulaControl = ({ definition, id, inputId, descriptionId, label, value, 
 		<span className="formula-actions">
 			<small id={descriptionId}>Enter or Apply to update · Esc to restore</small>
 			<span className="formula-buttons">
-				<button type="button" aria-label={`Restore default ${label}`} onClick={restoreDefault}>Default</button>
-				<button type="button" aria-label={`Apply ${label}`} onClick={commit}>Apply</button>
+				<button type="button" aria-label={`Restore default ${label}`} disabled={disabled} onClick={restoreDefault}>Default</button>
+				<button type="button" aria-label={`Apply ${label}`} disabled={disabled} onClick={commit}>Apply</button>
 			</span>
 		</span>
 	</>
 }
 
-const ParameterControlsInner = ({ schema, values, hiddenIds = [], onChange }: ParameterControlsProps) => (
+const ParameterControlsInner = ({ schema, values, hiddenIds = [], disabled = false, onChange }: ParameterControlsProps) => (
 	<section className="controls" aria-label="Parameters">
 		{createParameterControlModels(schema, values as ParameterValues<ParameterSchema>).filter((model) => !hiddenIds.includes(model.id)).map((model) => {
 			const inputId = `parameter-${model.id}`
@@ -72,6 +75,7 @@ const ParameterControlsInner = ({ schema, values, hiddenIds = [], onChange }: Pa
 			switch (definition.kind) {
 				case 'number':
 					control = <input
+						disabled={disabled}
 						id={inputId}
 						type={definition.min !== undefined && definition.max !== undefined ? 'range' : 'number'}
 						value={model.value as number}
@@ -83,7 +87,7 @@ const ParameterControlsInner = ({ schema, values, hiddenIds = [], onChange }: Pa
 					/>
 					break
 				case 'boolean':
-					control = <input id={inputId} type="checkbox" checked={model.value as boolean} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.checked)} />
+					control = <input id={inputId} type="checkbox" checked={model.value as boolean} disabled={disabled} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.checked)} />
 					break
 				case 'string':
 					control = formulaControl
@@ -95,12 +99,13 @@ const ParameterControlsInner = ({ schema, values, hiddenIds = [], onChange }: Pa
 							descriptionId={descriptionId}
 							label={model.label}
 							value={model.value as string}
+							disabled={disabled}
 							onCommit={onChange}
 						/>
-						: <input id={inputId} type="text" value={model.value as string} maxLength={definition.maxLength} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.value)} />
+						: <input id={inputId} type="text" value={model.value as string} maxLength={definition.maxLength} disabled={disabled} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.value)} />
 					break
 				case 'enum':
-					control = <select id={inputId} value={model.value as string} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.value)}>{definition.values.map((value) => <option key={value} value={value}>{definition.labels?.[value] ?? value}</option>)}</select>
+					control = <select id={inputId} value={model.value as string} disabled={disabled} aria-describedby={descriptionId} onChange={(event) => onChange(model.id, event.currentTarget.value)}>{definition.values.map((value) => <option key={value} value={value}>{definition.labels?.[value] ?? value}</option>)}</select>
 					break
 			}
 
