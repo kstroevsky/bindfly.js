@@ -357,6 +357,58 @@ test('Freeze keeps simulation state fixed while formula perturbations remain ins
 	await expect(page.getByRole('heading', { name: 'Formula trail' })).toHaveCount(0)
 })
 
+test('Stage 17 frozen and dynamic sweeps keep their reproducibility semantics distinct', async ({ page }) => {
+	await page.goto('/#/lab/pulse-2023')
+	const formula = page.locator('#parameter-formulaAX')
+	await formula.fill('positionX + distance * cos(a) * k * -1')
+	await page.getByRole('button', { name: 'Apply Formula AX' }).click()
+	await expect.poll(async () => Number(await metric(page, 'Step').textContent())).toBeGreaterThan(0)
+	await page.getByRole('button', { name: 'Freeze' }).click()
+	const frozenStep = await metric(page, 'Step').textContent()
+
+	await page.getByLabel('Sweep start').fill('0.8')
+	await page.getByLabel('Sweep end').fill('1.2')
+	await page.getByLabel('Sweep step', { exact: true }).fill('0.1')
+	await page.getByRole('button', { name: 'Execute parameter sweep' }).click()
+	await expect(page.locator('.sweep-card')).toHaveCount(5)
+	await expect(page.locator('.sweep-provenance')).toContainText('frozen formula state')
+	await expect(page.locator('.sweep-provenance')).toContainText(`step ${frozenStep}`)
+	await expect(metric(page, 'Step')).toHaveText(frozenStep ?? '')
+	await expect(page.locator('#parameter-k')).toHaveValue('1')
+
+	await page.getByRole('button', { name: 'Run', exact: true }).click()
+	await page.getByLabel('Sweep semantics').selectOption('dynamic-simulation')
+	await page.getByLabel('Sweep start').fill('0.8')
+	await page.getByLabel('Sweep end').fill('1')
+	await page.getByLabel('Sweep step', { exact: true }).fill('0.1')
+	await page.getByLabel('Dynamic sweep step count').fill('12')
+	await page.getByRole('button', { name: 'Execute parameter sweep' }).click()
+	await expect(page.locator('.sweep-card')).toHaveCount(3)
+	await expect(page.locator('.sweep-provenance')).toContainText('dynamic fixed-step reruns')
+	await expect(page.locator('.sweep-provenance')).toContainText('same initial state · 12 steps/sample')
+})
+
+test('Stage 17 saved experiments restore canonical state and guided challenges read live evidence', async ({ page }) => {
+	await page.goto('/')
+	await expect(page.getByRole('heading', { name: 'Guided learning & challenges' })).toBeVisible()
+	await page.getByLabel('Saved experiment name').fill('Baseline fixture')
+	await page.getByRole('button', { name: 'Save current' }).click()
+	await expect(page.locator('.saved-list')).toContainText('Baseline fixture')
+
+	const background = page.locator('#parameter-background')
+	await background.fill('#abcdef')
+	await expect(background).toHaveValue('#abcdef')
+	await page.locator('.saved-list').getByRole('button', { name: 'Load' }).click()
+	await expect(background).toHaveValue('#050508')
+	await expect(page.locator('.share-status')).toContainText("Loaded 'Baseline fixture'.")
+
+	await page.getByRole('button', { name: 'Freeze' }).click()
+	await page.getByRole('button', { name: 'Step', exact: true }).click()
+	await expect(page.locator('.learning-module[data-learning-status="complete"]')).toContainText('Causality: freeze one mathematical moment')
+	await expect(page.locator('.performance-evidence')).toContainText('FPS')
+	await expect(page.locator('.performance-evidence')).toContainText('Backend')
+})
+
 test('Difference and Probe expose synchronized formula causality on main and worker runtimes', async ({ page }) => {
 	await page.goto('/#/lab/pulse-2023')
 	await page.locator('#parameter-particleCount').fill('3')

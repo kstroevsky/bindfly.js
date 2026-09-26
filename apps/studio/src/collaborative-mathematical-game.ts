@@ -1,6 +1,7 @@
 import type { AuthoritativeSubmitResult } from '../../../src-v2/collaboration/index.ts'
 import type { RenderFrame } from '../../../src-v2/core/index.ts'
 import type { ExperimentTelemetry } from './experiment-session.ts'
+import type { SharedExperimentClient } from './shared-experiment-client.ts'
 
 export const CONNECTIVITY_GAME_ID = 'connect-within-edits-v1'
 export const CONNECTIVITY_GAME_MAX_ACCEPTED_EDITS = 5
@@ -59,3 +60,7 @@ export class ConnectivityCollaborativeGame {
 		})
 	}
 }
+
+export const createConnectivityCollaborativeGame = (
+	client: SharedExperimentClient,
+): ConnectivityCollaborativeGame => new ConnectivityCollaborativeGame(client)

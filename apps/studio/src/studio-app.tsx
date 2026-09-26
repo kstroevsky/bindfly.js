@@ -15,16 +15,35 @@ import { probeWorkerCanvasSupport } from '../../../src-v2/runtime/worker-runtime
 import type { WorkerCanvasCapability } from '../../../src-v2/runtime/worker-runtime.ts'
 import { AnalysisWorkerClient } from './analysis-worker-client.ts'
 import { ParameterControls } from './parameter-controls.tsx'
+import {
+	createParameterSweepPlan,
+	createSweepValues,
+	getSweepableFormulaParameters,
+	runParameterSweep,
+} from './parameter-sweep.ts'
+import type { ParameterSweepMode, ParameterSweepResult } from './parameter-sweep.ts'
 import { PersistenceViews } from './persistence-views.tsx'
 import { renderRipsAnalysisCanvas } from './rips-analysis-canvas.ts'
+import {
+	createEmptySavedExperimentCollection,
+	createSavedExperimentRecord,
+	readSavedExperiments,
+	removeSavedExperiment,
+	resolveSavedExperiment,
+	upsertSavedExperiment,
+	writeSavedExperiments,
+} from './saved-experiments.ts'
+import type { SavedExperimentCollection } from './saved-experiments.ts'
 import { createMainStudioController, createWorkerStudioController } from './studio-controller.ts'
 import type { StudioController, StudioMetrics, StudioRuntimeKind } from './studio-controller.ts'
 import { appendFormulaPerturbation, createFormulaPerturbationNode } from './formula-perturbation-history.ts'
 import type { FormulaPerturbationNode } from './formula-perturbation-history.ts'
+import { evaluateLearningChallenge, listLearningModules } from './learning-modules.ts'
+import { createStudioPerformanceSnapshot } from './studio-performance.ts'
 import { DEFAULT_STUDIO_EXPERIMENT_ID, getStudioExperimentPlugin, listStudioExperimentPlugins } from './studio-experiment-registry.ts'
 import type { StudioExperimentPlugin, StudioFormulaView, StudioParameterValues, StudioPointInspectionView, StudioPointerEvent } from './studio-experiment-plugin.ts'
 import { canonicalStringify, createShareArtifact, createStudioConfiguration, createStudioDurableState, createStudioExportDocument, parseStudioImportDocument, readStudioStateFromUrl, resolveStudioDurableState } from './studio-state.ts'
-import type { StudioWorkspace } from './studio-state.ts'
+import type { ResolvedStudioState, StudioWorkspace } from './studio-state.ts'
 
 const EMPTY_METRICS: StudioMetrics = {
 	points: 0, edges: 0, components: 0, step: 0, frameMs: 0, droppedSteps: 0, searchBackend: 'brute',
@@ -75,6 +94,41 @@ const FORMULA_VIEW_LABELS: Readonly<Record<StudioFormulaView, string>> = {
 }
 const PERSISTENCE_EPSILON_MAX_OPTIONS = [250, 500, 1000, 2000] as const
 
+interface SweepDraft {
+	readonly parameterId: string
+	readonly start: number
+	readonly end: number
+	readonly step: number
+	readonly dynamicStepCount: number
+}
+
+const createSweepDraft = (plugin: StudioExperimentPlugin, parameterId?: string): SweepDraft => {
+	const parameters = getSweepableFormulaParameters(plugin.parameters)
+	const parameter = parameters.find(({ id }) => id === parameterId) ?? parameters[0]
+	if (!parameter) return { parameterId: '', start: 0, end: 0, step: 1, dynamicStepCount: 120 }
+	const declaredStep = parameter.definition.step ?? 1
+	const sampleStep = declaredStep * 10
+	const start = Math.max(parameter.definition.min ?? Number.NEGATIVE_INFINITY, parameter.definition.default - sampleStep * 2)
+	const end = Math.min(parameter.definition.max ?? Number.POSITIVE_INFINITY, parameter.definition.default + sampleStep * 2)
+	return { parameterId: parameter.id, start, end, step: sampleStep, dynamicStepCount: 120 }
+}
+
+const safeReadSavedExperiments = (): SavedExperimentCollection => {
+	try { return readSavedExperiments(window.localStorage) } catch { return createEmptySavedExperimentCollection() }
+}
+
+const sweepPreviewPoints = (sample: ParameterSweepResult['samples'][number], maximum = 160) => {
+	const total = sample.preview.x.length
+	const stride = Math.max(1, Math.ceil(total / maximum))
+	const points: { readonly x: number; readonly y: number }[] = []
+	for (let index = 0; index < total; index += stride) {
+		const x = sample.preview.x[index]
+		const y = sample.preview.y[index]
+		if (x !== undefined && y !== undefined) points.push({ x, y })
+	}
+	return { points, total }
+}
+
 export const StudioApp = () => {
 	const [plugin, setPlugin] = useState(INITIAL_PLUGIN)
 	const [parameters, setParameters] = useState<StudioParameterValues>(INITIAL_PARAMETERS)
@@ -98,6 +152,13 @@ export const StudioApp = () => {
 	const [persistencePending, setPersistencePending] = useState(false)
 	const [formulaHistory, setFormulaHistory] = useState<readonly FormulaPerturbationNode[]>([])
 	const [frozenSimulationSnapshotId, setFrozenSimulationSnapshotId] = useState<string | undefined>()
+	const [singleStepCount, setSingleStepCount] = useState(0)
+	const [sweepMode, setSweepMode] = useState<ParameterSweepMode>('frozen-formula')
+	const [sweepDraft, setSweepDraft] = useState<SweepDraft>(() => createSweepDraft(INITIAL_PLUGIN))
+	const [sweepResult, setSweepResult] = useState<ParameterSweepResult | undefined>()
+	const [sweepPending, setSweepPending] = useState(false)
+	const [savedExperiments, setSavedExperiments] = useState<SavedExperimentCollection>(safeReadSavedExperiments)
+	const [saveName, setSaveName] = useState(INITIAL_PLUGIN.title)
 	const [error, setError] = useState<string | undefined>(INITIAL_ERROR)
 	const [shareStatus, setShareStatus] = useState(INITIAL_RESOLVED_STATE?.migratedFrom ? 'Legacy preset migrated.' : '')
 	const [stateGeneration, setStateGeneration] = useState(0)
@@ -119,6 +180,7 @@ export const StudioApp = () => {
 	const persistenceRunCounterRef = useRef(0)
 	const formulaHistoryCounterRef = useRef(0)
 	const frozenSnapshotCounterRef = useRef(0)
+	const savedExperimentCounterRef = useRef(0)
 
 	const hasFormulaHistory = Object.values(plugin.parameters).some(
 		(definition) => definition.kind === 'string' && definition.control === 'formula',
@@ -214,6 +276,10 @@ export const StudioApp = () => {
 		setFormulaView(nextPlugin.formulaViews[0] ?? 'morph')
 		setFormulaHistory([])
 		setFrozenSimulationSnapshotId(undefined)
+		setSingleStepCount(0)
+		setSweepDraft(createSweepDraft(nextPlugin))
+		setSweepResult(undefined)
+		setSaveName(nextPlugin.title)
 		clearPinnedAnalysis(nextPlugin)
 		setError(undefined)
 		setCanWriteUrl(true)
@@ -344,6 +410,7 @@ export const StudioApp = () => {
 		if (!patch.ok) { setError(patch.error); return }
 		setError(undefined)
 		setCanWriteUrl(true)
+		setSweepResult(undefined)
 		setParameters(normalized.value)
 		runtimeConfigurationRef.current = { plugin, parameters: normalized.value, formulaView, seed }
 		const update = controllerRef.current?.updateParameters(patch.value)
@@ -547,12 +614,14 @@ export const StudioApp = () => {
 		void (async () => {
 			await controller?.pause()
 			setPaused(true)
+			setSingleStepCount(0)
 			resetFormulaHistory(snapshotId, runtimeConfigurationRef.current.parameters)
 		})().catch((failure: unknown) => setError(failure instanceof Error ? failure.message : 'Unable to freeze simulation.'))
 	}
 	const run = () => {
 		if (!paused) return
 		resetFormulaHistory()
+		setSingleStepCount(0)
 		setPaused(false)
 		void controllerRef.current?.resume()
 	}
@@ -562,17 +631,213 @@ export const StudioApp = () => {
 		resetFormulaHistory()
 		void (async () => {
 			await controller?.step()
+			setSingleStepCount((count) => count + 1)
 			resetFormulaHistory(nextFrozenSnapshotId(), runtimeConfigurationRef.current.parameters, 'Stepped frame')
 		})().catch((failure: unknown) => setError(failure instanceof Error ? failure.message : 'Unable to step simulation.'))
 	}
 	const reset = () => {
 		const controller = controllerRef.current
 		resetFormulaHistory()
+		setSingleStepCount(0)
+		setSweepResult(undefined)
 		setPaused(false)
 		void (async () => {
 			await controller?.reset()
 			if (paused) await controller?.resume()
 		})()
+	}
+
+	const runSweep = async () => {
+		if (sweepPending) return
+		const parameter = getSweepableFormulaParameters(plugin.parameters).find(({ id }) => id === sweepDraft.parameterId)
+		if (!parameter) { setError('Choose a declared formula parameter before running a sweep.'); return }
+		if (plugin.pointCloudSources.length === 0) { setError('This experiment does not expose a validated point-cloud source for sweeps.'); return }
+		let values: readonly number[]
+		try {
+			values = createSweepValues(parameter.definition, sweepDraft)
+		} catch (failure) {
+			setError(failure instanceof Error ? failure.message : 'Sweep range is invalid.')
+			return
+		}
+		const viewportElement = viewportRef.current
+		if (!viewportElement) { setError('Studio viewport is not ready for a sweep.'); return }
+		const sweepViewport = {
+			width: Math.max(1, viewportElement.clientWidth),
+			height: Math.max(1, viewportElement.clientHeight),
+		}
+		const baseExperimentPayload = plugin.serializeConfiguration(parameters, seed)
+		setSweepPending(true)
+		setError(undefined)
+		try {
+			if (sweepMode === 'frozen-formula') {
+				if (!paused || !frozenSimulationSnapshotId) throw new Error('Freeze the simulation before running a frozen-state formula sweep.')
+				const controller = controllerRef.current
+				if (!controller) throw new Error('Runtime is not ready for a frozen-state sweep.')
+				const baseline = await controller.capturePointCloud({ source: analysisSource })
+				if (!isPointCloudSnapshot(baseline)) throw new Error('Runtime returned an invalid sweep baseline point cloud.')
+				const baselineValue = parameters[parameter.id]
+				if (typeof baselineValue !== 'number') throw new Error('Sweep baseline parameter is not numeric.')
+				const plan = createParameterSweepPlan({
+					mode: sweepMode,
+					experimentId: plugin.id,
+					experimentStateVersion: plugin.stateVersion,
+					baseExperimentPayload,
+					seed,
+					parameterId: parameter.id,
+					values,
+					source: analysisSource,
+					epsilon: analysisEpsilon,
+					viewport: sweepViewport,
+					anchor: {
+						kind: 'frozen-simulation',
+						simulationSnapshotId: frozenSimulationSnapshotId,
+						simulationStep: baseline.simulationStep,
+					},
+				})
+				try {
+					const result = await runParameterSweep(plan, async (parameterValue) => {
+						const patch = plugin.parseParameterPatch({ [parameter.id]: parameterValue })
+						if (!patch.ok) throw new Error(patch.error)
+						await controller.updateParameters(patch.value)
+						const captured = await controller.capturePointCloud({ source: analysisSource })
+						if (!isPointCloudSnapshot(captured)) throw new Error('Runtime returned an invalid point cloud during the sweep.')
+						return captured
+					})
+					setSweepResult(result)
+				} finally {
+					const restore = plugin.parseParameterPatch({ [parameter.id]: baselineValue })
+					if (restore.ok) await controller.updateParameters(restore.value)
+				}
+			} else {
+				const plan = createParameterSweepPlan({
+					mode: sweepMode,
+					experimentId: plugin.id,
+					experimentStateVersion: plugin.stateVersion,
+					baseExperimentPayload,
+					seed,
+					parameterId: parameter.id,
+					values,
+					source: analysisSource,
+					epsilon: analysisEpsilon,
+					viewport: sweepViewport,
+					anchor: { kind: 'initial-conditions', stepCount: sweepDraft.dynamicStepCount },
+				})
+				const viewport = createViewport({
+					cssWidth: sweepViewport.width,
+					cssHeight: sweepViewport.height,
+					devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+				})
+				const result = await runParameterSweep(plan, (parameterValue) => {
+					const normalized = plugin.normalizeParameters({ ...parameters, [parameter.id]: parameterValue })
+					if (!normalized.ok) throw new Error(normalized.error)
+					const canvas = document.createElement('canvas')
+					const session = plugin.createSession({
+						canvas,
+						rendererId: 'canvas2d',
+						parameters: normalized.value,
+						formulaView,
+						seed,
+						viewport,
+					})
+					try {
+						session.resize(viewport)
+						for (let index = 0; index < sweepDraft.dynamicStepCount; index++) {
+							session.step({
+								index,
+								dtSeconds: plugin.timing.fixedStepSeconds,
+								elapsedSeconds: (index + 1) * plugin.timing.fixedStepSeconds,
+							})
+						}
+						session.render({ frameIndex: 0, simulationStepIndex: sweepDraft.dynamicStepCount, interpolationAlpha: 0 })
+						if (!session.capturePointCloud) throw new Error(`Experiment '${plugin.id}' cannot capture a sweep point cloud.`)
+						const captured = session.capturePointCloud({ source: analysisSource })
+						if (!isPointCloudSnapshot(captured)) throw new Error('Dynamic sweep session returned an invalid point cloud.')
+							return Promise.resolve(captured)
+					} finally {
+						session.dispose()
+					}
+				})
+				setSweepResult(result)
+			}
+		} catch (failure) {
+			setError(failure instanceof Error ? failure.message : 'Parameter sweep failed.')
+		} finally {
+			setSweepPending(false)
+		}
+	}
+
+	const applyResolvedStudioState = (resolved: ResolvedStudioState, status: string) => {
+		const nextPlugin = getStudioExperimentPlugin(resolved.experimentId)
+		if (!nextPlugin) { setError(`Experiment '${resolved.experimentId}' is not registered.`); return }
+		setError(undefined)
+		setPlugin(nextPlugin)
+		setParameters(resolved.parameters)
+		setSeed(resolved.seed)
+		setRendererKind(resolved.studio.renderer)
+		runtimeConfigurationRef.current = {
+			plugin: nextPlugin,
+			parameters: resolved.parameters,
+			formulaView: resolved.studio.formulaView,
+			seed: resolved.seed,
+		}
+		setRuntimeKind(resolved.runtime)
+		setWorkspace(resolved.studio.workspace)
+		setFormulaView(resolved.studio.formulaView)
+		setAnalysisSource(resolved.studio.analysis.source)
+		setAnalysisEpsilon(resolved.studio.analysis.epsilon)
+		setAnalysisEpsilonMax(resolved.studio.analysis.epsilonMax)
+		setStateGeneration((generation) => generation + 1)
+		metricsRef.current = EMPTY_METRICS
+		setMetrics(EMPTY_METRICS)
+		setPaused(false)
+		setFormulaHistory([])
+		setFrozenSimulationSnapshotId(undefined)
+		setSingleStepCount(0)
+		setSweepDraft(createSweepDraft(nextPlugin))
+		setSweepResult(undefined)
+		setSaveName(nextPlugin.title)
+		clearPinnedAnalysis()
+		setCanWriteUrl(true)
+		setShareStatus(status)
+	}
+
+	const saveCurrentExperiment = () => {
+		try {
+			const state = createStudioDurableState(plugin, parameters, seed, runtimeKind, {
+				renderer: rendererKind,
+				workspace, formulaView, analysis: { source: analysisSource, epsilon: analysisEpsilon, epsilonMax: analysisEpsilonMax },
+			})
+			const id = globalThis.crypto?.randomUUID?.() ?? `saved-${Date.now()}-${++savedExperimentCounterRef.current}`
+			const record = createSavedExperimentRecord({
+				id,
+				name: saveName.trim() || plugin.title,
+				document: createStudioExportDocument(plugin, state),
+			})
+			const next = upsertSavedExperiment(savedExperiments, record)
+			writeSavedExperiments(window.localStorage, next)
+			setSavedExperiments(next)
+			setShareStatus(`Saved '${record.name}' locally.`)
+		} catch (failure) {
+			setError(failure instanceof Error ? failure.message : 'Unable to save this experiment locally.')
+		}
+	}
+
+	const loadSavedExperiment = (record: SavedExperimentCollection['records'][number]) => {
+		const saved = resolveSavedExperiment(record)
+		if (!saved.ok) { setError(saved.error); return }
+		const resolved = resolveStudioDurableState(saved.value)
+		if (!resolved.ok) { setError(resolved.error); return }
+		applyResolvedStudioState(resolved.value, `Loaded '${record.name}'.`)
+	}
+
+	const deleteSavedExperiment = (id: string) => {
+		try {
+			const next = removeSavedExperiment(savedExperiments, id)
+			writeSavedExperiments(window.localStorage, next)
+			setSavedExperiments(next)
+		} catch (failure) {
+			setError(failure instanceof Error ? failure.message : 'Unable to remove the saved experiment.')
+		}
 	}
 
 	const copyLink = async () => {
@@ -606,34 +871,7 @@ export const StudioApp = () => {
 		if (!parsed.ok) { setError(parsed.error); return }
 		const resolved = resolveStudioDurableState(parsed.value)
 		if (!resolved.ok) { setError(resolved.error); return }
-		const nextPlugin = getStudioExperimentPlugin(resolved.value.experimentId)
-		if (!nextPlugin) { setError(`Experiment '${resolved.value.experimentId}' is not registered.`); return }
-		setError(undefined)
-		setPlugin(nextPlugin)
-		setParameters(resolved.value.parameters)
-		setSeed(resolved.value.seed)
-		setRendererKind(resolved.value.studio.renderer)
-		runtimeConfigurationRef.current = {
-			plugin: nextPlugin,
-			parameters: resolved.value.parameters,
-			formulaView: resolved.value.studio.formulaView,
-			seed: resolved.value.seed,
-		}
-		setRuntimeKind(resolved.value.runtime)
-		setWorkspace(resolved.value.studio.workspace)
-		setFormulaView(resolved.value.studio.formulaView)
-		setAnalysisSource(resolved.value.studio.analysis.source)
-		setAnalysisEpsilon(resolved.value.studio.analysis.epsilon)
-		setAnalysisEpsilonMax(resolved.value.studio.analysis.epsilonMax)
-		setStateGeneration((generation) => generation + 1)
-		metricsRef.current = EMPTY_METRICS
-		setMetrics(EMPTY_METRICS)
-		setPaused(false)
-		setFormulaHistory([])
-		setFrozenSimulationSnapshotId(undefined)
-		clearPinnedAnalysis()
-		setCanWriteUrl(true)
-		setShareStatus('Canonical JSON imported.')
+		applyResolvedStudioState(resolved.value, 'Canonical JSON imported.')
 	}
 
 	const persistenceAtCursor = persistenceResult?.value.status === 'computed'
@@ -645,10 +883,20 @@ export const StudioApp = () => {
 	const epsilonMaxOptions = PERSISTENCE_EPSILON_MAX_OPTIONS.includes(analysisEpsilonMax as typeof PERSISTENCE_EPSILON_MAX_OPTIONS[number])
 		? PERSISTENCE_EPSILON_MAX_OPTIONS
 		: [analysisEpsilonMax, ...PERSISTENCE_EPSILON_MAX_OPTIONS].sort((left, right) => left - right)
+	const sweepableParameters = getSweepableFormulaParameters(plugin.parameters)
+	const learningModules = listLearningModules(plugin)
+	const performanceSnapshot = createStudioPerformanceSnapshot({
+		telemetry: metrics,
+		renderer: rendererKind,
+		runtime: runtimeKind,
+		dpr: Math.min(window.devicePixelRatio || 1, 2),
+		...(analysisResult ? { analysisMs: analysisResult.durationMs, analysisResult: analysisResult.value } : {}),
+		...(analysisSnapshot ? { analysisSnapshot } : {}),
+	})
 
 	return <main className="studio">
 		<aside className="panel" aria-label="Experiment controls">
-			<header><div><p className="eyebrow">Bindfly 2 · Stage 15</p><h1>{plugin.title}</h1></div><p className="description">Versioned, reproducible experiment state.</p></header>
+			<header><div><p className="eyebrow">Bindfly 2 · Stage 17</p><h1>{plugin.title}</h1></div><p className="description">Versioned experiments for mathematical exploration, analysis and learning.</p></header>
 			<label className="picker"><span>Experiment</span><select value={plugin.id} aria-label="Experiment" onChange={(event) => selectExperiment(event.currentTarget.value)}>{EXPERIMENTS.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
 			<nav className="workspace-tabs" aria-label="Studio workspace">
 				<button type="button" aria-pressed={workspace === 'explore'} onClick={() => selectWorkspace('explore')}>Explore</button>
@@ -723,10 +971,76 @@ export const StudioApp = () => {
 					{analysisResult.warnings.length > 0 ? <p className="analysis-warning">{analysisResult.warnings.join(' · ')}</p> : null}
 				</> : null}
 			</section> : null}
+			{learningModules.length > 0 ? <section className="stage17-panel learning-panel" aria-labelledby="learning-heading">
+				<div className="stage17-heading"><div><h2 id="learning-heading">Guided learning & challenges</h2><p>Questions and completion rules use the same validated runtime and analyzer evidence as the Studio.</p></div><span>{learningModules.length}</span></div>
+				<div className="learning-modules">{learningModules.map((module) => {
+					const status = evaluateLearningChallenge(module.id, {
+						paused,
+						singleStepCount,
+						formulaTrailLength: formulaHistory.length,
+						...(analysisResult ? { analysis: analysisResult.value } : {}),
+						...(sweepResult ? { sweep: sweepResult } : {}),
+					})
+					return <details className="learning-module" key={module.id} data-learning-status={status}>
+						<summary><span>{module.title}</span><strong>{status.replace('-', ' ')}</strong></summary>
+						<p className="learning-question">{module.question}</p>
+						<p>{module.explanation}</p>
+						<ol>{module.steps.map((learningStep) => <li key={learningStep}>{learningStep}</li>)}</ol>
+						<p className="learning-challenge"><strong>Challenge:</strong> {module.challenge}</p>
+					</details>
+				})}</div>
+				{plugin.collaboration ? <article className="shared-challenge">
+					<strong>Shared mathematical game · Connect within 5 edits</strong>
+					<p>In an authoritative Stage 16 room, collaborators try to reach β₀ = 1 using at most five newly accepted point edits. Duplicate retries do not spend the edit budget.</p>
+				</article> : null}
+			</section> : null}
+			{sweepableParameters.length > 0 && plugin.pointCloudSources.length > 0 ? <section className="stage17-panel sweep-panel" aria-labelledby="sweep-heading">
+				<div className="stage17-heading"><div><h2 id="sweep-heading">Parameter sweep</h2><p>Reproducible small multiples plus validated Rips structure metrics.</p></div><span>{sweepResult ? 'Result' : 'Ready'}</span></div>
+				<div className="sweep-controls">
+					<label className="picker"><span>Sweep semantics</span><select aria-label="Sweep semantics" value={sweepMode} onChange={(event) => { setSweepMode(event.currentTarget.value as ParameterSweepMode); setSweepResult(undefined) }}><option value="frozen-formula">Formula sweep · frozen state</option><option value="dynamic-simulation">Dynamic simulation · fixed steps</option></select></label>
+					<label className="picker"><span>Formula parameter</span><select aria-label="Sweep formula parameter" value={sweepDraft.parameterId} onChange={(event) => { setSweepDraft(createSweepDraft(plugin, event.currentTarget.value)); setSweepResult(undefined) }}>{sweepableParameters.map(({ id }) => <option key={id} value={id}>{id}</option>)}</select></label>
+					<div className="sweep-range">
+						<label><span>Start</span><input aria-label="Sweep start" type="number" value={sweepDraft.start} onChange={(event) => setSweepDraft({ ...sweepDraft, start: Number(event.currentTarget.value) })} /></label>
+						<label><span>End</span><input aria-label="Sweep end" type="number" value={sweepDraft.end} onChange={(event) => setSweepDraft({ ...sweepDraft, end: Number(event.currentTarget.value) })} /></label>
+						<label><span>Step</span><input aria-label="Sweep step" type="number" min="0" value={sweepDraft.step} onChange={(event) => setSweepDraft({ ...sweepDraft, step: Number(event.currentTarget.value) })} /></label>
+					</div>
+					{sweepMode === 'dynamic-simulation' ? <label className="picker"><span>Steps per sample</span><input aria-label="Dynamic sweep step count" type="number" min="0" max="600" step="1" value={sweepDraft.dynamicStepCount} onChange={(event) => setSweepDraft({ ...sweepDraft, dynamicStepCount: Number(event.currentTarget.value) })} /></label> : <p className="analysis-note">Frozen sweep requires Freeze and keeps the same simulation step and point identities while changing only the declared coefficient.</p>}
+					<button type="button" disabled={sweepPending || (sweepMode === 'frozen-formula' && !paused)} onClick={() => { void runSweep() }}>{sweepPending ? 'Executing sweep…' : 'Execute parameter sweep'}</button>
+				</div>
+				{sweepResult ? <div className="sweep-result" aria-live="polite">
+					<dl className="analysis-provenance sweep-provenance">
+						<div><dt>Mode</dt><dd>{sweepResult.plan.mode === 'frozen-formula' ? 'frozen formula state' : 'dynamic fixed-step reruns'}</dd></div>
+						<div><dt>Parameter</dt><dd>{sweepResult.plan.parameterId} · {sweepResult.plan.values.join(', ')}</dd></div>
+						<div><dt>Seed</dt><dd>{sweepResult.plan.seed}</dd></div>
+						<div><dt>Analyzer</dt><dd>{sweepResult.analyzer.id} v{sweepResult.analyzer.version}</dd></div>
+						<div><dt>Analysis</dt><dd>Euclidean · CSS px · ε {sweepResult.plan.epsilon} · all points</dd></div>
+						<div><dt>Anchor</dt><dd>{sweepResult.plan.anchor.kind === 'frozen-simulation' ? `${sweepResult.plan.anchor.simulationSnapshotId} · step ${sweepResult.plan.anchor.simulationStep}` : `same initial state · ${sweepResult.plan.anchor.stepCount} steps/sample`}</dd></div>
+					</dl>
+					<div className="sweep-grid">{sweepResult.samples.map((sample) => {
+						const preview = sweepPreviewPoints(sample)
+						return <figure className="sweep-card" key={`${sweepResult.plan.parameterId}-${sample.parameterValue}`}>
+							<figcaption><strong>{sweepResult.plan.parameterId} = {sample.parameterValue}</strong><span>β₀ {sample.beta0} · β₁ {sample.beta1Status === 'computed' ? sample.beta1 : 'budget'}</span></figcaption>
+							<svg role="img" aria-label={`Point-cloud preview for ${sweepResult.plan.parameterId} ${sample.parameterValue}`} viewBox={`0 0 ${sweepResult.plan.viewport.width} ${sweepResult.plan.viewport.height}`} preserveAspectRatio="xMidYMid meet">{preview.points.map((point, index) => <circle key={index} cx={point.x} cy={point.y} r="2.2" />)}</svg>
+							<small>{sample.pointCount} points · {sample.edgeCount} edges · mean degree {sample.meanDegree.toFixed(2)}{preview.points.length < preview.total ? ` · preview ${preview.points.length}/${preview.total}` : ''}</small>
+							{sample.warnings.length > 0 ? <small className="analysis-warning">{sample.warnings.join(' · ')}</small> : null}
+						</figure>
+					})}</div>
+				</div> : null}
+			</section> : null}
+			<section className="stage17-panel saved-panel" aria-labelledby="saved-heading">
+				<div className="stage17-heading"><div><h2 id="saved-heading">Saved experiments</h2><p>Local, versioned records backed by the canonical Studio export and migration path.</p></div><span>{savedExperiments.records.length}</span></div>
+				<div className="saved-create"><input aria-label="Saved experiment name" type="text" maxLength={120} value={saveName} onChange={(event) => setSaveName(event.currentTarget.value)} /><button type="button" onClick={saveCurrentExperiment}>Save current</button></div>
+				{savedExperiments.records.length > 0 ? <ul className="saved-list">{savedExperiments.records.map((record) => <li key={record.id}><div><strong>{record.name}</strong><span>{record.document.configuration.experiment.experimentId} · {new Date(record.updatedAt).toLocaleString()}</span></div><div><button type="button" onClick={() => loadSavedExperiment(record)}>Load</button><button type="button" onClick={() => deleteSavedExperiment(record.id)}>Delete</button></div></li>)}</ul> : <p className="analysis-note">No local saved experiments yet.</p>}
+			</section>
 			<div className="state-actions"><button type="button" onClick={() => { void copyLink() }}>Copy link</button><button type="button" onClick={exportJson}>Export JSON</button><label className="file-button" htmlFor="state-import">Import JSON<input id="state-import" type="file" accept="application/json,.json" onChange={(event) => { void importJson(event.currentTarget.files?.[0]) }} /></label></div>
 			<p className="share-status" role="status">{shareStatus}</p>
 			{error ? <p className="error-message" role="alert">{error}</p> : null}
-			<section aria-labelledby="performance-heading"><h2 id="performance-heading">Performance</h2><dl className="metrics">
+			<section aria-labelledby="performance-heading"><h2 id="performance-heading">Performance</h2><dl className="metrics performance-evidence">
+				<div className="metric"><dt>FPS</dt><dd>{performanceSnapshot.fps.toFixed(1)}</dd></div>
+				<div className="metric"><dt>DPR</dt><dd>{performanceSnapshot.dpr.toFixed(2)}</dd></div>
+				<div className="metric"><dt>Backend</dt><dd>{performanceSnapshot.renderer} · {performanceSnapshot.runtime}</dd></div>
+				{performanceSnapshot.analysisMs === undefined ? null : <div className="metric"><dt>Analysis</dt><dd>{performanceSnapshot.analysisMs.toFixed(1)} ms</dd></div>}
+				{performanceSnapshot.analysisBufferBytes === undefined ? null : <div className="metric"><dt>Analysis buffers</dt><dd>{(performanceSnapshot.analysisBufferBytes / 1024).toFixed(1)} KiB</dd></div>}
 				{plugin.metrics.map((descriptor) => {
 					const value = metrics[descriptor.id as keyof Omit<StudioMetrics, 'stage15Parity'>] ?? 0
 					return <div className="metric" data-metric-id={descriptor.id} data-metric-value={String(value)} key={descriptor.id}><dt>{descriptor.label}</dt><dd>{descriptor.format ? descriptor.format(value) : String(value)}</dd></div>

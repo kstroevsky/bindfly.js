@@ -2858,6 +2858,8 @@ Begin with the simplest shared interaction: two users add/move points in one det
 
 ## Stage 17 — Educational and product layer
 
+**Status (2026-09-26): complete.** See `docs/v2/stage-17-report.md` and ADR 0021 for the implemented educational/product contracts, bounded reproducible parameter sweeps, local saved experiments, validated learning/challenge evidence, collaborative connectivity game and performance evidence.
+
 Add guided lessons, parameter sweeps, saved experiments, explanations, topology/dynamics challenges and collaborative mathematical games only after their engine/analyzer contracts are validated.
 
 Parameter sweeps render reproducible small multiples and may plot validated derived quantities such as \(\beta_0\), \(\beta_1\), mean displacement or Lyapunov estimates. They must pin the frozen snapshot/initial conditions, formula and parameter range, seed, analyzer version and approximation metadata; a visual grid alone is not an analysis result.
