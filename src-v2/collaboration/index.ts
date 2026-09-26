@@ -1,5 +1,6 @@
 export * from './canonical-snapshot.ts'
 export * from './in-memory-authority.ts'
+export * from './persistence-integrity.ts'
 export * from './protocol.ts'
 export * from './replica.ts'
 export * from './wire.ts'

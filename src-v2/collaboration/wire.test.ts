@@ -65,6 +65,15 @@ test('collaboration wire round-trips snapshot bytes without changing cryptograph
 })
 
 test('client wire parser preserves semantic protocol errors for the authority', () => {
+	const describe = parseClientCollaborationWireMessage(encodeClientCollaborationWireMessage({
+		wireVersion: COLLABORATION_WIRE_VERSION,
+		type: 'describe-room',
+	}))
+	assert.deepEqual(describe, {
+		ok: true,
+		value: { wireVersion: COLLABORATION_WIRE_VERSION, type: 'describe-room' },
+	})
+
 	const message = encodeClientCollaborationWireMessage({
 		wireVersion: COLLABORATION_WIRE_VERSION,
 		type: 'submit',
@@ -82,6 +91,61 @@ test('client wire parser preserves semantic protocol errors for the authority', 
 	if (!parsed.ok || parsed.value.type !== 'submit') return
 	assert.equal(parsed.value.proposal.protocolVersion, 99)
 	assert.equal(parsed.value.proposal.knownSequence, -1)
+})
+
+test('collaboration wire round-trips room bootstrap bytes and synchronization points', async () => {
+	const checksum = await createSnapshotChecksum(encodeCanonicalSnapshotV1({
+		roomId: 'room-wire',
+		experimentId: 'fixture',
+		stateVersion: 1,
+		lastAppliedSequence: 4,
+		stepIndex: 8,
+		configurationBytes: new Uint8Array([7, 8, 9]),
+		stateBytes: new Uint8Array([1, 2, 3]),
+	}))
+	const descriptorEncoded = encodeServerCollaborationWireMessage({
+		wireVersion: COLLABORATION_WIRE_VERSION,
+		type: 'room-descriptor',
+		descriptor: {
+			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+			roomId: 'room-wire',
+			experimentId: 'fixture',
+			stateVersion: 1,
+			configurationVersion: 1,
+			configurationBytes: new Uint8Array([0, 127, 128, 255]),
+		},
+	})
+	const descriptor = parseServerCollaborationWireMessage(descriptorEncoded)
+	assert.equal(descriptor.ok, true)
+	if (!descriptor.ok || descriptor.value.type !== 'room-descriptor') return
+	assert.deepEqual(descriptor.value.descriptor.configurationBytes, new Uint8Array([0, 127, 128, 255]))
+
+	const tick = parseServerCollaborationWireMessage(encodeServerCollaborationWireMessage({
+		wireVersion: COLLABORATION_WIRE_VERSION,
+		type: 'authoritative-tick',
+		tick: {
+			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+			roomId: 'room-wire',
+			experimentId: 'fixture',
+			stateVersion: 1,
+			stepIndex: 8,
+			logHeadSequence: 4,
+			appliedSequence: 4,
+			syncPoint: {
+				protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+				roomId: 'room-wire',
+				experimentId: 'fixture',
+				stateVersion: 1,
+				stepIndex: 8,
+				appliedSequence: 4,
+				checksum,
+			},
+		},
+	}))
+	assert.equal(tick.ok, true)
+	if (tick.ok && tick.value.type === 'authoritative-tick') {
+		assert.deepEqual(tick.value.tick.syncPoint?.checksum, checksum)
+	}
 })
 
 test('wire parser rejects malformed envelopes and malformed encoded snapshot bytes', () => {

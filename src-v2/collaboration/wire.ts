@@ -6,11 +6,13 @@ import {
 } from './protocol.ts'
 import type {
 	AuthoritativeEvent,
+	AuthoritativeSyncPoint,
 	AuthoritativeSnapshot,
 	AuthoritativeSubmitErrorCode,
 	AuthoritativeSubmitResult,
 	AuthoritativeTick,
 	ClientEventProposal,
+	CollaborationRoomDescriptor,
 	CollaborationResumeErrorCode,
 	CollaborationResumePlan,
 	CollaborationResumeRequest,
@@ -20,6 +22,10 @@ import type {
 export const COLLABORATION_WIRE_VERSION = 1
 
 export type CollaborationClientWireMessage =
+	| {
+		readonly wireVersion: typeof COLLABORATION_WIRE_VERSION
+		readonly type: 'describe-room'
+	}
 	| {
 		readonly wireVersion: typeof COLLABORATION_WIRE_VERSION
 		readonly type: 'resume'
@@ -38,6 +44,11 @@ export type CollaborationWireErrorCode =
 	| 'SERVER_ERROR'
 
 export type CollaborationServerWireMessage<Input> =
+	| {
+		readonly wireVersion: typeof COLLABORATION_WIRE_VERSION
+		readonly type: 'room-descriptor'
+		readonly descriptor: CollaborationRoomDescriptor
+	}
 	| {
 		readonly wireVersion: typeof COLLABORATION_WIRE_VERSION
 		readonly type: 'resume-plan'
@@ -75,6 +86,15 @@ interface WireSnapshot {
 	readonly configurationBase64Url: string
 	readonly stateBase64Url: string
 	readonly checksum: SnapshotChecksum
+}
+
+interface WireRoomDescriptor {
+	readonly protocolVersion: number
+	readonly roomId: string
+	readonly experimentId: string
+	readonly stateVersion: number
+	readonly configurationVersion: number
+	readonly configurationBase64Url: string
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -139,6 +159,15 @@ const snapshotToWire = (snapshot: AuthoritativeSnapshot): WireSnapshot => ({
 	checksum: snapshot.checksum,
 })
 
+const descriptorToWire = (descriptor: CollaborationRoomDescriptor): WireRoomDescriptor => ({
+	protocolVersion: descriptor.protocolVersion,
+	roomId: descriptor.roomId,
+	experimentId: descriptor.experimentId,
+	stateVersion: descriptor.stateVersion,
+	configurationVersion: descriptor.configurationVersion,
+	configurationBase64Url: bytesToBase64Url(descriptor.configurationBytes),
+})
+
 const validChecksum = (value: unknown): value is SnapshotChecksum => {
 	if (!isRecord(value)) return false
 	return value.algorithm === SNAPSHOT_CHECKSUM_ALGORITHM
@@ -176,6 +205,32 @@ const wireToSnapshot = (value: unknown): Result<AuthoritativeSnapshot, string> =
 			configurationBytes: configurationBytes.value,
 			stateBytes: stateBytes.value,
 			checksum: value.checksum,
+		},
+	}
+}
+
+const wireToDescriptor = (value: unknown): Result<CollaborationRoomDescriptor, string> => {
+	if (!isRecord(value)
+		|| value.protocolVersion !== COLLABORATION_PROTOCOL_VERSION
+		|| typeof value.roomId !== 'string'
+		|| typeof value.experimentId !== 'string'
+		|| !isNonNegativeSafeInteger(value.stateVersion)
+		|| !isNonNegativeSafeInteger(value.configurationVersion)
+		|| value.configurationVersion === 0
+		|| typeof value.configurationBase64Url !== 'string') {
+		return { ok: false, error: 'Collaboration room descriptor wire payload is malformed.' }
+	}
+	const configurationBytes = base64UrlToBytes(value.configurationBase64Url)
+	if (!configurationBytes.ok) return configurationBytes
+	return {
+		ok: true,
+		value: {
+			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+			roomId: value.roomId,
+			experimentId: value.experimentId,
+			stateVersion: value.stateVersion,
+			configurationVersion: value.configurationVersion,
+			configurationBytes: configurationBytes.value,
 		},
 	}
 }
@@ -242,6 +297,9 @@ export const parseClientCollaborationWireMessage = (text: string): Result<Collab
 	if (parsed.value.wireVersion !== COLLABORATION_WIRE_VERSION || typeof parsed.value.type !== 'string') {
 		return { ok: false, error: 'Collaboration client wire envelope is incompatible or malformed.' }
 	}
+	if (parsed.value.type === 'describe-room') {
+		return { ok: true, value: { wireVersion: COLLABORATION_WIRE_VERSION, type: 'describe-room' } }
+	}
 	if (parsed.value.type === 'resume') {
 		const request = parseResumeRequest(parsed.value.request)
 		return request.ok
@@ -255,6 +313,31 @@ export const parseClientCollaborationWireMessage = (text: string): Result<Collab
 			: proposal
 	}
 	return { ok: false, error: `Unknown collaboration client message type '${parsed.value.type}'.` }
+}
+
+const parseAuthoritativeSyncPoint = (value: unknown): Result<AuthoritativeSyncPoint, string> => {
+	if (!isRecord(value)
+		|| value.protocolVersion !== COLLABORATION_PROTOCOL_VERSION
+		|| typeof value.roomId !== 'string'
+		|| typeof value.experimentId !== 'string'
+		|| !isNonNegativeSafeInteger(value.stateVersion)
+		|| !isNonNegativeSafeInteger(value.stepIndex)
+		|| !isNonNegativeSafeInteger(value.appliedSequence)
+		|| !validChecksum(value.checksum)) {
+		return { ok: false, error: 'Authoritative synchronization point wire payload is malformed.' }
+	}
+	return {
+		ok: true,
+		value: {
+			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+			roomId: value.roomId,
+			experimentId: value.experimentId,
+			stateVersion: value.stateVersion,
+			stepIndex: value.stepIndex,
+			appliedSequence: value.appliedSequence,
+			checksum: value.checksum,
+		},
+	}
 }
 
 const resumeErrorCodes = new Set<CollaborationResumeErrorCode>([
@@ -327,6 +410,15 @@ const parseAuthoritativeTick = (value: unknown): Result<AuthoritativeTick, strin
 		|| !isNonNegativeSafeInteger(value.appliedSequence)) {
 		return { ok: false, error: 'Authoritative tick wire payload is malformed.' }
 	}
+	let syncPoint: AuthoritativeSyncPoint | undefined
+	if (hasOwn(value, 'syncPoint') && value.syncPoint !== undefined) {
+		const parsedSyncPoint = parseAuthoritativeSyncPoint(value.syncPoint)
+		if (!parsedSyncPoint.ok) return parsedSyncPoint
+		syncPoint = parsedSyncPoint.value
+		if (syncPoint.stepIndex !== value.stepIndex || syncPoint.appliedSequence !== value.appliedSequence) {
+			return { ok: false, error: 'Authoritative tick synchronization point does not match the tick boundary.' }
+		}
+	}
 	return {
 		ok: true,
 		value: {
@@ -337,6 +429,7 @@ const parseAuthoritativeTick = (value: unknown): Result<AuthoritativeTick, strin
 			stepIndex: value.stepIndex,
 			logHeadSequence: value.logHeadSequence,
 			appliedSequence: value.appliedSequence,
+			...(syncPoint ? { syncPoint } : {}),
 		},
 	}
 }
@@ -398,6 +491,9 @@ const parseSubmitResult = <Input>(value: unknown): Result<AuthoritativeSubmitRes
 }
 
 const serverMessageToJsonValue = <Input>(message: CollaborationServerWireMessage<Input>): unknown => {
+	if (message.type === 'room-descriptor') {
+		return { ...message, descriptor: descriptorToWire(message.descriptor) }
+	}
 	if (message.type !== 'resume-plan' || !message.plan.ok || message.plan.mode !== 'snapshot') return message
 	return {
 		...message,
@@ -418,6 +514,12 @@ export const parseServerCollaborationWireMessage = <Input = unknown>(
 	if (!parsed.ok) return parsed
 	if (parsed.value.wireVersion !== COLLABORATION_WIRE_VERSION || typeof parsed.value.type !== 'string') {
 		return { ok: false, error: 'Collaboration server wire envelope is incompatible or malformed.' }
+	}
+	if (parsed.value.type === 'room-descriptor') {
+		const descriptor = wireToDescriptor(parsed.value.descriptor)
+		return descriptor.ok
+			? { ok: true, value: { wireVersion: COLLABORATION_WIRE_VERSION, type: 'room-descriptor', descriptor: descriptor.value } }
+			: descriptor
 	}
 	if (parsed.value.type === 'resume-plan') {
 		const plan = parseResumePlan<Input>(parsed.value.plan)

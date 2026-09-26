@@ -24,6 +24,9 @@ const DEFAULT_PATH = '/collaboration'
 const DEFAULT_MAX_WIRE_BYTES = 64 * 1024
 const DEFAULT_MAX_CONNECTIONS = 128
 const DEFAULT_MAX_CONNECTIONS_PER_PARTICIPANT = 4
+const DEFAULT_MAX_BUFFERED_BYTES = 512 * 1024
+const DEFAULT_SYNC_POINT_INTERVAL_STEPS = 120
+const DEFAULT_CHECKPOINT_INTERVAL_STEPS = 120
 
 export interface AuthenticatedCollaborationParticipant {
 	readonly participantId: string
@@ -43,6 +46,9 @@ export interface AuthoritativeRoomWebSocketServerOptions<Input> {
 	readonly maxWireBytes?: number
 	readonly maxConnections?: number
 	readonly maxConnectionsPerParticipant?: number
+	readonly maxBufferedBytes?: number
+	readonly syncPointIntervalSteps?: number
+	readonly checkpointIntervalSteps?: number
 }
 
 export interface CollaborationServerAddress {
@@ -86,6 +92,9 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 	private readonly path: string
 	private readonly maxConnections: number
 	private readonly maxConnectionsPerParticipant: number
+	private readonly maxBufferedBytes: number
+	private readonly syncPointIntervalSteps: number
+	private readonly checkpointIntervalSteps: number
 	private readonly httpServer: Server
 	private readonly webSocketServer: WebSocketServer
 	private readonly sessions = new Set<ConnectionSession>()
@@ -107,6 +116,18 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		if (!Number.isSafeInteger(maxConnectionsPerParticipant) || maxConnectionsPerParticipant <= 0) {
 			throw new RangeError('Collaboration maxConnectionsPerParticipant must be a positive safe integer.')
 		}
+		const maxBufferedBytes = options.maxBufferedBytes ?? DEFAULT_MAX_BUFFERED_BYTES
+		if (!Number.isSafeInteger(maxBufferedBytes) || maxBufferedBytes <= 0) {
+			throw new RangeError('Collaboration maxBufferedBytes must be a positive safe integer.')
+		}
+		const syncPointIntervalSteps = options.syncPointIntervalSteps ?? DEFAULT_SYNC_POINT_INTERVAL_STEPS
+		if (!Number.isSafeInteger(syncPointIntervalSteps) || syncPointIntervalSteps <= 0) {
+			throw new RangeError('Collaboration syncPointIntervalSteps must be a positive safe integer.')
+		}
+		const checkpointIntervalSteps = options.checkpointIntervalSteps ?? DEFAULT_CHECKPOINT_INTERVAL_STEPS
+		if (!Number.isSafeInteger(checkpointIntervalSteps) || checkpointIntervalSteps <= 0) {
+			throw new RangeError('Collaboration checkpointIntervalSteps must be a positive safe integer.')
+		}
 		this.room = options.room
 		this.authenticate = options.authenticate
 		this.stateStore = options.stateStore
@@ -115,6 +136,9 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		this.path = options.path ?? DEFAULT_PATH
 		this.maxConnections = maxConnections
 		this.maxConnectionsPerParticipant = maxConnectionsPerParticipant
+		this.maxBufferedBytes = maxBufferedBytes
+		this.syncPointIntervalSteps = syncPointIntervalSteps
+		this.checkpointIntervalSteps = checkpointIntervalSteps
 		if (!this.path.startsWith('/')) throw new Error('Collaboration WebSocket path must start with /.')
 
 		this.httpServer = createServer((_request, response) => {
@@ -143,6 +167,10 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		const requestPath = new URL(request.url ?? '/', 'http://localhost').pathname
 		if (requestPath !== this.path) {
 			writeUpgradeRejection(socket, 404, 'Not Found')
+			return
+		}
+		if (this.persistenceFailure) {
+			writeUpgradeRejection(socket, 503, 'Service Unavailable')
 			return
 		}
 		const authenticated = await this.authenticate(request)
@@ -185,9 +213,19 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		})
 	}
 
-	private send(session: ConnectionSession, message: CollaborationServerWireMessage<Input>): void {
-		if (session.socket.readyState !== WebSocket.OPEN) return
-		session.socket.send(encodeServerCollaborationWireMessage(message))
+	private sendEncoded(session: ConnectionSession, encoded: string): boolean {
+		if (session.socket.readyState !== WebSocket.OPEN) return false
+		const byteLength = Buffer.byteLength(encoded)
+		if (session.socket.bufferedAmount + byteLength > this.maxBufferedBytes) {
+			session.socket.terminate()
+			return false
+		}
+		session.socket.send(encoded)
+		return true
+	}
+
+	private send(session: ConnectionSession, message: CollaborationServerWireMessage<Input>): boolean {
+		return this.sendEncoded(session, encodeServerCollaborationWireMessage(message))
 	}
 
 	private sendError(
@@ -202,17 +240,33 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		const encoded = encodeServerCollaborationWireMessage(message)
 		for (const session of this.sessions) {
 			if (!session.resumed || session.socket === excluded || session.socket.readyState !== WebSocket.OPEN) continue
-			session.socket.send(encoded)
+			this.sendEncoded(session, encoded)
 		}
 	}
 
-	private async persistState(): Promise<void> {
+	private poisonPersistence(error: unknown): Error {
+		if (!this.persistenceFailure) {
+			this.persistenceFailure = error instanceof Error ? error : new Error('Collaboration persistence failed.')
+			for (const session of this.sessions) session.socket.terminate()
+		}
+		return this.persistenceFailure
+	}
+
+	private async appendAcceptedEvent(sequence: number): Promise<void> {
 		if (!this.stateStore) return
 		try {
-			await this.stateStore.save(await this.room.capturePersistenceState())
+			await this.stateStore.appendEvent(this.room.capturePersistedEvent(sequence))
 		} catch (error) {
-			this.persistenceFailure = error instanceof Error ? error : new Error('Collaboration persistence failed.')
-			throw this.persistenceFailure
+			throw this.poisonPersistence(error)
+		}
+	}
+
+	private async saveCheckpoint(): Promise<void> {
+		if (!this.stateStore) return
+		try {
+			await this.stateStore.saveCheckpoint(await this.room.capturePersistenceCheckpoint())
+		} catch (error) {
+			throw this.poisonPersistence(error)
 		}
 	}
 
@@ -220,6 +274,18 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		const parsed = parseClientCollaborationWireMessage(text)
 		if (!parsed.ok) {
 			this.sendError(session, 'MALFORMED_MESSAGE', parsed.error)
+			return
+		}
+		if (this.persistenceFailure) {
+			this.sendError(session, 'SERVER_ERROR', 'Collaboration persistence is unavailable; reconnect after server recovery.')
+			return
+		}
+		if (parsed.value.type === 'describe-room') {
+			this.send(session, {
+				wireVersion: COLLABORATION_WIRE_VERSION,
+				type: 'room-descriptor',
+				descriptor: this.room.createDescriptor(),
+			})
 			return
 		}
 		if (parsed.value.type === 'resume') {
@@ -237,12 +303,8 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 			this.sendError(session, 'PARTICIPANT_MISMATCH', 'Event proposal participant does not match the authenticated connection.')
 			return
 		}
-		if (this.persistenceFailure) {
-			this.sendError(session, 'SERVER_ERROR', 'Collaboration persistence is unavailable; the room is read-only until restart.')
-			return
-		}
 		const result = this.room.submit(parsed.value.proposal)
-		if (result.ok) await this.persistState()
+		if (result.ok && !result.duplicate) await this.appendAcceptedEvent(result.event.sequence)
 		this.send(session, { wireVersion: COLLABORATION_WIRE_VERSION, type: 'submit-result', result })
 		if (result.ok && !result.duplicate) {
 			this.broadcast(
@@ -254,7 +316,7 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 
 	async start(): Promise<CollaborationServerAddress> {
 		if (this.address) return this.address
-		await this.persistState()
+		await this.saveCheckpoint()
 		await new Promise<void>((resolve, reject) => {
 			const onError = (error: Error): void => reject(error)
 			this.httpServer.once('error', onError)
@@ -277,12 +339,16 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 	async advanceStepIndex(nextStepIndex: number): Promise<void> {
 		await this.enqueue(async () => {
 			if (this.persistenceFailure) throw this.persistenceFailure
+			const previouslyAppliedSequence = this.room.appliedSequence
 			this.room.advanceStepIndex(nextStepIndex)
-			await this.persistState()
+			const shouldCreateSyncPoint = nextStepIndex % this.syncPointIntervalSteps === 0
+				|| this.room.appliedSequence !== previouslyAppliedSequence
+			const syncPoint = shouldCreateSyncPoint ? await this.room.createSyncPoint() : undefined
+			if (nextStepIndex % this.checkpointIntervalSteps === 0) await this.saveCheckpoint()
 			this.broadcast({
 				wireVersion: COLLABORATION_WIRE_VERSION,
 				type: 'authoritative-tick',
-				tick: this.room.createTick(),
+				tick: this.room.createTick(syncPoint),
 			})
 		})
 	}

@@ -1,4 +1,5 @@
 import { createSnapshotChecksum, encodeCanonicalSnapshotV1, snapshotChecksumsEqual } from './canonical-snapshot.ts'
+import { createEventLogHeadHash, eventLogHashesEqual } from './persistence-integrity.ts'
 import {
 	AUTHORITATIVE_ROOM_PERSISTENCE_VERSION,
 	COLLABORATION_PROTOCOL_VERSION,
@@ -7,11 +8,14 @@ import {
 import type { Result } from '../core/result.ts'
 import type {
 	AuthoritativeEvent,
+	AuthoritativeRoomCheckpoint,
 	AuthoritativeRoomPersistenceState,
+	AuthoritativeSyncPoint,
 	AuthoritativeSnapshot,
 	AuthoritativeSubmitResult,
 	AuthoritativeTick,
 	ClientEventProposal,
+	CollaborationRoomDescriptor,
 	CollaborationResumePlan,
 	CollaborationResumeRequest,
 	CollaborationStateAdapter,
@@ -21,7 +25,9 @@ import type {
 const DEFAULT_MAX_INPUT_BYTES = 4_096
 const DEFAULT_INPUT_LEAD_STEPS = 1
 const DEFAULT_MAX_REPLAY_EVENTS = 256
+const DEFAULT_MAX_REPLAY_STEPS = 600
 const DEFAULT_MAX_INPUTS_PER_PARTICIPANT_PER_STEP = 64
+const DEFAULT_SYNC_POINT_HISTORY_LIMIT = 32
 
 export interface InMemoryAuthoritativeRoomOptions<Input> {
 	readonly roomId: string
@@ -32,7 +38,10 @@ export interface InMemoryAuthoritativeRoomOptions<Input> {
 	readonly maxInputBytes?: number
 	readonly inputLeadSteps?: number
 	readonly maxReplayEvents?: number
+	readonly maxReplaySteps?: number
 	readonly maxInputsPerParticipantPerStep?: number
+	readonly syncPointHistoryLimit?: number
+	readonly configurationVersion?: number
 }
 
 const bytesEqual = (left: Uint8Array, right: Uint8Array): boolean => {
@@ -55,10 +64,14 @@ export class InMemoryAuthoritativeRoom<Input> {
 	private readonly maxInputBytes: number
 	private readonly inputLeadSteps: number
 	private readonly maxReplayEvents: number
+	private readonly maxReplaySteps: number
 	private readonly maxInputsPerParticipantPerStep: number
+	private readonly syncPointHistoryLimit: number
+	private readonly configurationVersion: number
 	private readonly events: AuthoritativeEvent<Input>[] = []
 	private readonly acceptedByClientId = new Map<string, { event: AuthoritativeEvent<Input>; inputBytes: Uint8Array }>()
 	private readonly participantStepUsage = new Map<string, { stepIndex: number; count: number }>()
+	private readonly syncPoints = new Map<string, AuthoritativeSyncPoint>()
 	private stepIndex = 0
 	private appliedSequenceValue = 0
 
@@ -80,10 +93,22 @@ export class InMemoryAuthoritativeRoom<Input> {
 		if (!Number.isSafeInteger(maxReplayEvents) || maxReplayEvents < 0) {
 			throw new RangeError('Collaboration maxReplayEvents must be a non-negative safe integer.')
 		}
+		const maxReplaySteps = options.maxReplaySteps ?? DEFAULT_MAX_REPLAY_STEPS
+		if (!Number.isSafeInteger(maxReplaySteps) || maxReplaySteps < 0) {
+			throw new RangeError('Collaboration maxReplaySteps must be a non-negative safe integer.')
+		}
 		const maxInputsPerParticipantPerStep = options.maxInputsPerParticipantPerStep
 			?? DEFAULT_MAX_INPUTS_PER_PARTICIPANT_PER_STEP
 		if (!Number.isSafeInteger(maxInputsPerParticipantPerStep) || maxInputsPerParticipantPerStep <= 0) {
 			throw new RangeError('Collaboration maxInputsPerParticipantPerStep must be a positive safe integer.')
+		}
+		const syncPointHistoryLimit = options.syncPointHistoryLimit ?? DEFAULT_SYNC_POINT_HISTORY_LIMIT
+		if (!Number.isSafeInteger(syncPointHistoryLimit) || syncPointHistoryLimit <= 0) {
+			throw new RangeError('Collaboration syncPointHistoryLimit must be a positive safe integer.')
+		}
+		const configurationVersion = options.configurationVersion ?? 1
+		if (!Number.isSafeInteger(configurationVersion) || configurationVersion <= 0) {
+			throw new RangeError('Collaboration configurationVersion must be a positive safe integer.')
 		}
 		this.roomId = options.roomId
 		this.experimentId = options.experimentId
@@ -93,7 +118,10 @@ export class InMemoryAuthoritativeRoom<Input> {
 		this.maxInputBytes = maxInputBytes
 		this.inputLeadSteps = inputLeadSteps
 		this.maxReplayEvents = maxReplayEvents
+		this.maxReplaySteps = maxReplaySteps
 		this.maxInputsPerParticipantPerStep = maxInputsPerParticipantPerStep
+		this.syncPointHistoryLimit = syncPointHistoryLimit
+		this.configurationVersion = configurationVersion
 	}
 
 	static async recover<Input>(
@@ -135,6 +163,10 @@ export class InMemoryAuthoritativeRoom<Input> {
 		}
 		if (snapshot.lastAppliedSequence > persisted.events.length) {
 			throw new Error('Persisted authoritative snapshot references an event sequence beyond the stored log.')
+		}
+		const expectedEventLogHeadHash = await createEventLogHeadHash(persisted.events)
+		if (!eventLogHashesEqual(expectedEventLogHeadHash, persisted.eventLogHeadHash)) {
+			throw new Error('Persisted authoritative event-log integrity verification failed.')
 		}
 
 		const recoveredEvents: Array<{ event: AuthoritativeEvent<Input>; inputBytes: Uint8Array }> = []
@@ -210,6 +242,16 @@ export class InMemoryAuthoritativeRoom<Input> {
 				})
 			}
 		}
+		const recoveredSyncPoint: AuthoritativeSyncPoint = {
+			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+			roomId: room.roomId,
+			experimentId: room.experimentId,
+			stateVersion: room.stateVersion,
+			stepIndex: snapshot.stepIndex,
+			appliedSequence: snapshot.lastAppliedSequence,
+			checksum: snapshot.checksum,
+		}
+		room.rememberSyncPoint(recoveredSyncPoint)
 		return room
 	}
 
@@ -229,6 +271,17 @@ export class InMemoryAuthoritativeRoom<Input> {
 		return this.stepIndex
 	}
 
+	createDescriptor(): CollaborationRoomDescriptor {
+		return {
+			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+			roomId: this.roomId,
+			experimentId: this.experimentId,
+			stateVersion: this.stateVersion,
+			configurationVersion: this.configurationVersion,
+			configurationBytes: this.adapter.captureConfigurationBytes().slice(),
+		}
+	}
+
 	advanceStepIndex(nextStepIndex: number): void {
 		if (!Number.isSafeInteger(nextStepIndex) || nextStepIndex < this.stepIndex || nextStepIndex > this.stepIndex + 1) {
 			throw new RangeError('Authoritative step index must advance monotonically one boundary at a time.')
@@ -243,7 +296,11 @@ export class InMemoryAuthoritativeRoom<Input> {
 		}
 	}
 
-	createTick(): AuthoritativeTick {
+	createTick(syncPoint?: AuthoritativeSyncPoint): AuthoritativeTick {
+		if (syncPoint
+			&& (syncPoint.stepIndex !== this.stepIndex || syncPoint.appliedSequence !== this.appliedSequenceValue)) {
+			throw new Error('Authoritative sync point does not match the current room boundary.')
+		}
 		return {
 			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
 			roomId: this.roomId,
@@ -252,7 +309,38 @@ export class InMemoryAuthoritativeRoom<Input> {
 			stepIndex: this.stepIndex,
 			logHeadSequence: this.logHeadSequence,
 			appliedSequence: this.appliedSequenceValue,
+			...(syncPoint ? { syncPoint } : {}),
 		}
+	}
+
+	private syncPointKey(stepIndex: number, appliedSequence: number): string {
+		return `${stepIndex}:${appliedSequence}`
+	}
+
+	private rememberSyncPoint(syncPoint: AuthoritativeSyncPoint): void {
+		const key = this.syncPointKey(syncPoint.stepIndex, syncPoint.appliedSequence)
+		this.syncPoints.delete(key)
+		this.syncPoints.set(key, syncPoint)
+		while (this.syncPoints.size > this.syncPointHistoryLimit) {
+			const oldest = this.syncPoints.keys().next().value as string | undefined
+			if (oldest === undefined) break
+			this.syncPoints.delete(oldest)
+		}
+	}
+
+	async createSyncPoint(): Promise<AuthoritativeSyncPoint> {
+		const snapshot = await this.createSnapshot()
+		const syncPoint: AuthoritativeSyncPoint = {
+			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+			roomId: this.roomId,
+			experimentId: this.experimentId,
+			stateVersion: this.stateVersion,
+			stepIndex: snapshot.stepIndex,
+			appliedSequence: snapshot.lastAppliedSequence,
+			checksum: snapshot.checksum,
+		}
+		this.rememberSyncPoint(syncPoint)
+		return syncPoint
 	}
 
 	submit(proposal: ClientEventProposal): AuthoritativeSubmitResult<Input> {
@@ -278,9 +366,6 @@ export class InMemoryAuthoritativeRoom<Input> {
 		if (inputBytes.byteLength > this.maxInputBytes) {
 			return { ok: false, code: 'INPUT_TOO_LARGE', error: `Input exceeds ${this.maxInputBytes} bytes.` }
 		}
-		const authorization = this.authorizeInput(proposal.participantId, parsed.value)
-		if (!authorization.ok) return { ok: false, code: 'UNAUTHORIZED', error: authorization.error }
-
 		const idempotencyKey = JSON.stringify([proposal.participantId, proposal.clientEventId])
 		const existing = this.acceptedByClientId.get(idempotencyKey)
 		if (existing) {
@@ -289,6 +374,9 @@ export class InMemoryAuthoritativeRoom<Input> {
 			}
 			return { ok: true, event: existing.event, duplicate: true }
 		}
+
+		const authorization = this.authorizeInput(proposal.participantId, parsed.value)
+		if (!authorization.ok) return { ok: false, code: 'UNAUTHORIZED', error: authorization.error }
 
 		const usage = this.participantStepUsage.get(proposal.participantId)
 		const acceptedThisStep = usage?.stepIndex === this.stepIndex ? usage.count : 0
@@ -364,6 +452,34 @@ export class InMemoryAuthoritativeRoom<Input> {
 			inputLeadSteps: this.inputLeadSteps,
 			snapshot,
 			events,
+			eventLogHeadHash: await createEventLogHeadHash(events),
+		}
+	}
+
+	async capturePersistenceCheckpoint(): Promise<AuthoritativeRoomCheckpoint> {
+		return {
+			persistenceVersion: AUTHORITATIVE_ROOM_PERSISTENCE_VERSION,
+			inputLeadSteps: this.inputLeadSteps,
+			snapshot: await this.createSnapshot(),
+			eventCount: this.events.length,
+		}
+	}
+
+	capturePersistedEvent(sequence: number): PersistedAuthoritativeEvent {
+		if (!Number.isSafeInteger(sequence) || sequence <= 0 || sequence > this.events.length) {
+			throw new RangeError('Persisted collaboration event sequence is outside the authoritative log.')
+		}
+		const event = this.events[sequence - 1]!
+		return {
+			protocolVersion: event.protocolVersion,
+			roomId: event.roomId,
+			experimentId: event.experimentId,
+			stateVersion: event.stateVersion,
+			participantId: event.participantId,
+			clientEventId: event.clientEventId,
+			sequence: event.sequence,
+			stepIndex: event.stepIndex,
+			inputBytes: this.adapter.encodeInput(event.input).slice(),
 		}
 	}
 
@@ -398,17 +514,28 @@ export class InMemoryAuthoritativeRoom<Input> {
 		const firstMissing = this.events[request.lastAppliedSequence]
 		const missedPastBoundary = firstMissing !== undefined && firstMissing.stepIndex <= request.stepIndex
 		const replayCount = this.appliedSequenceValue - request.lastAppliedSequence
-		let snapshotRequired = missedPastBoundary || replayCount > this.maxReplayEvents
+		const replaySteps = this.stepIndex - request.stepIndex
+		let snapshotRequired = missedPastBoundary
+			|| replayCount > this.maxReplayEvents
+			|| replaySteps > this.maxReplaySteps
 
-		if (!snapshotRequired
-			&& request.checksum
-			&& request.lastAppliedSequence === this.appliedSequenceValue
-			&& request.stepIndex === this.stepIndex) {
-			const currentSnapshot = await this.createSnapshot()
-			snapshotRequired = !snapshotChecksumsEqual(request.checksum, currentSnapshot.checksum)
+		if (!snapshotRequired) {
+			const atGenesis = request.lastAppliedSequence === 0 && request.stepIndex === 0
+			if (!atGenesis) {
+				if (!request.checksum) {
+					snapshotRequired = true
+				} else if (request.lastAppliedSequence === this.appliedSequenceValue && request.stepIndex === this.stepIndex) {
+					const currentSnapshot = await this.createSnapshot()
+					snapshotRequired = !snapshotChecksumsEqual(request.checksum, currentSnapshot.checksum)
+				} else {
+					const syncPoint = this.syncPoints.get(this.syncPointKey(request.stepIndex, request.lastAppliedSequence))
+					snapshotRequired = !syncPoint || !snapshotChecksumsEqual(request.checksum, syncPoint.checksum)
+				}
+			}
 		}
 
-		const tick = this.createTick()
+		const currentSyncPoint = this.syncPoints.get(this.syncPointKey(this.stepIndex, this.appliedSequenceValue))
+		const tick = this.createTick(currentSyncPoint)
 		if (!snapshotRequired) {
 			return {
 				ok: true,

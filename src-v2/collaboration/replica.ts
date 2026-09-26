@@ -3,7 +3,9 @@ import { COLLABORATION_PROTOCOL_VERSION } from './protocol.ts'
 import type {
 	AuthoritativeEvent,
 	AuthoritativeSnapshot,
+	AuthoritativeSyncPoint,
 	AuthoritativeTick,
+	CollaborationResumeRequest,
 	CollaborationResumePlan,
 	CollaborationStateAdapter,
 	DivergenceEvidence,
@@ -35,6 +37,8 @@ export class CollaborationReplica<Input> {
 	private lastAppliedSequenceValue = 0
 	private stepIndex = 0
 	private authoritativeTick: AuthoritativeTick | undefined
+	private pendingSyncPoint: AuthoritativeSyncPoint | undefined
+	private needsResynchronization = false
 
 	constructor(options: CollaborationReplicaOptions<Input>) {
 		this.roomId = options.roomId
@@ -49,6 +53,10 @@ export class CollaborationReplica<Input> {
 
 	get currentStepIndex(): number {
 		return this.stepIndex
+	}
+
+	get requiresResynchronization(): boolean {
+		return this.needsResynchronization
 	}
 
 	private result(status: ReplicaReceiveResult['status']): ReplicaReceiveResult {
@@ -128,6 +136,7 @@ export class CollaborationReplica<Input> {
 	}
 
 	receive(event: AuthoritativeEvent<unknown>): ReplicaReceiveResult {
+		if (this.needsResynchronization) return this.result('needs-resync')
 		if (!this.validEnvelope(event)) return this.result('needs-resync')
 		if (event.sequence <= this.lastAppliedSequenceValue) return this.result('ignored-old')
 
@@ -152,6 +161,9 @@ export class CollaborationReplica<Input> {
 	}
 
 	receiveTick(tick: AuthoritativeTick): Result<void, string> {
+		if (this.needsResynchronization) {
+			return { ok: false, error: 'Replica requires authoritative resynchronization.' }
+		}
 		if (tick.protocolVersion !== COLLABORATION_PROTOCOL_VERSION
 			|| tick.roomId !== this.roomId
 			|| tick.experimentId !== this.experimentId
@@ -170,6 +182,17 @@ export class CollaborationReplica<Input> {
 				|| tick.appliedSequence < this.authoritativeTick.appliedSequence)) {
 			return { ok: false, error: 'Authoritative tick regressed relative to a previously accepted watermark.' }
 		}
+		if (tick.syncPoint) {
+			if (tick.syncPoint.protocolVersion !== COLLABORATION_PROTOCOL_VERSION
+				|| tick.syncPoint.roomId !== this.roomId
+				|| tick.syncPoint.experimentId !== this.experimentId
+				|| tick.syncPoint.stateVersion !== this.stateVersion
+				|| tick.syncPoint.stepIndex !== tick.stepIndex
+				|| tick.syncPoint.appliedSequence !== tick.appliedSequence) {
+				return { ok: false, error: 'Authoritative tick contains an incompatible synchronization checkpoint.' }
+			}
+			this.pendingSyncPoint = tick.syncPoint
+		}
 		const prefixComplete = this.hasCompletePrefix(tick.appliedSequence)
 		if (prefixComplete) {
 			const prefix = this.validatePendingPrefix(tick.appliedSequence, tick.stepIndex)
@@ -181,6 +204,9 @@ export class CollaborationReplica<Input> {
 	}
 
 	advanceStepIndex(nextStepIndex: number): Result<void, string> {
+		if (this.needsResynchronization) {
+			return { ok: false, error: 'Replica requires authoritative resynchronization.' }
+		}
 		if (!Number.isSafeInteger(nextStepIndex) || nextStepIndex < this.stepIndex || nextStepIndex > this.stepIndex + 1) {
 			return { ok: false, error: 'Replica step index must advance monotonically one boundary at a time.' }
 		}
@@ -198,6 +224,52 @@ export class CollaborationReplica<Input> {
 		return { ok: true, value: undefined }
 	}
 
+	private async createLocalChecksum(): Promise<AuthoritativeSnapshot['checksum']> {
+		const localBytes = encodeCanonicalSnapshotV1({
+			roomId: this.roomId,
+			experimentId: this.experimentId,
+			stateVersion: this.stateVersion,
+			lastAppliedSequence: this.lastAppliedSequenceValue,
+			stepIndex: this.stepIndex,
+			configurationBytes: this.adapter.captureConfigurationBytes(),
+			stateBytes: this.adapter.captureStateBytes(),
+		})
+		return createSnapshotChecksum(localBytes)
+	}
+
+	async createResumeRequest(): Promise<CollaborationResumeRequest> {
+		return {
+			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+			roomId: this.roomId,
+			experimentId: this.experimentId,
+			stateVersion: this.stateVersion,
+			lastAppliedSequence: this.lastAppliedSequenceValue,
+			stepIndex: this.stepIndex,
+			checksum: await this.createLocalChecksum(),
+		}
+	}
+
+	async verifyPendingSyncPoint(): Promise<Result<DivergenceEvidence | undefined, string>> {
+		const syncPoint = this.pendingSyncPoint
+		if (!syncPoint) return { ok: true, value: undefined }
+		if (syncPoint.stepIndex !== this.stepIndex || syncPoint.appliedSequence !== this.lastAppliedSequenceValue) {
+			return { ok: true, value: undefined }
+		}
+		const replicaChecksum = await this.createLocalChecksum()
+		const evidence: DivergenceEvidence = {
+			matches: snapshotChecksumsEqual(syncPoint.checksum, replicaChecksum),
+			authoritativeChecksum: syncPoint.checksum,
+			replicaChecksum,
+			authoritativeLastAppliedSequence: syncPoint.appliedSequence,
+			replicaLastAppliedSequence: this.lastAppliedSequenceValue,
+			authoritativeStepIndex: syncPoint.stepIndex,
+			replicaStepIndex: this.stepIndex,
+		}
+		this.pendingSyncPoint = undefined
+		if (!evidence.matches) this.needsResynchronization = true
+		return { ok: true, value: evidence }
+	}
+
 	async applyResumePlan(plan: CollaborationResumePlan<Input>): Promise<Result<void, string>> {
 		if (!plan.ok) return { ok: false, error: plan.error }
 		if (plan.mode === 'snapshot') {
@@ -213,16 +285,7 @@ export class CollaborationReplica<Input> {
 	}
 
 	async compareSnapshot(snapshot: AuthoritativeSnapshot): Promise<DivergenceEvidence> {
-		const localBytes = encodeCanonicalSnapshotV1({
-			roomId: this.roomId,
-			experimentId: this.experimentId,
-			stateVersion: this.stateVersion,
-			lastAppliedSequence: this.lastAppliedSequenceValue,
-			stepIndex: this.stepIndex,
-			configurationBytes: this.adapter.captureConfigurationBytes(),
-			stateBytes: this.adapter.captureStateBytes(),
-		})
-		const replicaChecksum = await createSnapshotChecksum(localBytes)
+		const replicaChecksum = await this.createLocalChecksum()
 		return {
 			matches: snapshotChecksumsEqual(snapshot.checksum, replicaChecksum),
 			authoritativeChecksum: snapshot.checksum,
@@ -267,6 +330,8 @@ export class CollaborationReplica<Input> {
 		this.stepIndex = snapshot.stepIndex
 		this.pending.clear()
 		this.authoritativeTick = undefined
+		this.pendingSyncPoint = undefined
+		this.needsResynchronization = false
 		return { ok: true, value: undefined }
 	}
 }

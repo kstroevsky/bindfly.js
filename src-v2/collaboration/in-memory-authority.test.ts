@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import { InMemoryAuthoritativeRoom } from './in-memory-authority.ts'
+import { createEventLogHeadHash } from './persistence-integrity.ts'
 import { CollaborationReplica } from './replica.ts'
 import { COLLABORATION_PROTOCOL_VERSION } from './protocol.ts'
 
@@ -164,6 +165,24 @@ test('authority rate limit counts accepted inputs per participant and authoritat
 
 	room.advanceStepIndex(1)
 	assert.equal(room.submit(proposal('alice', 'event-d', 2, 4)).ok, true)
+})
+
+test('idempotent retry returns the committed outcome after participant authorization is revoked', () => {
+	const adapter = createAdapter()
+	let authorized = true
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter,
+		authorizeInput: () => authorized ? allowAll() : { ok: false as const, error: 'revoked' },
+	})
+	const accepted = room.submit(proposal('alice', 'event-a', 0, 2))
+	assert.equal(accepted.ok, true)
+	if (!accepted.ok) return
+	authorized = false
+	const retry = room.submit(proposal('alice', 'event-a', 1, 2))
+	assert.equal(retry.ok && retry.duplicate, true)
+	if (retry.ok) assert.equal(retry.event.sequence, accepted.event.sequence)
+	const newInput = room.submit(proposal('alice', 'event-b', 1, 3))
+	assert.deepEqual(newInput.ok ? undefined : newInput.code, 'UNAUTHORIZED')
 })
 
 test('replica rejects a tampered authoritative snapshot before restoring state', async () => {
@@ -336,6 +355,85 @@ test('resume replays a compatible suffix and falls back to snapshot plus pending
 	assert.equal(snapshotAdapter.read(), 9)
 })
 
+test('resume bounds simulation catch-up by maxReplaySteps even when no events are missing', async () => {
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
+		maxReplaySteps: 2,
+	})
+	room.advanceStepIndex(1)
+	room.advanceStepIndex(2)
+	room.advanceStepIndex(3)
+	const plan = await room.createResumePlan({
+		protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+		roomId: 'room-1',
+		experimentId: 'fixture',
+		stateVersion: 1,
+		lastAppliedSequence: 0,
+		stepIndex: 0,
+	})
+	assert.equal(plan.ok && plan.mode, 'snapshot')
+	if (plan.ok && plan.mode === 'snapshot') assert.equal(plan.snapshot.stepIndex, 3)
+})
+
+test('historical sync points validate replay bases and connected replicas detect divergence', async () => {
+	const authorityAdapter = createAdapter()
+	const replicaAdapter = createAdapter()
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: authorityAdapter, authorizeInput: allowAll,
+	})
+	const replica = new CollaborationReplica({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: replicaAdapter,
+	})
+	const accepted = room.submit(proposal('alice', 'event-a', 0, 2))
+	assert.equal(accepted.ok, true)
+	if (!accepted.ok) return
+	assert.equal(replica.receive(accepted.event).status, 'buffered-step')
+	room.advanceStepIndex(1)
+	const syncPoint = await room.createSyncPoint()
+	assert.equal(replica.receiveTick(room.createTick(syncPoint)).ok, true)
+	assert.equal(replica.advanceStepIndex(1).ok, true)
+	const verified = await replica.verifyPendingSyncPoint()
+	assert.equal(verified.ok && verified.value?.matches, true)
+	const verifiedBase = await replica.createResumeRequest()
+
+	room.advanceStepIndex(2)
+	const replay = await room.createResumePlan(verifiedBase)
+	assert.equal(replay.ok && replay.mode, 'replay')
+
+	replicaAdapter.diverge(5)
+	const divergentBase = await replica.createResumeRequest()
+	const snapshot = await room.createResumePlan(divergentBase)
+	assert.equal(snapshot.ok && snapshot.mode, 'snapshot')
+
+	const divergentReplicaAdapter = createAdapter()
+	const divergentReplica = new CollaborationReplica({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: divergentReplicaAdapter,
+	})
+	assert.equal(divergentReplica.receive(accepted.event).status, 'buffered-step')
+	assert.equal(divergentReplica.receiveTick(room.createTick()).ok, true)
+	assert.equal(divergentReplica.advanceStepIndex(1).ok, true)
+	divergentReplicaAdapter.diverge(1)
+	assert.equal(divergentReplica.receiveTick({ ...room.createTick(), stepIndex: 1, syncPoint }).ok, false)
+
+	const activeReplicaAdapter = createAdapter()
+	const activeReplica = new CollaborationReplica({
+		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: activeReplicaAdapter,
+	})
+	assert.equal(activeReplica.receive(accepted.event).status, 'buffered-step')
+	assert.equal(activeReplica.receiveTick({
+		...room.createTick(),
+		stepIndex: 1,
+		logHeadSequence: 1,
+		appliedSequence: 1,
+		syncPoint,
+	}).ok, true)
+	assert.equal(activeReplica.advanceStepIndex(1).ok, true)
+	activeReplicaAdapter.diverge(1)
+	const mismatch = await activeReplica.verifyPendingSyncPoint()
+	assert.equal(mismatch.ok && mismatch.value?.matches, false)
+	assert.equal(activeReplica.requiresResynchronization, true)
+})
+
 test('resume rejects incompatible protocol and state identity', async () => {
 	const room = new InMemoryAuthoritativeRoom({
 		roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
@@ -444,16 +542,28 @@ test('authoritative persistence rejects tampered snapshots and invalid persisted
 		/checksum verification failed/,
 	)
 
+	const invalidEvents = persisted.events.map((event, index) => index === 0
+		? { ...event, inputBytes: new Uint8Array([...event.inputBytes, 0]) }
+		: event)
 	const invalidInput = {
 		...persisted,
-		events: persisted.events.map((event, index) => index === 0
-			? { ...event, inputBytes: new Uint8Array([...event.inputBytes, 0]) }
-			: event),
+		events: invalidEvents,
+		eventLogHeadHash: await createEventLogHeadHash(invalidEvents),
 	}
 	await assert.rejects(
 		InMemoryAuthoritativeRoom.recover({
 			roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
 		}, invalidInput),
 		/input is invalid/,
+	)
+
+	const validButWrongEvents = persisted.events.map((event, index) => index === 0
+		? { ...event, inputBytes: numberBytes(999) }
+		: event)
+	await assert.rejects(
+		InMemoryAuthoritativeRoom.recover({
+			roomId: 'room-1', experimentId: 'fixture', stateVersion: 1, adapter: createAdapter(), authorizeInput: allowAll,
+		}, { ...persisted, events: validButWrongEvents }),
+		/event-log integrity verification failed/,
 	)
 })

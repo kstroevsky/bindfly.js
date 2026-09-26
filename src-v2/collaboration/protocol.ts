@@ -3,7 +3,9 @@ import type { Result } from '../core/result.ts'
 export const COLLABORATION_PROTOCOL_VERSION = 1
 export const CANONICAL_SNAPSHOT_ENCODING_VERSION = 1
 export const SNAPSHOT_CHECKSUM_ALGORITHM = 'sha-256'
-export const AUTHORITATIVE_ROOM_PERSISTENCE_VERSION = 1
+export const AUTHORITATIVE_ROOM_PERSISTENCE_VERSION = 2
+export const EVENT_LOG_HASH_ENCODING_VERSION = 1
+export const EVENT_LOG_HASH_ALGORITHM = 'sha-256'
 export const MAX_COLLABORATION_ID_LENGTH = 128
 
 export type SequenceNumber = number
@@ -37,12 +39,38 @@ export interface AuthoritativeTick {
 	readonly stepIndex: number
 	readonly logHeadSequence: SequenceNumber
 	readonly appliedSequence: SequenceNumber
+	readonly syncPoint?: AuthoritativeSyncPoint
 }
 
 export interface SnapshotChecksum {
 	readonly algorithm: typeof SNAPSHOT_CHECKSUM_ALGORITHM
 	readonly encodingVersion: typeof CANONICAL_SNAPSHOT_ENCODING_VERSION
 	readonly value: string
+}
+
+export interface EventLogHash {
+	readonly algorithm: typeof EVENT_LOG_HASH_ALGORITHM
+	readonly encodingVersion: typeof EVENT_LOG_HASH_ENCODING_VERSION
+	readonly value: string
+}
+
+export interface AuthoritativeSyncPoint {
+	readonly protocolVersion: typeof COLLABORATION_PROTOCOL_VERSION
+	readonly roomId: string
+	readonly experimentId: string
+	readonly stateVersion: number
+	readonly stepIndex: number
+	readonly appliedSequence: SequenceNumber
+	readonly checksum: SnapshotChecksum
+}
+
+export interface CollaborationRoomDescriptor {
+	readonly protocolVersion: typeof COLLABORATION_PROTOCOL_VERSION
+	readonly roomId: string
+	readonly experimentId: string
+	readonly stateVersion: number
+	readonly configurationVersion: number
+	readonly configurationBytes: Uint8Array
 }
 
 export interface AuthoritativeSnapshot {
@@ -94,6 +122,14 @@ export interface AuthoritativeRoomPersistenceState {
 	readonly inputLeadSteps: number
 	readonly snapshot: AuthoritativeSnapshot
 	readonly events: readonly PersistedAuthoritativeEvent[]
+	readonly eventLogHeadHash: EventLogHash
+}
+
+export interface AuthoritativeRoomCheckpoint {
+	readonly persistenceVersion: typeof AUTHORITATIVE_ROOM_PERSISTENCE_VERSION
+	readonly inputLeadSteps: number
+	readonly snapshot: AuthoritativeSnapshot
+	readonly eventCount: number
 }
 
 export interface CollaborationResumeRequest {

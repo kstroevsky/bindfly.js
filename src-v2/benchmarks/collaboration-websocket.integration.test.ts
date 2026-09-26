@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
@@ -21,7 +21,7 @@ import {
 	encodeClientCollaborationWireMessage,
 	parseServerCollaborationWireMessage,
 } from '../collaboration/index.ts'
-import type { CollaborationResumePlan, CollaborationServerWireMessage } from '../collaboration/index.ts'
+import type { CollaborationResumePlan, CollaborationServerWireMessage, SnapshotChecksum } from '../collaboration/index.ts'
 import { createSeededRandom, createViewport } from '../core/index.ts'
 import {
 	decodeMovingPointCheckpointV1,
@@ -161,6 +161,7 @@ const sendResume = async (
 	inbox: ReturnType<typeof createInbox>,
 	lastAppliedSequence: number,
 	stepIndex: number,
+	checksum?: SnapshotChecksum,
 ): Promise<CollaborationResumePlan<MovingPointInput>> => {
 	socket.send(encodeClientCollaborationWireMessage({
 		wireVersion: COLLABORATION_WIRE_VERSION,
@@ -172,6 +173,7 @@ const sendResume = async (
 			stateVersion: 1,
 			lastAppliedSequence,
 			stepIndex,
+			...(checksum ? { checksum } : {}),
 		},
 	}))
 	const message = await inbox.next()
@@ -237,6 +239,17 @@ test('real WebSocket clients preserve authoritative ordering and reconnect throu
 	t.after(async () => closeSocket(aliceSocket))
 	const aliceInbox = createInbox(aliceSocket)
 	let bobInbox = createInbox(bobSocket)
+	aliceSocket.send(encodeClientCollaborationWireMessage({
+		wireVersion: COLLABORATION_WIRE_VERSION,
+		type: 'describe-room',
+	}))
+	const descriptorMessage = await aliceInbox.next()
+	assert.equal(descriptorMessage.type, 'room-descriptor')
+	if (descriptorMessage.type === 'room-descriptor') {
+		assert.equal(descriptorMessage.descriptor.experimentId, 'flying-lines')
+		assert.equal(descriptorMessage.descriptor.configurationVersion, 1)
+		assert.deepEqual(descriptorMessage.descriptor.configurationBytes, configurationBytes)
+	}
 	const beforeResume = await sendProposal(
 		aliceSocket,
 		aliceInbox,
@@ -324,7 +337,14 @@ test('real WebSocket clients preserve authoritative ordering and reconnect throu
 
 	const replaySocket = await openSocket(address.url, 'bob')
 	bobInbox = createInbox(replaySocket)
-	const replay = await sendResume(replaySocket, bobInbox, bobReplica.lastAppliedSequence, bobReplica.currentStepIndex)
+	const replayRequest = await bobReplica.createResumeRequest()
+	const replay = await sendResume(
+		replaySocket,
+		bobInbox,
+		replayRequest.lastAppliedSequence,
+		replayRequest.stepIndex,
+		replayRequest.checksum,
+	)
 	assert.equal(replay.ok && replay.mode, 'replay')
 	assert.equal((await bobReplica.applyResumePlan(replay)).ok, true)
 	await closeSocket(replaySocket)
@@ -384,11 +404,49 @@ test('real WebSocket clients preserve authoritative ordering and reconnect throu
 	assert.deepEqual(bob.simulation.captureCheckpoint(), authority.simulation.captureCheckpoint())
 })
 
+test('file WAL rejects valid-but-wrong canonical event tampering through its hash chain', async (t) => {
+	const directory = await mkdtemp(join(tmpdir(), 'bindfly-collaboration-integrity-'))
+	t.after(async () => rm(directory, { recursive: true, force: true }))
+	const filePath = join(directory, 'shared-room.json')
+	const store = new FileAuthoritativeRoomStateStore(filePath)
+	const authority = createHarness()
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'shared-flying-lines',
+		experimentId: 'flying-lines',
+		stateVersion: 1,
+		adapter: authority.adapter,
+		authorizeInput: () => ({ ok: true, value: undefined }),
+	})
+	await store.saveCheckpoint(await room.capturePersistenceCheckpoint())
+	const accepted = room.submit({
+		protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+		roomId: 'shared-flying-lines',
+		participantId: 'alice',
+		clientEventId: 'tamper-me',
+		knownSequence: 0,
+		input: { type: 'add-point', x: 120, y: 160 },
+	})
+	assert.equal(accepted.ok, true)
+	if (!accepted.ok) return
+	await store.appendEvent(room.capturePersistedEvent(accepted.event.sequence))
+
+	const eventLogPath = `${filePath}.events`
+	const line = JSON.parse((await readFile(eventLogPath, 'utf8')).trim()) as {
+		event: { inputBase64Url: string }
+	}
+	line.event.inputBase64Url = Buffer.from(encodeMovingPointInputV1({
+		type: 'add-point', x: 121, y: 160,
+	})).toString('base64url')
+	await writeFile(eventLogPath, `${JSON.stringify(line)}\n`, 'utf8')
+	await assert.rejects(store.load(), /event-log integrity verification failed/)
+})
+
 test('persistent WebSocket room recovers its checkpoint and pending event log after process restart', async (t) => {
 	const directory = await mkdtemp(join(tmpdir(), 'bindfly-collaboration-'))
 	t.after(async () => rm(directory, { recursive: true, force: true }))
 	const stateStore = new FileAuthoritativeRoomStateStore(join(directory, 'shared-room.json'))
 	const firstAuthority = createHarness()
+	const initialCheckpoint = firstAuthority.simulation.captureCheckpoint()
 	const firstRoom = await loadOrCreateAuthoritativeRoom({
 		roomId: 'shared-flying-lines',
 		experimentId: 'flying-lines',
@@ -399,6 +457,7 @@ test('persistent WebSocket room recovers its checkpoint and pending event log af
 	const firstServer = new AuthoritativeRoomWebSocketServer({
 		room: firstRoom,
 		stateStore,
+		checkpointIntervalSteps: 120,
 		authenticate: (request) => {
 			const participantId = request.headers['x-bindfly-participant-id']
 			return typeof participantId === 'string' && participantId.length > 0
@@ -431,7 +490,6 @@ test('persistent WebSocket room recovers its checkpoint and pending event log af
 		{ type: 'move-point', id: 0, x: 310, y: 220 },
 	)
 	assert.equal(pendingSubmit.type, 'submit-result')
-	const checkpointBeforeRestart = firstAuthority.simulation.captureCheckpoint()
 	await closeSocket(firstSocket)
 	await firstServer.stop()
 
@@ -447,14 +505,15 @@ test('persistent WebSocket room recovers its checkpoint and pending event log af
 		adapter: recoveredAuthority.adapter,
 		authorizeInput: () => ({ ok: true, value: undefined }),
 	}, stateStore)
-	assert.equal(recoveredRoom.currentStepIndex, 1)
-	assert.equal(recoveredRoom.appliedSequence, 1)
+	assert.equal(recoveredRoom.currentStepIndex, 0)
+	assert.equal(recoveredRoom.appliedSequence, 0)
 	assert.equal(recoveredRoom.logHeadSequence, 2)
-	assert.deepEqual(recoveredAuthority.simulation.captureCheckpoint(), checkpointBeforeRestart)
+	assert.deepEqual(recoveredAuthority.simulation.captureCheckpoint(), initialCheckpoint)
 
 	const recoveredServer = new AuthoritativeRoomWebSocketServer({
 		room: recoveredRoom,
 		stateStore,
+		checkpointIntervalSteps: 2,
 		authenticate: (request) => {
 			const participantId = request.headers['x-bindfly-participant-id']
 			return typeof participantId === 'string' && participantId.length > 0
@@ -465,11 +524,14 @@ test('persistent WebSocket room recovers its checkpoint and pending event log af
 	const recoveredAddress = await recoveredServer.start()
 	const recoveredSocket = await openSocket(recoveredAddress.url, 'alice')
 	const recoveredInbox = createInbox(recoveredSocket)
-	const resume = await sendResume(recoveredSocket, recoveredInbox, 1, 1)
+	const resume = await sendResume(recoveredSocket, recoveredInbox, 0, 0)
 	assert.equal(resume.ok && resume.mode, 'replay')
 	if (!resume.ok || resume.mode !== 'replay') return
-	assert.equal(resume.events.length, 1)
-	assert.equal(resume.events[0]?.sequence, 2)
+	assert.equal(resume.events.length, 2)
+	assert.deepEqual(resume.events.map((event) => event.sequence), [1, 2])
+	stepSimulation(recoveredAuthority.simulation, 0)
+	await recoveredServer.advanceStepIndex(1)
+	assert.equal((await recoveredInbox.next()).type, 'authoritative-tick')
 	stepSimulation(recoveredAuthority.simulation, 1)
 	await recoveredServer.advanceStepIndex(2)
 	assert.equal((await recoveredInbox.next()).type, 'authoritative-tick')
@@ -485,14 +547,14 @@ test('persistent WebSocket room recovers its checkpoint and pending event log af
 })
 
 test('WebSocket room fails closed after durable persistence becomes unavailable', async (t) => {
-	let saveCount = 0
+	const directory = await mkdtemp(join(tmpdir(), 'bindfly-collaboration-failure-'))
+	t.after(async () => rm(directory, { recursive: true, force: true }))
+	const durableStore = new FileAuthoritativeRoomStateStore(join(directory, 'shared-room.json'))
 	const stateStore: AuthoritativeRoomStateStore = {
-		load: async () => undefined,
-		save: async () => {
-			saveCount++
-			if (saveCount > 1) throw new Error('fixture storage failure')
-		},
-		delete: async () => undefined,
+		load: () => durableStore.load(),
+		appendEvent: async () => { throw new Error('fixture storage failure') },
+		saveCheckpoint: (checkpoint) => durableStore.saveCheckpoint(checkpoint),
+		delete: () => durableStore.delete(),
 	}
 	const authority = createHarness()
 	const room = new InMemoryAuthoritativeRoom({
@@ -512,37 +574,41 @@ test('WebSocket room fails closed after durable persistence becomes unavailable'
 				: { ok: false, error: 'Missing participant identity.' }
 		},
 	})
-	t.after(async () => server.stop())
 	const address = await server.start()
 	const socket = await openSocket(address.url, 'alice')
-	t.after(async () => closeSocket(socket))
 	const inbox = createInbox(socket)
 	assert.equal((await sendResume(socket, inbox, 0, 0)).ok, true)
-	const failed = await sendProposal(
-		socket,
-		inbox,
-		'alice',
-		'not-durable',
-		0,
-		{ type: 'add-point', x: 120, y: 160 },
-	)
-	assert.equal(failed.type, 'error')
-	if (failed.type === 'error') assert.equal(failed.code, 'SERVER_ERROR')
+	const closed = new Promise<void>((resolve) => socket.once('close', () => resolve()))
+	socket.send(encodeClientCollaborationWireMessage({
+		wireVersion: COLLABORATION_WIRE_VERSION,
+		type: 'submit',
+		proposal: {
+			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+			roomId: 'shared-flying-lines',
+			participantId: 'alice',
+			clientEventId: 'not-durable',
+			knownSequence: 0,
+			input: { type: 'add-point', x: 120, y: 160 },
+		},
+	}))
+	await closed
 	assert.equal(room.logHeadSequence, 1)
-
-	const blocked = await sendProposal(
-		socket,
-		inbox,
-		'alice',
-		'blocked-after-failure',
-		1,
-		{ type: 'add-point', x: 200, y: 200 },
-	)
-	assert.equal(blocked.type, 'error')
-	if (blocked.type === 'error') assert.equal(blocked.code, 'SERVER_ERROR')
-	assert.equal(room.logHeadSequence, 1)
+	assert.equal(await rejectedUpgradeStatus(address.url, 'bob'), 503)
 	await assert.rejects(server.advanceStepIndex(1), /fixture storage failure/)
 	assert.equal(room.currentStepIndex, 0)
+	await server.stop()
+
+	const recoveredAuthority = createHarness()
+	const recoveredRoom = await loadOrCreateAuthoritativeRoom({
+		roomId: 'shared-flying-lines',
+		experimentId: 'flying-lines',
+		stateVersion: 1,
+		adapter: recoveredAuthority.adapter,
+		authorizeInput: () => ({ ok: true, value: undefined }),
+	}, durableStore)
+	assert.equal(recoveredRoom.logHeadSequence, 0)
+	assert.equal(recoveredRoom.currentStepIndex, 0)
+	assert.deepEqual(recoveredAuthority.simulation.captureCheckpoint(), createHarness().simulation.captureCheckpoint())
 })
 
 test('WebSocket transport bounds authenticated identities and concurrent connections', async (t) => {
@@ -575,4 +641,35 @@ test('WebSocket transport bounds authenticated identities and concurrent connect
 	const bob = await openSocket(address.url, 'bob')
 	t.after(async () => closeSocket(bob))
 	assert.equal(await rejectedUpgradeStatus(address.url, 'charlie'), 503)
+})
+
+test('WebSocket transport disconnects a client before outbound buffering exceeds the hard limit', async (t) => {
+	const authority = createHarness()
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'shared-flying-lines',
+		experimentId: 'flying-lines',
+		stateVersion: 1,
+		adapter: authority.adapter,
+		authorizeInput: () => ({ ok: true, value: undefined }),
+	})
+	const server = new AuthoritativeRoomWebSocketServer({
+		room,
+		maxBufferedBytes: 1,
+		authenticate: (request) => {
+			const participantId = request.headers['x-bindfly-participant-id']
+			return typeof participantId === 'string' && participantId.length > 0
+				? { ok: true, value: { participantId } }
+				: { ok: false, error: 'Missing participant identity.' }
+		},
+	})
+	t.after(async () => server.stop())
+	const address = await server.start()
+	const socket = await openSocket(address.url, 'slow-client')
+	const closed = new Promise<void>((resolve) => socket.once('close', () => resolve()))
+	socket.send(encodeClientCollaborationWireMessage({
+		wireVersion: COLLABORATION_WIRE_VERSION,
+		type: 'describe-room',
+	}))
+	await closed
+	assert.equal(socket.readyState, WebSocket.CLOSED)
 })
