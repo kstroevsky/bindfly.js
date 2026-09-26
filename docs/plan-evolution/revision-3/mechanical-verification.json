@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "base": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/plan-evolution/revision-3/base.md",
+    "sha256": "a1e4d827fdf7fc351c3a651c83ec6fc7619e169c6298bc30d62f9c1f818c5ce0"
+  },
+  "candidate": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/bindfly_2_implementation_plan.md",
+    "sha256": "0444072c92bae2f3021ebb5521a556bcecab12fb56de53dba04368e605cf2988"
+  },
+  "delta": {
+    "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/plan-evolution/revision-3/delta.json",
+    "feedback_ids": [
+      "MXR-01",
+      "MXR-02",
+      "MXR-03",
+      "MXR-04",
+      "MXR-05"
+    ]
+  },
+  "changed_sections": [
+    "57. Accepted Milestone B review and revised execution roadmap / Preserved backlog mapping",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 13 — Analysis engine and first mathematical lens",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 13 — Analysis runtime and topology",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 14 — Dynamical-systems laboratory",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 17 — Educational and product layer",
+    "58. Accepted mathematical-experience review after Stage 12",
+    "58. Accepted mathematical-experience review after Stage 12 / Difference lens",
+    "58. Accepted mathematical-experience review after Stage 12 / Explicitly deferred product extensions",
+    "58. Accepted mathematical-experience review after Stage 12 / First structure-at-scale lens",
+    "58. Accepted mathematical-experience review after Stage 12 / Freeze, Step and causal comparison",
+    "58. Accepted mathematical-experience review after Stage 12 / Probe and evaluation trace",
+    "58. Accepted mathematical-experience review after Stage 12 / Workspace information hierarchy"
+  ],
+  "added_sections": [
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 13 — Analysis engine and first mathematical lens",
+    "58. Accepted mathematical-experience review after Stage 12",
+    "58. Accepted mathematical-experience review after Stage 12 / Difference lens",
+    "58. Accepted mathematical-experience review after Stage 12 / Explicitly deferred product extensions",
+    "58. Accepted mathematical-experience review after Stage 12 / First structure-at-scale lens",
+    "58. Accepted mathematical-experience review after Stage 12 / Freeze, Step and causal comparison",
+    "58. Accepted mathematical-experience review after Stage 12 / Probe and evaluation trace",
+    "58. Accepted mathematical-experience review after Stage 12 / Workspace information hierarchy"
+  ],
+  "removed_sections": [
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 13 — Analysis runtime and topology"
+  ],
+  "allowed_sections": [
+    "57. Accepted Milestone B review and revised execution roadmap / Preserved backlog mapping",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 13 — Analysis engine and first mathematical lens",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 13 — Analysis runtime and topology",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 14 — Dynamical-systems laboratory",
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 17 — Educational and product layer",
+    "58. Accepted mathematical-experience review after Stage 12",
+    "58. Accepted mathematical-experience review after Stage 12 / Difference lens",
+    "58. Accepted mathematical-experience review after Stage 12 / Explicitly deferred product extensions",
+    "58. Accepted mathematical-experience review after Stage 12 / First structure-at-scale lens",
+    "58. Accepted mathematical-experience review after Stage 12 / Freeze, Step and causal comparison",
+    "58. Accepted mathematical-experience review after Stage 12 / Probe and evaluation trace",
+    "58. Accepted mathematical-experience review after Stage 12 / Workspace information hierarchy"
+  ],
+  "contract_signal_deltas": {
+    "57. Accepted Milestone B review and revised execution roadmap / Preserved backlog mapping": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 14 — Dynamical-systems laboratory": {
+      "numeric_removed": [],
+      "numeric_added": [
+        "17",
+        "2023"
+      ],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    },
+    "57. Accepted Milestone B review and revised execution roadmap / Stage 17 — Educational and product layer": {
+      "numeric_removed": [],
+      "numeric_added": [],
+      "versioned_removed": [],
+      "versioned_added": [],
+      "code_fence_delta": 0,
+      "display_math_delta": 0
+    }
+  },
+  "ledger_counts": {
+    "active": 88,
+    "deferred": 46,
+    "superseded": 1,
+    "other": 0
+  },
+  "base_ledger": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/plan-evolution/revision-3/base-ledger.json",
+  "errors": [],
+  "warnings": []
+}

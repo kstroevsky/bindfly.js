@@ -1,0 +1,380 @@
+{
+  "generatedAt": "2026-08-30T15:11:58.743Z",
+  "source": "visible sidebar links",
+  "total": 37,
+  "renders": 33,
+  "broken": 4,
+  "note": "Console log history persisted after WebGL failures; route status is based on error screen plus canvas presence. Fresh-tab checks for Canvas routes had no errors.",
+  "routes": [
+    {
+      "expected": "#/DroopingLines-Simple",
+      "effect": "DroopingLines",
+      "finalHref": "http://localhost:3000/#/DroopingLines-Simple?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/FlyingCubesGL-Simple",
+      "effect": "FlyingCubesGL",
+      "finalHref": "http://localhost:3000/#/FlyingCubesGL-Simple",
+      "canvasCount": 0,
+      "rangeCount": 0,
+      "hasErrorScreen": true,
+      "status": "broken",
+      "errorSignature": "TypeError: e is not a constructor"
+    },
+    {
+      "expected": "#/FlyingLines-Simple",
+      "effect": "FlyingLines",
+      "finalHref": "http://localhost:3000/#/FlyingLines-Simple?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/FlyingLinesGL-Simple",
+      "effect": "FlyingLinesGL",
+      "finalHref": "http://localhost:3000/#/FlyingLinesGL-Simple?particleMaxVelocity=0.5",
+      "canvasCount": 0,
+      "rangeCount": 0,
+      "hasErrorScreen": true,
+      "status": "broken",
+      "errorSignature": "TypeError: e is not a constructor"
+    },
+    {
+      "expected": "#/Pulse-Simple",
+      "effect": "Pulse",
+      "finalHref": "http://localhost:3000/#/Pulse-Simple?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral-Simple",
+      "effect": "Spiral",
+      "finalHref": "http://localhost:3000/#/Spiral-Simple?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral2-Simple",
+      "effect": "Spiral2",
+      "finalHref": "http://localhost:3000/#/Spiral2-Simple?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral3-Simple",
+      "effect": "Spiral3",
+      "finalHref": "http://localhost:3000/#/Spiral3-Simple?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/DroopingLines-SwitchColor",
+      "effect": "DroopingLines",
+      "finalHref": "http://localhost:3000/#/DroopingLines-SwitchColor?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/FlyingLines-SwitchColor",
+      "effect": "FlyingLines",
+      "finalHref": "http://localhost:3000/#/FlyingLines-SwitchColor?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Pulse-SwitchColor",
+      "effect": "Pulse",
+      "finalHref": "http://localhost:3000/#/Pulse-SwitchColor?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral-SwitchColor",
+      "effect": "Spiral",
+      "finalHref": "http://localhost:3000/#/Spiral-SwitchColor?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral2-SwitchColor",
+      "effect": "Spiral2",
+      "finalHref": "http://localhost:3000/#/Spiral2-SwitchColor?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral3-SwitchColor",
+      "effect": "Spiral3",
+      "finalHref": "http://localhost:3000/#/Spiral3-SwitchColor?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/SpiralFlyingLines-SwitchColor",
+      "effect": "SpiralFlyingLines",
+      "finalHref": "http://localhost:3000/#/SpiralFlyingLines-SwitchColor?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 2,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/DroopingLines-Monochrome&Clickable",
+      "effect": "DroopingLines",
+      "finalHref": "http://localhost:3000/#/DroopingLines-Monochrome&Clickable?bgColor=0",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/FlyingLines-Monochrome&Clickable",
+      "effect": "FlyingLines",
+      "finalHref": "http://localhost:3000/#/FlyingLines-Monochrome&Clickable?bgColor=0",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/SpiralFlyingLines-Monochrome&Clickable",
+      "effect": "SpiralFlyingLines",
+      "finalHref": "http://localhost:3000/#/SpiralFlyingLines-Monochrome&Clickable?bgColor=0",
+      "canvasCount": 1,
+      "rangeCount": 2,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/DroopingLines-AddByClick",
+      "effect": "DroopingLines",
+      "finalHref": "http://localhost:3000/#/DroopingLines-AddByClick?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/FlyingLines-AddByClick",
+      "effect": "FlyingLines",
+      "finalHref": "http://localhost:3000/#/FlyingLines-AddByClick?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/FlyingLinesGL-AddByClick",
+      "effect": "FlyingLinesGL",
+      "finalHref": "http://localhost:3000/#/FlyingLinesGL-AddByClick?particleMaxVelocity=1",
+      "canvasCount": 0,
+      "rangeCount": 0,
+      "hasErrorScreen": true,
+      "status": "broken",
+      "errorSignature": "TypeError: e is not a constructor"
+    },
+    {
+      "expected": "#/SpiralFlyingLines-AddByClick",
+      "effect": "SpiralFlyingLines",
+      "finalHref": "http://localhost:3000/#/SpiralFlyingLines-AddByClick?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 2,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/SpiralFlyingLines-FixedRadius",
+      "effect": "SpiralFlyingLines",
+      "finalHref": "http://localhost:3000/#/SpiralFlyingLines-FixedRadius?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Pulse-Fixed&Movable",
+      "effect": "Pulse",
+      "finalHref": "http://localhost:3000/#/Pulse-Fixed&Movable?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral-Fixed&Movable",
+      "effect": "Spiral",
+      "finalHref": "http://localhost:3000/#/Spiral-Fixed&Movable?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral2-Fixed&Movable",
+      "effect": "Spiral2",
+      "finalHref": "http://localhost:3000/#/Spiral2-Fixed&Movable?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral3-Fixed&Movable",
+      "effect": "Spiral3",
+      "finalHref": "http://localhost:3000/#/Spiral3-Fixed&Movable?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/SpiralFlyingLines-Fixed&Movable",
+      "effect": "SpiralFlyingLines",
+      "finalHref": "http://localhost:3000/#/SpiralFlyingLines-Fixed&Movable?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/FlyingLinesGL-Clickable&Pulsative",
+      "effect": "FlyingLinesGL",
+      "finalHref": "http://localhost:3000/#/FlyingLinesGL-Clickable&Pulsative?particleMaxVelocity=1",
+      "canvasCount": 0,
+      "rangeCount": 0,
+      "hasErrorScreen": true,
+      "status": "broken",
+      "errorSignature": "TypeError: e is not a constructor"
+    },
+    {
+      "expected": "#/SpiralFlyingLines-Clickable&Pulsative",
+      "effect": "SpiralFlyingLines",
+      "finalHref": "http://localhost:3000/#/SpiralFlyingLines-Clickable&Pulsative?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 2,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/DroopingLines-Blank",
+      "effect": "DroopingLines",
+      "finalHref": "http://localhost:3000/#/DroopingLines-Blank?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/FlyingLines-Blank",
+      "effect": "FlyingLines",
+      "finalHref": "http://localhost:3000/#/FlyingLines-Blank?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Pulse-Blank",
+      "effect": "Pulse",
+      "finalHref": "http://localhost:3000/#/Pulse-Blank?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 4,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral-Blank",
+      "effect": "Spiral",
+      "finalHref": "http://localhost:3000/#/Spiral-Blank?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral2-Blank",
+      "effect": "Spiral2",
+      "finalHref": "http://localhost:3000/#/Spiral2-Blank?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/Spiral3-Blank",
+      "effect": "Spiral3",
+      "finalHref": "http://localhost:3000/#/Spiral3-Blank?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    },
+    {
+      "expected": "#/SpiralFlyingLines-Blank",
+      "effect": "SpiralFlyingLines",
+      "finalHref": "http://localhost:3000/#/SpiralFlyingLines-Blank?bgColor=0.7",
+      "canvasCount": 1,
+      "rangeCount": 3,
+      "hasErrorScreen": false,
+      "status": "renders",
+      "errorSignature": null
+    }
+  ]
+}

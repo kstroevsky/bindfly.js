@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "status": "ACCEPTED_CANONICAL_AMENDMENT",
+  "accepted_at": "2026-09-13T14:38:11+03:00",
+  "accepted_by": "user",
+  "canonical_path": "docs/bindfly_2_implementation_plan.md",
+  "canonical_sha256": "a1e4d827fdf7fc351c3a651c83ec6fc7619e169c6298bc30d62f9c1f818c5ce0",
+  "predecessor_path": "docs/plan-evolution/revision-2/base.md",
+  "predecessor_sha256": "8a2bda7188e5d5fd571b5eee533f6759944cb9cd325320d9077651aa520e79b6",
+  "verification_summary": "docs/plan-evolution/revision-2/final-verification-summary.md",
+  "note": "User supplied and approved the Milestone B roadmap amendment, then repeatedly instructed Codex to continue implementation. Revision 2 passed mechanical, semantic and independent verification."
+}

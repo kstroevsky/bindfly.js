@@ -1,0 +1,498 @@
+{
+  "schema_version": 1,
+  "phase": "PHASE_0_ACCEPTED",
+  "accepted_at": "2026-08-31T09:24:16+02:00",
+  "captured_at": "2026-08-30T22:15:17+02:00",
+  "canonical_plan": {
+    "path": "docs/bindfly_2_implementation_plan.md",
+    "sha256": "8a2bda7188e5d5fd571b5eee533f6759944cb9cd325320d9077651aa520e79b6",
+    "acceptance": "docs/plan-evolution/acceptance.json"
+  },
+  "source": {
+    "branch": "bug/pulse-position",
+    "commit": "9f2a83d3996207bf6886d80949561c96e1bc175d",
+    "source_tree_clean": true,
+    "commitments": "docs/legacy/source-hashes.sha256"
+  },
+  "toolchain": {
+    "node": "v22.22.0",
+    "npm": "11.11.0",
+    "pnpm": "11.6.0",
+    "lockfile": "pnpm-lock.yaml",
+    "lockfile_sha256": "1ba461339d1b38bfb401f1d86649f9e7fa05012bdd371d24a958d171e1736d94"
+  },
+  "quality_gates": {
+    "production_build": {
+      "command": "npm run build",
+      "status": "PASS",
+      "note": "Webpack/Babel emitted production bundles; Browserslist database warning present."
+    },
+    "typecheck": {
+      "command": "npx tsc --noEmit",
+      "status": "FAIL",
+      "primary_boundaries": [
+        "async module factory used as constructor",
+        "Canvas2D/3D particle union mismatch",
+        "WebGL handlers incomplete"
+      ]
+    },
+    "lint": {
+      "command": "npm run lint",
+      "status": "FAIL",
+      "errors": 25,
+      "warnings": 1
+    },
+    "tests": {
+      "command": "CI=true npm test -- --watchAll=false",
+      "status": "FAIL",
+      "reason": "No tests found (51 files checked)."
+    }
+  },
+  "inventory": {
+    "effects": [
+      {
+        "id": "FlyingLines",
+        "kind": "Canvas2D",
+        "classification": "intentional-fix",
+        "source": "src/shared/2d/animations/FlyingLines/index.js",
+        "formula_summary": "Moving point cloud; connect pairs below lineLength with Euclidean distance; preserve visual identity while fixing lifecycle, timing, pair duplication, boundary and velocity defects."
+      },
+      {
+        "id": "DroopingLines",
+        "kind": "Canvas2D",
+        "classification": "intentional-fix",
+        "source": "src/shared/2d/animations/DroopingLines/index.js",
+        "formula_summary": "Flying Lines variant using tan(x) or atan(y) on one endpoint depending on addByClick; preserve formula and visual character."
+      },
+      {
+        "id": "Pulse",
+        "kind": "Canvas2D",
+        "classification": "intentional-fix",
+        "source": "src/shared/2d/animations/Pulse/index.js",
+        "formula_summary": "Parametric particle positions with tan(distance), cos(angle*exp(a)), atan(a), cos(a) and weight; preserve exact source formula before redefining timing."
+      },
+      {
+        "id": "Spiral",
+        "kind": "Canvas2D",
+        "classification": "intentional-fix",
+        "source": "src/shared/2d/animations/Spiral/index.js",
+        "formula_summary": "Parametric spiral using cos(angle*exp(a))*sin(a) and cos(a); preserve exact source formula."
+      },
+      {
+        "id": "Spiral2",
+        "kind": "Canvas2D",
+        "classification": "intentional-fix",
+        "source": "src/shared/2d/animations/Spiral2/index.js",
+        "formula_summary": "Spiral variant replacing sin(a) with atan(a) in x; preserve exact source formula."
+      },
+      {
+        "id": "Spiral3",
+        "kind": "Canvas2D",
+        "classification": "intentional-fix",
+        "source": "src/shared/2d/animations/Spiral3/index.js",
+        "formula_summary": "Spiral2 variant using cos(sin(a)) in y; preserve exact source formula."
+      },
+      {
+        "id": "SpiralFlyingLines",
+        "kind": "Canvas2D",
+        "classification": "intentional-fix",
+        "source": "src/shared/2d/animations/SpiralFlyingLines/index.js",
+        "formula_summary": "Iterative polar path with angle/radius increments, random opacity and periodic particle growth; preserve form while fixing timer/lifecycle behavior."
+      },
+      {
+        "id": "FlyingLinesGL",
+        "kind": "WebGL/Three.js",
+        "classification": "archive-only",
+        "source": "src/shared/2d/animations/FlyingLinesGL/index.js",
+        "formula_summary": "3D normalized proximity-line experiment; current routes are broken and no parity commitment is made before the shared renderer contract."
+      },
+      {
+        "id": "FlyingCubesGL",
+        "kind": "WebGL/Three.js R&D notebook",
+        "classification": "archive-only",
+        "source": "src/shared/2d/animations/FlyingCubesGL/index.js",
+        "formula_summary": "Mixed cubes, procedural textures, Mandelbrot, noise, refraction and shader experiments; archive intact and extract only a separately approved coherent experiment."
+      }
+    ],
+    "presets": [
+      {
+        "name": "Simple",
+        "for": [
+          "Spiral",
+          "Spiral2",
+          "Spiral3",
+          "Pulse",
+          "DroopingLines",
+          "FlyingLines",
+          "FlyingLinesGL",
+          "FlyingCubesGL"
+        ],
+        "bgColor": "rgba(0, 0, 0, 0.7)",
+        "generativeColorsCounts": 10,
+        "particlesCount": 100,
+        "particleMaxVelocity": 0.5,
+        "lineLength": 250,
+        "particleLife": 20,
+        "margin": 20,
+        "weight": 10,
+        "isMonochrome": false,
+        "isCountStable": false,
+        "isImmortal": false,
+        "addByClick": false,
+        "switchByClick": false,
+        "isStatic": false
+      },
+      {
+        "name": "Switch Color",
+        "for": [
+          "SpiralFlyingLines",
+          "Spiral",
+          "Spiral2",
+          "Spiral3",
+          "Pulse",
+          "DroopingLines",
+          "FlyingLines"
+        ],
+        "bgColor": "rgba(255, 255, 0, 0.7)",
+        "particleColors": [
+          "rgba(0, 0, 255, 1)",
+          "rgba(0, 255, 0, 1)",
+          "rgba(255, 0, 0, 1)"
+        ],
+        "generativeColorsCounts": 10,
+        "particlesCount": 100,
+        "particleMaxVelocity": 1,
+        "lineLength": 150,
+        "particleLife": 20,
+        "margin": 20,
+        "weight": 10,
+        "isMonochrome": false,
+        "isCountStable": false,
+        "isImmortal": false,
+        "addByClick": false,
+        "switchByClick": true,
+        "isStatic": false
+      },
+      {
+        "name": "Monochrome & Clickable",
+        "for": [
+          "SpiralFlyingLines",
+          "DroopingLines",
+          "FlyingLines"
+        ],
+        "bgColor": "rgb(255, 255, 255)",
+        "generativeColorsCounts": 10,
+        "particlesCount": 100,
+        "particleMaxVelocity": 1,
+        "lineLength": 150,
+        "particleLife": 20,
+        "margin": 20,
+        "isMonochrome": true,
+        "isCountStable": false,
+        "isImmortal": false,
+        "addByClick": true,
+        "switchByClick": true,
+        "isStatic": false
+      },
+      {
+        "name": "Add By Click",
+        "for": [
+          "SpiralFlyingLines",
+          "DroopingLines",
+          "FlyingLines",
+          "FlyingLinesGL"
+        ],
+        "bgColor": "rgba(0, 0, 0, 0.7)",
+        "generativeColorsCounts": 10,
+        "particlesCount": 100,
+        "particleMaxVelocity": 1,
+        "lineLength": 200,
+        "particleLife": 20,
+        "margin": 20,
+        "isMonochrome": false,
+        "isCountStable": false,
+        "isImmortal": false,
+        "addByClick": true,
+        "switchByClick": false,
+        "isStatic": false
+      },
+      {
+        "name": "Fixed Radius",
+        "for": "SpiralFlyingLines",
+        "bgColor": "rgba(0, 0, 0, 0.7)",
+        "generativeColorsCounts": 10,
+        "particlesCount": 100,
+        "particleMaxVelocity": 1,
+        "lineLength": 150,
+        "particleLife": 20,
+        "margin": 20,
+        "radius": 12000,
+        "reverse": false,
+        "isPulsative": false,
+        "isMonochrome": false,
+        "isCountStable": false,
+        "isImmortal": false,
+        "addByClick": true,
+        "switchByClick": false,
+        "moveByClick": false,
+        "isStatic": false
+      },
+      {
+        "name": "Fixed & Movable",
+        "for": [
+          "Spiral",
+          "Spiral2",
+          "Spiral3",
+          "Pulse",
+          "SpiralFlyingLines"
+        ],
+        "bgColor": "rgba(0, 0, 0, 0.7)",
+        "generativeColorsCounts": 10,
+        "particlesCount": 100,
+        "particleMaxVelocity": 1,
+        "lineLength": 150,
+        "particleLife": 20,
+        "margin": 20,
+        "weight": 10,
+        "radius": 12000,
+        "reverse": false,
+        "isPulsative": false,
+        "isMonochrome": false,
+        "isCountStable": false,
+        "isImmortal": false,
+        "addByClick": false,
+        "switchByClick": false,
+        "moveByClick": true,
+        "isStatic": false
+      },
+      {
+        "name": "Clickable & Pulsative",
+        "for": [
+          "SpiralFlyingLines",
+          "FlyingLinesGL"
+        ],
+        "bgColor": "rgba(0, 0, 0, 0.7)",
+        "generativeColorsCounts": 10,
+        "particlesCount": 100,
+        "particleMaxVelocity": 1,
+        "lineLength": 150,
+        "particleLife": 20,
+        "margin": 20,
+        "reverse": false,
+        "isPulsative": true,
+        "isMonochrome": false,
+        "isCountStable": false,
+        "isImmortal": false,
+        "addByClick": true,
+        "switchByClick": false,
+        "moveByClick": false,
+        "isStatic": false
+      },
+      {
+        "name": "Blank",
+        "for": [
+          "SpiralFlyingLines",
+          "Spiral",
+          "Spiral2",
+          "Spiral3",
+          "Pulse",
+          "DroopingLines",
+          "FlyingLines"
+        ],
+        "bgColor": "rgba(0, 0, 0, 0.7)",
+        "generativeColorsCounts": 10,
+        "particlesCount": 1,
+        "particleMaxVelocity": 1,
+        "lineLength": 200,
+        "particleLife": 20,
+        "radius": 400,
+        "weight": 10,
+        "margin": 20,
+        "isMonochrome": false,
+        "isCountStable": false,
+        "isImmortal": false,
+        "addByClick": true,
+        "switchByClick": false,
+        "isStatic": false
+      }
+    ],
+    "router_generated_routes": 72,
+    "sidebar_visible_routes": 37
+  },
+  "browser_baseline": {
+    "url": "http://localhost:3000/",
+    "title": "Bindfly Gallery",
+    "default_redirect": "#/DroopingLines-Simple",
+    "desktop_viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "mobile_viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "route_matrix": {
+      "path": "docs/legacy/route-matrix.json",
+      "tested": 37,
+      "renders": 33,
+      "broken": 4,
+      "broken_routes": [
+        "#/FlyingCubesGL-Simple",
+        "#/FlyingLinesGL-Simple",
+        "#/FlyingLinesGL-AddByClick",
+        "#/FlyingLinesGL-Clickable&Pulsative"
+      ],
+      "error_signature": "TypeError: e is not a constructor"
+    },
+    "interaction": {
+      "flow": "FlyingLines Simple -> particlesCount slider",
+      "visual_value_change": true,
+      "url_state_change": false,
+      "observed": "Slider changed from 100 to 120/121 while URL remained with only bgColor."
+    },
+    "fresh_canvas_console": "No errors or warnings on fresh DroopingLines/FlyingLines tabs.",
+    "mobile": {
+      "canvas_renders": true,
+      "controls_present": 4,
+      "visual_findings": [
+        "parameter controls clipped/compressed at the top",
+        "sidebar/open-close affordance not visible in screenshot"
+      ]
+    }
+  },
+  "performance_baseline": {
+    "status": "COMPLETE",
+    "workload": "FlyingLines Simple in the OffscreenCanvas worker at 100, 300 and 500 particles",
+    "probe": "Temporary diagnostics=1 worker rAF wrapper; 30 warmup frames; three 60-sample windows per count; removed after capture",
+    "raw_samples": "docs/legacy/performance-raw.json",
+    "raw_samples_sha256": "51c2b86ca03b352268bd9c5e87bdcd41cc10313850be0274a28c8715f32e9926",
+    "summary": "docs/legacy/performance-summary.json",
+    "summary_sha256": "fd4913e4f53a8bbf1df9dab2f1e1f5a8c4ddb96409f8eaa0c50114ad63413aa3",
+    "report": "docs/legacy/performance-baseline.md",
+    "report_sha256": "b68ac40fb0a13ae62754ea5ff89a72c9d4dbfe24ebb97be3a64ddb2ded1adb50",
+    "callback_median_ms": {
+      "100": 2.8,
+      "300": 24,
+      "500": 67.5
+    },
+    "frame_interval_median_ms": {
+      "100": 8.3,
+      "300": 25,
+      "500": 67
+    },
+    "source_restored_after_probe": true
+  },
+  "known_defects": [
+    {
+      "id": "LEG-001",
+      "area": "loading/runtime",
+      "evidence": "useCanvas/useWebGL and browser",
+      "summary": "Async module factories are used as constructors in fallback/WebGL paths; all visible WebGL routes fail."
+    },
+    {
+      "id": "LEG-002",
+      "area": "React lifecycle",
+      "evidence": "useCanvas",
+      "summary": "canvasReload runs during render and mutates refs/terminates workers."
+    },
+    {
+      "id": "LEG-003",
+      "area": "animation lifecycle",
+      "evidence": "Canvas effects",
+      "summary": "cancelAnimationFrame receives a callback rather than the numeric request ID."
+    },
+    {
+      "id": "LEG-004",
+      "area": "simulation",
+      "evidence": "FlyingPoints/effects",
+      "summary": "Physics/life/fades are frame-based and randomness is uncontrolled."
+    },
+    {
+      "id": "LEG-005",
+      "area": "performance",
+      "evidence": "FlyingLines/DroopingLines",
+      "summary": "Quadratic pair search, duplicate directed pairs and toFixed string conversion in hot loops."
+    },
+    {
+      "id": "LEG-006",
+      "area": "simulation boundary",
+      "evidence": "getPosition",
+      "summary": "Left-edge check compares velocity < margin instead of velocity < 0."
+    },
+    {
+      "id": "LEG-007",
+      "area": "random initialization",
+      "evidence": "FlyingPoints/handlers",
+      "summary": "X and Y often receive the same velocity value."
+    },
+    {
+      "id": "LEG-008",
+      "area": "worker protocol",
+      "evidence": "ICanvasWorkerProps/canvas-worker",
+      "summary": "Heterogeneous messages share one giant interface and resize sends a fake UIEvent."
+    },
+    {
+      "id": "LEG-009",
+      "area": "browser lifecycle",
+      "evidence": "useCanvas",
+      "summary": "Animations overwrite window.onresize rather than owning listeners/observers."
+    },
+    {
+      "id": "LEG-010",
+      "area": "WebGL lifecycle",
+      "evidence": "useWebGL",
+      "summary": "Listener cleanup uses a new closure and a property Object.assign result is discarded."
+    },
+    {
+      "id": "LEG-011",
+      "area": "timer lifecycle",
+      "evidence": "SpiralFlyingLines",
+      "summary": "A 20-second interval grows particles and is never cleared."
+    },
+    {
+      "id": "LEG-012",
+      "area": "URL state",
+      "evidence": "Browser interaction",
+      "summary": "Parameter UI value changes did not persist the changed particlesCount in the hash query."
+    },
+    {
+      "id": "LEG-013",
+      "area": "responsive UI",
+      "evidence": "390x844 screenshot",
+      "summary": "Controls are clipped/compressed and the navigation affordance is not visibly usable."
+    },
+    {
+      "id": "LEG-014",
+      "area": "routing",
+      "evidence": "router/properties",
+      "summary": "Router creates 72 animation/preset combinations while sidebar exposes only 37 supported combinations."
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/legacy/screenshots/drooping-lines-simple-desktop.jpg",
+      "sha256": "6dfeb9fc7367fb10a86ad181243fb0644ff7fe2d933c0e8a6ca086f28b2aa06e",
+      "viewport": "1280x720",
+      "state": "default redirect"
+    },
+    {
+      "path": "docs/legacy/screenshots/flying-lines-simple-desktop.jpg",
+      "sha256": "a96509ab0138f6a7d54e287c31ed5a6553fdd5adc6e469fe5e9dccf0fc43c21f",
+      "viewport": "1280x720",
+      "state": "FlyingLines Simple"
+    },
+    {
+      "path": "docs/legacy/screenshots/flying-lines-gl-simple-error.jpg",
+      "sha256": "8ae3abb3085b59d30528e6300b77b8f3c9bb6b8ea81a0ebc3d054760dee10df2",
+      "viewport": "1280x720",
+      "state": "FlyingLinesGL error"
+    },
+    {
+      "path": "docs/legacy/screenshots/flying-lines-simple-mobile.jpg",
+      "sha256": "5620e2a4e8ef5ab7d67e817c4f85f4d58f931b126e865921f869d1b7bb5b780f",
+      "viewport": "390x844",
+      "state": "FlyingLines Simple mobile"
+    }
+  ],
+  "remaining_phase_0": []
+}

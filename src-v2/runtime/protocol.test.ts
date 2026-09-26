@@ -1,0 +1,74 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+
+import {
+	RUNTIME_PROTOCOL_VERSION,
+	createRuntimeCommand,
+	isRuntimeCommand,
+	isRuntimeEvent,
+	runtimeCommandTypes,
+} from './protocol.ts'
+
+test('enumerates the complete runtime command surface', () => {
+	assert.deepEqual(runtimeCommandTypes, [
+		'initialize',
+		'resize',
+		'input',
+		'parameters',
+		'reset',
+		'pause',
+		'resume',
+		'step',
+		'formula-view',
+		'inspect-point',
+		'capture-point-cloud',
+		'dispose',
+	])
+})
+
+test('creates a versioned command envelope', () => {
+	const command = createRuntimeCommand({
+		requestId: 'request-1',
+		sequence: 0,
+		type: 'pause',
+		payload: undefined,
+	})
+
+	assert.deepEqual(command, {
+		protocolVersion: RUNTIME_PROTOCOL_VERSION,
+		requestId: 'request-1',
+		sequence: 0,
+		type: 'pause',
+		payload: undefined,
+	})
+	assert.equal(isRuntimeCommand(command), true)
+})
+
+test('rejects wrong versions, unknown commands and missing request identity', () => {
+	assert.equal(isRuntimeCommand({
+		protocolVersion: RUNTIME_PROTOCOL_VERSION + 1,
+		requestId: 'request-1',
+		sequence: 0,
+		type: 'pause',
+	}), false)
+	assert.equal(isRuntimeCommand({
+		protocolVersion: RUNTIME_PROTOCOL_VERSION,
+		requestId: 'request-1',
+		sequence: 0,
+		type: 'unknown',
+	}), false)
+	assert.equal(isRuntimeCommand({
+		protocolVersion: RUNTIME_PROTOCOL_VERSION,
+		requestId: '',
+		sequence: 0,
+		type: 'pause',
+	}), false)
+})
+
+test('rejects the retired main-runtime analysis result event', () => {
+	assert.equal(isRuntimeEvent({
+		protocolVersion: RUNTIME_PROTOCOL_VERSION,
+		type: 'analysis-result',
+		payload: {},
+	}), false)
+})

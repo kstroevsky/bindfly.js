@@ -1,0 +1,1443 @@
+{
+  "schema_version": 1,
+  "path": "/Users/kstroevsky/Desktop/dev/bindfly.js/docs/initial_plan.md",
+  "sha256": "0815d8a1a1e895c43e9345f5f8ba291cac81fbda6791a1f230165df815c67a37",
+  "bytes": 40572,
+  "lines": 2320,
+  "sections": [
+    {
+      "path": "Q",
+      "level": 1,
+      "heading": "Q",
+      "start_line": 1,
+      "end_line": 11,
+      "sha256": "49633708071c9b92c19578013ae713dbfea7c33fe11ea7ccb6f0a79857bfdb30",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "1",
+        "2"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "A",
+      "level": 1,
+      "heading": "A",
+      "start_line": 12,
+      "end_line": 21,
+      "sha256": "b5da78835846f69901e9b869254f919861178db1b4fe8b0f2919d83dc5fa630a",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "1. The corrected implementation sequence",
+      "level": 1,
+      "heading": "1. The corrected implementation sequence",
+      "start_line": 22,
+      "end_line": 64,
+      "sha256": "519f90c41a98574c863036a6f2cefc27199fa520336f4b15deabc74332ca6eb3",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "2. Product definition",
+      "level": 1,
+      "heading": "2. Product definition",
+      "start_line": 65,
+      "end_line": 109,
+      "sha256": "a03a84874cab563b3232fb71d4722ebe8198e5ab225e44ae450d125b3da521c5",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "2"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "3. Architectural principles for Codex",
+      "level": 1,
+      "heading": "3. Architectural principles for Codex",
+      "start_line": 110,
+      "end_line": 113,
+      "sha256": "a0a77c3e7f090f0769676d78a6d61434af8eb27c892ff1f9f00a240066acbbc7",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "3"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "3. Architectural principles for Codex / A. Prefer domain abstractions over TypeScript tricks",
+      "level": 3,
+      "heading": "A. Prefer domain abstractions over TypeScript tricks",
+      "start_line": 114,
+      "end_line": 121,
+      "sha256": "53c9c97fb0a0c354c2623f15a1b0bcc4dc44c084c4d8fb0f0592c83a359ead98",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "3. Architectural principles for Codex / A. Prefer domain abstractions over TypeScript tricks / B. Engine code must not depend on React",
+      "level": 3,
+      "heading": "B. Engine code must not depend on React",
+      "start_line": 122,
+      "end_line": 142,
+      "sha256": "f108fb3f375c0e60da28138de42f362fa10832b2ddffe1ce22134807cbb357b0",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "3. Architectural principles for Codex / A. Prefer domain abstractions over TypeScript tricks / C. No renderer owns the simulation",
+      "level": 3,
+      "heading": "C. No renderer owns the simulation",
+      "start_line": 143,
+      "end_line": 160,
+      "sha256": "3bba8eae36add78193ca6878e72de9b05f2612bc8d0748d44538eaa93305c7b7",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "3. Architectural principles for Codex / A. Prefer domain abstractions over TypeScript tricks / D. All randomness must be deterministic when desired",
+      "level": 3,
+      "heading": "D. All randomness must be deterministic when desired",
+      "start_line": 161,
+      "end_line": 179,
+      "sha256": "12b27e0408c48330e9b352a7cc9df6692cdfdffbee9f134bf598ab268bc4328f",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "3. Architectural principles for Codex / A. Prefer domain abstractions over TypeScript tricks / E. Rendering backends are adapters",
+      "level": 3,
+      "heading": "E. Rendering backends are adapters",
+      "start_line": 180,
+      "end_line": 183,
+      "sha256": "46f4f45fd1ad2c9a29176700bb66b18479df85138d78f06d607745505a9a215e",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "3. Architectural principles for Codex / A. Prefer domain abstractions over TypeScript tricks / F. Mathematical analyzers are plugins",
+      "level": 3,
+      "heading": "F. Mathematical analyzers are plugins",
+      "start_line": 184,
+      "end_line": 191,
+      "sha256": "29382fdc2a97b20980e23aa75c19a48220d30425bc3529b2c3f96b0f399e9456",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "4. Proposed repository structure",
+      "level": 1,
+      "heading": "4. Proposed repository structure",
+      "start_line": 192,
+      "end_line": 256,
+      "sha256": "9b62fd1c7f37d1a8f75292765732b60eada7eb0ad64add049e2e59cb4a494141",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "4"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "5. The central domain object: Experiment",
+      "level": 1,
+      "heading": "5. The central domain object: Experiment",
+      "start_line": 257,
+      "end_line": 314,
+      "sha256": "003c539c05509dd3915d735a69674ac98cfee8319d8906d0525da212fb40ed4c",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "5"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "6. The state model",
+      "level": 1,
+      "heading": "6. The state model",
+      "start_line": 315,
+      "end_line": 365,
+      "sha256": "7f6f233c6918b3224f554d442275fa2284b445d54744e52e0b71531a9c9a4a2a",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "6"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "7. Clock architecture",
+      "level": 1,
+      "heading": "7. Clock architecture",
+      "start_line": 366,
+      "end_line": 414,
+      "sha256": "6d858431ac662e0e6552a4709bed2299e3be07b6bf1b64d824a9dd703b96684c",
+      "code_fences": 6,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "1",
+        "120",
+        "144",
+        "30",
+        "5",
+        "60",
+        "7"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "8. Formula engine: probably the most important new subsystem",
+      "level": 1,
+      "heading": "8. Formula engine: probably the most important new subsystem",
+      "start_line": 415,
+      "end_line": 455,
+      "sha256": "357cb514adb383f87a3c95db8ed5b77af2b769ecd2c922caec002f97bade5789",
+      "code_fences": 6,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "8"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "9. Formula families",
+      "level": 1,
+      "heading": "9. Formula families",
+      "start_line": 456,
+      "end_line": 461,
+      "sha256": "77d4be5fe47b575ffa837001616e5ccc418e93c5248b49fff59609cc90da9e61",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "9"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "9. Formula families / `VectorField`",
+      "level": 2,
+      "heading": "`VectorField`",
+      "start_line": 462,
+      "end_line": 479,
+      "sha256": "bb051cd2857d518d3b4248b0bf6638b5cbd65e40b1cd8cefde0624012a8e46a4",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "9. Formula families / `DiscreteMap`",
+      "level": 2,
+      "heading": "`DiscreteMap`",
+      "start_line": 480,
+      "end_line": 496,
+      "sha256": "4843716af1cbcbb1612d016b31156310dd784e40cb4114d0f2e141b9ed93de15",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "9. Formula families / `Transform`",
+      "level": 2,
+      "heading": "`Transform`",
+      "start_line": 497,
+      "end_line": 512,
+      "sha256": "1af49c5c58f6875a41a43ebd0893b1bd8570045adf7002224a7c152c8367121a",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "9. Formula families / `ScalarField`",
+      "level": 2,
+      "heading": "`ScalarField`",
+      "start_line": 513,
+      "end_line": 530,
+      "sha256": "01b989d7d69dae473ae7c8e5e19049114be502e12b16e9008001951f5b161c15",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "9. Formula families / `Metric`",
+      "level": 2,
+      "heading": "`Metric`",
+      "start_line": 531,
+      "end_line": 557,
+      "sha256": "67dfc600ea76c078f6c5aa85dacca51d1436b5b1adf095f20d0681c6992f56fa",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "9. Formula families / Eventually: `InteractionLaw`",
+      "level": 2,
+      "heading": "Eventually: `InteractionLaw`",
+      "start_line": 558,
+      "end_line": 571,
+      "sha256": "0599550fd9fde54c070e2b7cb0a8acfc6e3fa5b18d47169f402e0b5997794204",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "10. Parameter system",
+      "level": 1,
+      "heading": "10. Parameter system",
+      "start_line": 572,
+      "end_line": 621,
+      "sha256": "2a3f5a57f1823cba1bfa29c88e7dd4ae33d5b4b41add177ff0bb62e13a3cf53c",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "0",
+        "000000",
+        "1",
+        "10",
+        "100",
+        "1000",
+        "500"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "11. Rendering architecture",
+      "level": 1,
+      "heading": "11. Rendering architecture",
+      "start_line": 622,
+      "end_line": 625,
+      "sha256": "47222e8c58b6edb573aa72ec99d57f1e16851581cf80d5d51ac51cf58409be32",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "11"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "11. Rendering architecture / Renderer 1 — Canvas2D",
+      "level": 2,
+      "heading": "Renderer 1 — Canvas2D",
+      "start_line": 626,
+      "end_line": 657,
+      "sha256": "86ecd34f30c67ff132c6d94e92e4f5172e72d1ee30f0f28d0dbdcec00d8f25e9",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "1",
+        "6"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "12. Canvas performance refactor",
+      "level": 1,
+      "heading": "12. Canvas performance refactor",
+      "start_line": 658,
+      "end_line": 695,
+      "sha256": "f332ebda6f14576fb56a8cb7fd2a527c4991803f3b68b5d38ca8df75e14150d7",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "12",
+        "2"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "13. Worker architecture",
+      "level": 1,
+      "heading": "13. Worker architecture",
+      "start_line": 696,
+      "end_line": 733,
+      "sha256": "21029e2bfef6cc6bb564ef079b30e020ecad7bbf7d5a00882c9d24af7b82e3b3",
+      "code_fences": 6,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "13"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "14. Worker protocol",
+      "level": 1,
+      "heading": "14. Worker protocol",
+      "start_line": 734,
+      "end_line": 774,
+      "sha256": "76c868c16fbb3051e2e5cfc88493687c499ae1c864edc4fafd51c96a2af5f414",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "14"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "15. Avoid excessive state transfer",
+      "level": 1,
+      "heading": "15. Avoid excessive state transfer",
+      "start_line": 775,
+      "end_line": 800,
+      "sha256": "c60028ca73439b6295a3ee5f2fe882f9c87d41e86b48e8312ca7e3ca2c7cf844",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "000",
+        "100",
+        "15"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "16. Renderer 2 — WebGL2",
+      "level": 1,
+      "heading": "16. Renderer 2 — WebGL2",
+      "start_line": 801,
+      "end_line": 820,
+      "sha256": "59bdf748b609fbe765af303f8e42b2271b1ec405e38e5bea68906ba29c13c3aa",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "16",
+        "2"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "17. Renderer 3 — WebGPU",
+      "level": 1,
+      "heading": "17. Renderer 3 — WebGPU",
+      "start_line": 821,
+      "end_line": 860,
+      "sha256": "a875985125a6b5b3661adbb212c864ceb6b0ec4a16de571746ebf79594447157",
+      "code_fences": 8,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "1",
+        "100",
+        "17",
+        "2",
+        "3"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "18. Analysis architecture",
+      "level": 1,
+      "heading": "18. Analysis architecture",
+      "start_line": 861,
+      "end_line": 903,
+      "sha256": "cdfb3beea690a6aa9388b68ef4ee3f4d0e0ec8ecf46e64239cb368c5c9e8f20f",
+      "code_fences": 6,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "1",
+        "10",
+        "120",
+        "18",
+        "60"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "19. Introduce explicit computational budgets",
+      "level": 1,
+      "heading": "19. Introduce explicit computational budgets",
+      "start_line": 904,
+      "end_line": 926,
+      "sha256": "795e422a64a66b34b5cb16525c955740f0212fff6e112832589384b7e3eaa642",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "000",
+        "19",
+        "2",
+        "50",
+        "5000"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "20. First mathematical vertical slice: Flying Lines",
+      "level": 1,
+      "heading": "20. First mathematical vertical slice: Flying Lines",
+      "start_line": 927,
+      "end_line": 981,
+      "sha256": "98bbb21abe4346a60deae46f4547813c559bf1b3ec5df2001b48818cc1ff8a46",
+      "code_fences": 8,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "20"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "21. Topology v0: don't start with persistent homology",
+      "level": 1,
+      "heading": "21. Topology v0: don't start with persistent homology",
+      "start_line": 982,
+      "end_line": 985,
+      "sha256": "3b794a4d927e15126d7f4189f2bf78f45f592c13091081cdcc2a6279b7fd19a9",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "21"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "21. Topology v0: don't start with persistent homology / Connected components",
+      "level": 3,
+      "heading": "Connected components",
+      "start_line": 986,
+      "end_line": 1008,
+      "sha256": "b56fd85d73f90493ea5543fd3332e51a35649276f080eced0aee378d98193d77",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "43.2",
+        "7",
+        "823"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "22. Topology v1: Vietoris–Rips visualization",
+      "level": 1,
+      "heading": "22. Topology v1: Vietoris–Rips visualization",
+      "start_line": 1009,
+      "end_line": 1028,
+      "sha256": "5995d2e77d36af1d191f46c94c366789969e9dd3de9945abc7fa296e69245f6f",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "1",
+        "2",
+        "22",
+        "3",
+        "4"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "23. Topology v2: persistence",
+      "level": 1,
+      "heading": "23. Topology v2: persistence",
+      "start_line": 1029,
+      "end_line": 1067,
+      "sha256": "531f4874acc3896f7ae452b0fb0263511d63e04dd4b3fe0ebcf6728e23a64d51",
+      "code_fences": 6,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "23",
+        "7"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "24. Topology UI",
+      "level": 1,
+      "heading": "24. Topology UI",
+      "start_line": 1068,
+      "end_line": 1102,
+      "sha256": "151bdbb3b50cb9af4f6b9b1ef9a32f213a38a076089b55cc574480079763c224",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "0",
+        "1",
+        "2",
+        "24"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "25. Dynamical systems module",
+      "level": 1,
+      "heading": "25. Dynamical systems module",
+      "start_line": 1103,
+      "end_line": 1136,
+      "sha256": "4fd25d4a5ba9c72632ad1a9db37a18f0be1e6321119f2b08147241f820f6e2fa",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "25"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "26. Numerical integration",
+      "level": 1,
+      "heading": "26. Numerical integration",
+      "start_line": 1137,
+      "end_line": 1161,
+      "sha256": "39733c5fbe901ea1563c9abd670bf69471bf14462d33453987e1e32002ad06de",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "26"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "27. Formula morphing",
+      "level": 1,
+      "heading": "27. Formula morphing",
+      "start_line": 1162,
+      "end_line": 1198,
+      "sha256": "a8f6c64d9f3a2bd9d5397e8d18413ffc3138e60b93eaf783a6d587a5df488700",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "1.0000",
+        "1.0001",
+        "27"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "28. Parameter sweeps",
+      "level": 1,
+      "heading": "28. Parameter sweeps",
+      "start_line": 1199,
+      "end_line": 1227,
+      "sha256": "5065efd737f6ff36b896cfb61848916075be5a403aa81e72df9e7115445463f5",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "0.0",
+        "0.1",
+        "0.2",
+        "2.0",
+        "28"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "29. Dynamical-analysis plugins",
+      "level": 1,
+      "heading": "29. Dynamical-analysis plugins",
+      "start_line": 1228,
+      "end_line": 1231,
+      "sha256": "6e88789aee6da2bfd4cb6123231259b6ded63f25679a6affd4aded8d656238d9",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "29"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "29. Dynamical-analysis plugins / Equilibrium finder",
+      "level": 3,
+      "heading": "Equilibrium finder",
+      "start_line": 1232,
+      "end_line": 1239,
+      "sha256": "e919a569b57f1904521a265427b397174b103eefbd794a4ff393e3094eb898a9",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "0"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "29. Dynamical-analysis plugins / Equilibrium finder / Stability",
+      "level": 3,
+      "heading": "Stability",
+      "start_line": 1240,
+      "end_line": 1243,
+      "sha256": "88acd80d7ffdbd007c19c37cdde9afa6fb945580b68553674eed43523d839cd7",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "29. Dynamical-analysis plugins / Equilibrium finder / Lyapunov exponent",
+      "level": 3,
+      "heading": "Lyapunov exponent",
+      "start_line": 1244,
+      "end_line": 1247,
+      "sha256": "0eb1c15c0c6dbe908755adc5da788f68b4705aefee327f3005487976082910ae",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "29. Dynamical-analysis plugins / Equilibrium finder / Poincaré section",
+      "level": 3,
+      "heading": "Poincaré section",
+      "start_line": 1248,
+      "end_line": 1251,
+      "sha256": "76bbc2a9f285640241d2d7fce27b3779d109c87b26b345ee3306144b6d8353bc",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "29. Dynamical-analysis plugins / Equilibrium finder / Basin visualization",
+      "level": 3,
+      "heading": "Basin visualization",
+      "start_line": 1252,
+      "end_line": 1255,
+      "sha256": "b4180b47c567079ef8ebc48ea0f8db2cb8107d57ed50481d57239cca334e2e8b",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "29. Dynamical-analysis plugins / Equilibrium finder / Bifurcation explorer",
+      "level": 3,
+      "heading": "Bifurcation explorer",
+      "start_line": 1256,
+      "end_line": 1263,
+      "sha256": "fcc18c9c19f1119ac5066910175cc56d0f58aa1f3a922faa4537722e8cbd3f49",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "30. Scalar-field experiments",
+      "level": 1,
+      "heading": "30. Scalar-field experiments",
+      "start_line": 1264,
+      "end_line": 1294,
+      "sha256": "9004b77afa4d801233e9455e24f3d8ad8924924dd9fccfbcaa2642c71dc7f09a",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "3",
+        "30"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "31. Preserve the weird old formulas",
+      "level": 1,
+      "heading": "31. Preserve the weird old formulas",
+      "start_line": 1295,
+      "end_line": 1321,
+      "sha256": "f80878a360c2849276731f7715eacae0b962e7f520feca64e8e736a7ba504488",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "2023",
+        "31"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "32. Multiplayer architecture",
+      "level": 1,
+      "heading": "32. Multiplayer architecture",
+      "start_line": 1322,
+      "end_line": 1360,
+      "sha256": "0b6e78c0237c59ae27e126e776d894fe12f385b3e20f65dfa1ef84f78c64bf0e",
+      "code_fences": 6,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "0.23",
+        "0.84",
+        "1723",
+        "32",
+        "81238"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "33. Don't rely on perfect lockstep forever",
+      "level": 1,
+      "heading": "33. Don't rely on perfect lockstep forever",
+      "start_line": 1361,
+      "end_line": 1378,
+      "sha256": "8507f261089d900c34593bc2d1f2d310edf0cfd01a0d8210368b8a55f64c8e08",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "33"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "34. Multiplayer can become mathematical gameplay",
+      "level": 1,
+      "heading": "34. Multiplayer can become mathematical gameplay",
+      "start_line": 1379,
+      "end_line": 1416,
+      "sha256": "67af966054864a0b139e4b9c253845f84e6eb9565774cd38b499431ab6482916",
+      "code_fences": 10,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "3",
+        "34",
+        "5"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "35. Studio architecture",
+      "level": 1,
+      "heading": "35. Studio architecture",
+      "start_line": 1417,
+      "end_line": 1439,
+      "sha256": "9b9b44fd5dc32be4b453f6454551c93f83725f9eddff402e629b03b36df31e19",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "35"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "36. Separate durable and ephemeral state",
+      "level": 1,
+      "heading": "36. Separate durable and ephemeral state",
+      "start_line": 1440,
+      "end_line": 1471,
+      "sha256": "fd2c2b07361a569cdca3efaea38cbf5661bd66a3545650b1bf5796c1110896e8",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "36"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "37. Versioned URLs",
+      "level": 1,
+      "heading": "37. Versioned URLs",
+      "start_line": 1472,
+      "end_line": 1498,
+      "sha256": "9d5a25efe6456746fff852d2b567c2c57a152c74664c73c7cc173c4018100b43",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "2",
+        "2027",
+        "37"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "38. Performance telemetry",
+      "level": 1,
+      "heading": "38. Performance telemetry",
+      "start_line": 1499,
+      "end_line": 1532,
+      "sha256": "b5102e0f3e892236d7a67b9105981caa7203dbc05e7a2c5d9e619e2c3a3fcc85",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "38"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "39. Benchmark harness",
+      "level": 1,
+      "heading": "39. Benchmark harness",
+      "start_line": 1533,
+      "end_line": 1566,
+      "sha256": "0f787ddc12cfa493e62bb1b4ef0f46c8a9a633b81841fb6a9ebc56485dc9e599",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "000",
+        "1",
+        "10",
+        "100",
+        "20",
+        "300",
+        "39",
+        "42",
+        "50"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "40. Testing architecture",
+      "level": 1,
+      "heading": "40. Testing architecture",
+      "start_line": 1567,
+      "end_line": 1570,
+      "sha256": "7549b8900bdf476b713b938cfec86897b83007c8161bf3e79e02a09f52f0895c",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "40"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "40. Testing architecture / Unit tests",
+      "level": 3,
+      "heading": "Unit tests",
+      "start_line": 1571,
+      "end_line": 1586,
+      "sha256": "d462f3277e0e3cc1db906771eb6ac62f4e67c95267d3d1c8411bebe493bcf418",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "40. Testing architecture / Unit tests / Mathematical property tests",
+      "level": 3,
+      "heading": "Mathematical property tests",
+      "start_line": 1587,
+      "end_line": 1608,
+      "sha256": "1f9f5403feb50470ba359a683d7b00d6ac21b3d5a048d49cb78aa10d128737c5",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [],
+      "versioned_tokens": []
+    },
+    {
+      "path": "41. Analysis validation tests",
+      "level": 1,
+      "heading": "41. Analysis validation tests",
+      "start_line": 1609,
+      "end_line": 1634,
+      "sha256": "c4c12f0d02c4d34aac2fd95a5fe193d808962e6421cca53c830fd8c004f714ad",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "41",
+        "8"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "42. Visual tests",
+      "level": 1,
+      "heading": "42. Visual tests",
+      "start_line": 1635,
+      "end_line": 1656,
+      "sha256": "c776d25dcc0f29314ee718f24bdede7b8f43d73941f51909ca496a8548cd0d92",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "42"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "43. Tooling migration",
+      "level": 1,
+      "heading": "43. Tooling migration",
+      "start_line": 1657,
+      "end_line": 1685,
+      "sha256": "8d1f1b63cb9872646aa3bac73ae73277200cf001751f2d97102dc68109a2e772",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "43"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "44. TypeScript compiler policy",
+      "level": 1,
+      "heading": "44. TypeScript compiler policy",
+      "start_line": 1686,
+      "end_line": 1710,
+      "sha256": "1c559a3ef044f594bbefb9dd9c6c3a42dd9be0241e2e72e9f2a01f386b617b7f",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "44"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex",
+      "level": 1,
+      "heading": "45. Migration phases for Codex",
+      "start_line": 1711,
+      "end_line": 1714,
+      "sha256": "8db300b1c6729e9c3ce4613c346c7b53748e8c14a000f77dc5cfd7811d2a1cae",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "45"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 0 — Baseline old Bindfly",
+      "level": 2,
+      "heading": "Phase 0 — Baseline old Bindfly",
+      "start_line": 1715,
+      "end_line": 1732,
+      "sha256": "af0e22d3135b3f90fd81043dae5d125e23ba1c166f7740c95469de97f8182062",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "0"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 1 — Scaffold Bindfly 2",
+      "level": 2,
+      "heading": "Phase 1 — Scaffold Bindfly 2",
+      "start_line": 1733,
+      "end_line": 1769,
+      "sha256": "1d070a6264e8512d7dee8260f985964788ce06f671103613a267432bf97a8be5",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "1",
+        "2"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 2 — Core contracts",
+      "level": 2,
+      "heading": "Phase 2 — Core contracts",
+      "start_line": 1770,
+      "end_line": 1790,
+      "sha256": "6936c5cd9d0d3f6ab99ef2e43c3c8b135563ba2765b9b14d2d0d3d6f1f6a93b1",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "2"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 3 — Flying Lines vertical slice",
+      "level": 2,
+      "heading": "Phase 3 — Flying Lines vertical slice",
+      "start_line": 1791,
+      "end_line": 1814,
+      "sha256": "e0253e1af9ee3de30afc31e2c17e720fbb417d9ae518bad2a252b250d8ae2bf8",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "2",
+        "3"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 4 — Correct timing/lifecycle",
+      "level": 2,
+      "heading": "Phase 4 — Correct timing/lifecycle",
+      "start_line": 1815,
+      "end_line": 1831,
+      "sha256": "64f3dc70558ae3d156acd3311891184b9670f7c03d82a007b3decdbabdca45ce",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "4"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 5 — Performance data model",
+      "level": 2,
+      "heading": "Phase 5 — Performance data model",
+      "start_line": 1832,
+      "end_line": 1846,
+      "sha256": "1f7d8097b15bae46ca608868e9f96f4f302d4b531b099e62b2b3576222ed0b90",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "5"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 6 — Spatial indexing",
+      "level": 2,
+      "heading": "Phase 6 — Spatial indexing",
+      "start_line": 1847,
+      "end_line": 1866,
+      "sha256": "14dbc080cb9df0bd280dc979181f3e2f90187014ad3bf0a269b5857939975e9b",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "6"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 7 — Worker runtime",
+      "level": 2,
+      "heading": "Phase 7 — Worker runtime",
+      "start_line": 1867,
+      "end_line": 1883,
+      "sha256": "76f7eb296507161595a21cd4bcb3f614709ccab9e20516a36dea193a93f6195c",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "1",
+        "7"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 8 — Studio architecture",
+      "level": 2,
+      "heading": "Phase 8 — Studio architecture",
+      "start_line": 1884,
+      "end_line": 1901,
+      "sha256": "7100ffde91936777d3a54799ec625fd490c3c4a6aa2499b2b51dbcd1397fc9b2",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "8"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 9 — URL/state architecture",
+      "level": 2,
+      "heading": "Phase 9 — URL/state architecture",
+      "start_line": 1902,
+      "end_line": 1915,
+      "sha256": "55f564989d168122835cf54d647fd8593b8080bc93df3ffa361dc419fd83b8f2",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "9"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 10 — Legacy migration",
+      "level": 2,
+      "heading": "Phase 10 — Legacy migration",
+      "start_line": 1916,
+      "end_line": 1934,
+      "sha256": "c6f61ee08cb544e08e704f8c6b384ac318b291ee969e540bc3154e6a8399bd2a",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "1",
+        "10",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 11 — Formula AST",
+      "level": 2,
+      "heading": "Phase 11 — Formula AST",
+      "start_line": 1935,
+      "end_line": 1965,
+      "sha256": "6bba2ede457cb5a0e72b926636f16beb8c977828b9711f48f8183078e1be9f01",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "11"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 12 — Formula-based experiment system",
+      "level": 2,
+      "heading": "Phase 12 — Formula-based experiment system",
+      "start_line": 1966,
+      "end_line": 1983,
+      "sha256": "d4341530c536c33066bf0844d6c236978459ce2eca2db96da7661215abc87ceb",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "12"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 13 — Mathematical classics",
+      "level": 2,
+      "heading": "Phase 13 — Mathematical classics",
+      "start_line": 1984,
+      "end_line": 2002,
+      "sha256": "78b132383843523fce4b8b76a0c4e60f5d0b57779cfbdd0fbf3cc887f6715cc6",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "13"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 14 — Formula morphing",
+      "level": 2,
+      "heading": "Phase 14 — Formula morphing",
+      "start_line": 2003,
+      "end_line": 2014,
+      "sha256": "448da9acb9adfef5c40fa6e18a4babe786ab28fca59d60141c6048908ad031fb",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "14"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 15 — Graph-analysis subsystem",
+      "level": 2,
+      "heading": "Phase 15 — Graph-analysis subsystem",
+      "start_line": 2015,
+      "end_line": 2032,
+      "sha256": "7fcc0a8686efa1173f46e1e7322fc1df79ff001bb40886116aca88b0729d292f",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "15"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 16 — Rips-complex visualization",
+      "level": 2,
+      "heading": "Phase 16 — Rips-complex visualization",
+      "start_line": 2033,
+      "end_line": 2049,
+      "sha256": "799f55a01b77891998534483f43dff387526e14723b581b0ff0ccf186c7b68e1",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "16"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 17 — Persistent topology backend",
+      "level": 2,
+      "heading": "Phase 17 — Persistent topology backend",
+      "start_line": 2050,
+      "end_line": 2074,
+      "sha256": "0b6452c577d38f639b2528a0edfbbe98e388b1574ec6bb8d3219dd2512138c01",
+      "code_fences": 4,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "17",
+        "7"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 18 — Persistence visualization",
+      "level": 2,
+      "heading": "Phase 18 — Persistence visualization",
+      "start_line": 2075,
+      "end_line": 2091,
+      "sha256": "7f99c7aa25e0da5bb3a29ed6ec3ef5db6fbdd3416c2f8606931c0affcac4d584",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "18"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 19 — Dynamical systems analysis",
+      "level": 2,
+      "heading": "Phase 19 — Dynamical systems analysis",
+      "start_line": 2092,
+      "end_line": 2108,
+      "sha256": "974de49e137858e689dba4d4d78560dd332fd7c2b661eafbab42fe464ed3ecb9",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "19"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 20 — WebGL renderer",
+      "level": 2,
+      "heading": "Phase 20 — WebGL renderer",
+      "start_line": 2109,
+      "end_line": 2120,
+      "sha256": "be8d3275dfb62d0a102c3523cbe78c73aa00774e8f8e43b4df8561bb6bdbd4cb",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "20"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 21 — Benchmark laboratory",
+      "level": 2,
+      "heading": "Phase 21 — Benchmark laboratory",
+      "start_line": 2121,
+      "end_line": 2140,
+      "sha256": "cbaa95c3703eab3b76288e96bc828fe15279efa9aeaee6318e9395ee0b98df61",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "21"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 22 — WebGPU experiment",
+      "level": 2,
+      "heading": "Phase 22 — WebGPU experiment",
+      "start_line": 2141,
+      "end_line": 2156,
+      "sha256": "0d38ccd265e90be193a9835dbe3e888ef4ca39f2aaa89b2cd4768bc31ddb0ef8",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "2",
+        "22"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 23 — Multiplayer event system",
+      "level": 2,
+      "heading": "Phase 23 — Multiplayer event system",
+      "start_line": 2157,
+      "end_line": 2168,
+      "sha256": "68f3be97e0b5210d8fec9da7f902e5be83489b10004bb65a0a6fd688c587b168",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "23"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 24 — Authoritative synchronization",
+      "level": 2,
+      "heading": "Phase 24 — Authoritative synchronization",
+      "start_line": 2169,
+      "end_line": 2184,
+      "sha256": "ef8f9c5cb2bfa343fd6871c39895e13b44c29abd6f8ef322f68a4e7107850ee2",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "24"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "45. Migration phases for Codex / Phase 25 — Collaborative mathematical modes",
+      "level": 2,
+      "heading": "Phase 25 — Collaborative mathematical modes",
+      "start_line": 2185,
+      "end_line": 2202,
+      "sha256": "58ea88005094c478566366d3acf80c4d2572808b3cf2e3300a8a7da26a096cf6",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "25"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "46. Architecture acceptance tests",
+      "level": 1,
+      "heading": "46. Architecture acceptance tests",
+      "start_line": 2203,
+      "end_line": 2240,
+      "sha256": "e94df5a10b2a6acef29096a67b09fe90aa9dc2c63a43d10fbfefbfcbdba70296",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "46"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "47. One more important rule for Codex",
+      "level": 1,
+      "heading": "47. One more important rule for Codex",
+      "start_line": 2241,
+      "end_line": 2260,
+      "sha256": "99d0e11436e28d4e027b320d2ed83bc896f8562e4b141f12eac5e9141ec5b76f",
+      "code_fences": 0,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "47"
+      ],
+      "versioned_tokens": []
+    },
+    {
+      "path": "48. The target end-state",
+      "level": 1,
+      "heading": "48. The target end-state",
+      "start_line": 2261,
+      "end_line": 2320,
+      "sha256": "a7f260cbbf7f40b4f0d140148ec01114af677dbc123b2ba3f681985e4f108943",
+      "code_fences": 2,
+      "display_math_markers": 0,
+      "numeric_tokens": [
+        "0",
+        "1",
+        "13.0",
+        "2",
+        "25",
+        "3",
+        "4",
+        "48",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "versioned_tokens": []
+    }
+  ]
+}

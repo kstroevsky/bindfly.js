@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "accepted": true,
+  "accepted_at": "2026-09-25",
+  "accepted_candidate_sha256": "da39c962809699778a9e59995faff883e792f921364af9cd6d82142a27cd78bc",
+  "evidence": "The user identified the Candidate/candidate-under-verification header as stale for the canonical plan, then instructed Codex to continue and double-check the proposed fixes."
+}

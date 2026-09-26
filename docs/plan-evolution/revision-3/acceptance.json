@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "accepted": true,
+  "accepted_at": "2026-09-20",
+  "accepted_candidate_sha256": "0444072c92bae2f3021ebb5521a556bcecab12fb56de53dba04368e605cf2988",
+  "evidence": "User stated 'I would move ahead, with a few refinements to how Stage 13 is implemented,' accepting revision 3 as the base while supplying a new revision-4 delta."
+}

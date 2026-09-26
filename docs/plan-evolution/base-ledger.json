@@ -1,0 +1,1977 @@
+{
+  "schema_version": 1,
+  "canonical_sha256": "0815d8a1a1e895c43e9345f5f8ba291cac81fbda6791a1f230165df815c67a37",
+  "requirements": [
+    {
+      "id": "DOC-001",
+      "status": "active",
+      "section": [
+        "1. The corrected implementation sequence"
+      ],
+      "summary": "Use an evidence-first vertical-slice migration rather than a giant refactor.",
+      "normative_payload": {
+        "order": [
+          "freeze legacy",
+          "define boundaries",
+          "Flying Lines vertical slice",
+          "runtime/performance",
+          "legacy effects",
+          "mathematical laboratory",
+          "dynamics",
+          "topology",
+          "multiplayer",
+          "advanced GPU"
+        ],
+        "failure_action": "do not proceed as a mega-refactor"
+      },
+      "anchors": [
+        "do not do a giant “refactor everything, then build features” rewrite"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "PROD-001",
+      "status": "active",
+      "section": [
+        "2. Product definition"
+      ],
+      "summary": "Bindfly is a mathematical emergence laboratory with separable rule, simulation, analysis, representation and interaction layers.",
+      "normative_payload": {
+        "layers": [
+          "rules",
+          "simulation",
+          "analysis",
+          "representation"
+        ],
+        "cross_cutting": [
+          "interaction"
+        ]
+      },
+      "anchors": [
+        "Bindfly is an interactive laboratory for exploring how simple mathematical rules generate complex geometry, dynamics and topology"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-001",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex"
+      ],
+      "summary": "Rendering, simulation, analysis, UI and multiplayer remain separate responsibilities.",
+      "normative_payload": {
+        "forbidden_collapses": [
+          "rendering=simulation",
+          "simulation=analysis",
+          "analysis=UI",
+          "multiplayer=simulation"
+        ]
+      },
+      "anchors": [
+        "Rendering is not simulation."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-002",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "A. Prefer domain abstractions over TypeScript tricks"
+      ],
+      "summary": "Types describe runtime concepts and invalid states; avoid inference-only machinery.",
+      "normative_payload": {
+        "failure_action": "delete generic machinery without runtime/domain value"
+      },
+      "anchors": [
+        "Types should describe real runtime concepts and make invalid states impossible."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-003",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "B. Engine code must not depend on React"
+      ],
+      "summary": "React owns studio UI but never simulation/runtime/analysis/renderer state.",
+      "normative_payload": {
+        "react_owns": [
+          "panels",
+          "forms",
+          "lesson UI",
+          "routing",
+          "inspectors",
+          "accessibility",
+          "overlays"
+        ],
+        "react_forbidden": [
+          "simulation clocks",
+          "particle arrays",
+          "rendering loops",
+          "persistent homology",
+          "WebGL scenes",
+          "worker state"
+        ]
+      },
+      "anchors": [
+        "Engine code must not depend on React"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-004",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "C. No renderer owns the simulation"
+      ],
+      "summary": "Clock drives simulation; renderers and analyzers consume state.",
+      "normative_payload": {
+        "order": [
+          "clock",
+          "simulation.step",
+          "state",
+          "renderer/analyzer"
+        ]
+      },
+      "anchors": [
+        "No renderer owns the simulation"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-005",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "D. All randomness must be deterministic when desired"
+      ],
+      "summary": "Experiments accept a seed and engine code avoids uncontrolled Math.random.",
+      "normative_payload": {
+        "seed_types": [
+          "string",
+          "number"
+        ],
+        "uses": [
+          "reproducibility",
+          "benchmarks",
+          "tests",
+          "URLs",
+          "multiplayer",
+          "comparisons"
+        ]
+      },
+      "anchors": [
+        "Never scatter uncontrolled `Math.random()` through the engine"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-006",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "E. Rendering backends are adapters"
+      ],
+      "summary": "Canvas2D, WebGL2 and WebGPU are adapter implementations, not domain concepts.",
+      "normative_payload": {
+        "backends": [
+          "Canvas2D",
+          "WebGL2",
+          "WebGPU"
+        ]
+      },
+      "anchors": [
+        "Rendering backends are adapters"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-007",
+      "status": "active",
+      "section": [
+        "3. Architectural principles for Codex",
+        "F. Mathematical analyzers are plugins"
+      ],
+      "summary": "Topology and dynamics analyzers do not infect the core particle engine.",
+      "normative_payload": {
+        "examples": [
+          "persistent homology",
+          "Lyapunov",
+          "graph statistics",
+          "bifurcation"
+        ]
+      },
+      "anchors": [
+        "Mathematical analyzers are plugins"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-008",
+      "status": "active",
+      "section": [
+        "4. Proposed repository structure"
+      ],
+      "summary": "Use a pnpm workspace with meaningful boundaries and no garbage-drawer packages.",
+      "normative_payload": {
+        "workspace": "pnpm",
+        "logical_areas": [
+          "studio",
+          "core",
+          "formula",
+          "effects",
+          "rendering",
+          "runtime",
+          "analysis",
+          "collaboration",
+          "benchmarks"
+        ],
+        "forbidden_packages": [
+          "utils",
+          "helpers",
+          "shared",
+          "types"
+        ]
+      },
+      "anchors": [
+        "I would use a pnpm workspace, but deliberately avoid turning every directory into an npm package."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "EXP-001",
+      "status": "active",
+      "section": [
+        "5. The central domain object: Experiment"
+      ],
+      "summary": "ExperimentDefinition owns ID/version, parameters, simulation factory, renderer support, analyzers and presets.",
+      "normative_payload": {
+        "fields": [
+          "id",
+          "version",
+          "parameters",
+          "createSimulation",
+          "supportedRenderers",
+          "analyzers",
+          "presets"
+        ]
+      },
+      "anchors": [
+        "interface ExperimentDefinition<"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "EXP-002",
+      "status": "active",
+      "section": [
+        "5. The central domain object: Experiment"
+      ],
+      "summary": "Simulation exposes state, step, input, reset and dispose.",
+      "normative_payload": {
+        "methods": [
+          "step",
+          "applyInput",
+          "reset",
+          "dispose"
+        ]
+      },
+      "anchors": [
+        "interface Simulation<State, Input>"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "STATE-001",
+      "status": "active",
+      "section": [
+        "6. The state model"
+      ],
+      "summary": "Particle-heavy state uses structure-of-arrays typed buffers.",
+      "normative_payload": {
+        "fields": [
+          "count",
+          "x",
+          "y",
+          "vx",
+          "vy",
+          "life",
+          "flags"
+        ],
+        "types": [
+          "Float32Array",
+          "Uint8Array"
+        ]
+      },
+      "anchors": [
+        "interface ParticleBuffer"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "STATE-002",
+      "status": "active",
+      "section": [
+        "6. The state model"
+      ],
+      "summary": "Non-particle and object-based simulations remain permitted.",
+      "normative_payload": {
+        "scope": "do not require every simulation to use particles"
+      },
+      "anchors": [
+        "Do **not** require every simulation to use particles."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TIME-001",
+      "status": "active",
+      "section": [
+        "7. Clock architecture"
+      ],
+      "summary": "Use fixed-step simulation with accumulator, catch-up cap, pause/resume, speed and deterministic step index.",
+      "normative_payload": {
+        "illustrative_dt": "1 / 120",
+        "features": [
+          "accumulator",
+          "maximum catch-up steps",
+          "pause/resume",
+          "simulation speed",
+          "deterministic step index"
+        ],
+        "failure_action": "avoid refresh-rate-dependent dynamics"
+      },
+      "anchors": [
+        "simulationDt = 1 / 120"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-001",
+      "status": "active",
+      "section": [
+        "8. Formula engine: probably the most important new subsystem"
+      ],
+      "summary": "Never use eval; parse formula text to validated AST and canonical IR.",
+      "normative_payload": {
+        "pipeline": [
+          "text",
+          "parser",
+          "AST",
+          "semantic validation",
+          "canonical IR",
+          "execution backend"
+        ],
+        "forbidden": [
+          "eval"
+        ]
+      },
+      "anchors": [
+        "Do **not** implement arbitrary formulas through `eval()`."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-002",
+      "status": "active",
+      "section": [
+        "8. Formula engine: probably the most important new subsystem"
+      ],
+      "summary": "Canonical AST/IR can target JS first and later WASM, WGSL and TSL.",
+      "normative_payload": {
+        "initial": [
+          "JavaScript"
+        ],
+        "future": [
+          "WASM",
+          "WGSL",
+          "Three.js TSL"
+        ]
+      },
+      "anchors": [
+        "the AST—not JavaScript source—is the canonical representation"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-003",
+      "status": "active",
+      "section": [
+        "9. Formula families",
+        "VectorField"
+      ],
+      "summary": "VectorField maps 2D state, time and params to 2D derivative.",
+      "normative_payload": {
+        "inputs": [
+          "x",
+          "y",
+          "t",
+          "params"
+        ],
+        "outputs": [
+          "dx/dt",
+          "dy/dt"
+        ]
+      },
+      "anchors": [
+        "`VectorField`"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-004",
+      "status": "active",
+      "section": [
+        "9. Formula families",
+        "DiscreteMap"
+      ],
+      "summary": "DiscreteMap maps a 2D state and params to the next 2D state.",
+      "normative_payload": {
+        "inputs": [
+          "x_n",
+          "y_n",
+          "params"
+        ],
+        "outputs": [
+          "x_n+1",
+          "y_n+1"
+        ]
+      },
+      "anchors": [
+        "`DiscreteMap`"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-005",
+      "status": "active",
+      "section": [
+        "9. Formula families",
+        "Transform"
+      ],
+      "summary": "Transform maps 2D geometry to 2D geometry.",
+      "normative_payload": {
+        "inputs": [
+          "x",
+          "y"
+        ],
+        "outputs": [
+          "x-prime",
+          "y-prime"
+        ]
+      },
+      "anchors": [
+        "`Transform`"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-006",
+      "status": "active",
+      "section": [
+        "9. Formula families",
+        "ScalarField"
+      ],
+      "summary": "ScalarField maps x,y to z for contours, levels, potentials and height maps.",
+      "normative_payload": {
+        "inputs": [
+          "x",
+          "y"
+        ],
+        "outputs": [
+          "z"
+        ]
+      },
+      "anchors": [
+        "`ScalarField`"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-007",
+      "status": "active",
+      "section": [
+        "9. Formula families",
+        "Metric"
+      ],
+      "summary": "Metric maps point pairs to distance and may be standard or custom.",
+      "normative_payload": {
+        "input": [
+          "pointA",
+          "pointB"
+        ],
+        "output": "distance",
+        "examples": [
+          "Euclidean",
+          "Manhattan",
+          "Chebyshev",
+          "weighted",
+          "anisotropic",
+          "custom metric"
+        ]
+      },
+      "anchors": [
+        "## `Metric`"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "FORM-008",
+      "status": "deferred",
+      "section": [
+        "9. Formula families",
+        "InteractionLaw"
+      ],
+      "summary": "InteractionLaw may later map particle pairs and environment to force/influence.",
+      "normative_payload": {
+        "stage": "eventually"
+      },
+      "anchors": [
+        "Eventually: `InteractionLaw`"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "PARAM-001",
+      "status": "active",
+      "section": [
+        "10. Parameter system"
+      ],
+      "summary": "One parameter schema derives types, UI, defaults, validation, serialization, presets, worker and multiplayer state.",
+      "normative_payload": {
+        "derived": [
+          "TypeScript type",
+          "UI",
+          "defaults",
+          "runtime validation",
+          "URL encoding",
+          "serialization",
+          "presets",
+          "worker messages",
+          "multiplayer state",
+          "documentation"
+        ],
+        "failure_action": "no duplicated visibility matrices"
+      },
+      "anchors": [
+        "Replace both with one parameter schema."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "REND-001",
+      "status": "active",
+      "section": [
+        "11. Rendering architecture"
+      ],
+      "summary": "Renderer contract resizes, renders read-only state and disposes.",
+      "normative_payload": {
+        "methods": [
+          "resize",
+          "render",
+          "dispose"
+        ]
+      },
+      "anchors": [
+        "interface Renderer<State>"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "REND-002",
+      "status": "active",
+      "section": [
+        "11. Rendering architecture",
+        "Renderer 1 — Canvas2D"
+      ],
+      "summary": "Canvas2D is correctness baseline with explicit DPR/transforms and safe browser events.",
+      "normative_payload": {
+        "requirements": [
+          "explicit DPR",
+          "world-to-screen transform",
+          "no window.onresize",
+          "ResizeObserver",
+          "PointerEvent",
+          "HTML/SVG overlays"
+        ]
+      },
+      "anchors": [
+        "This is your correctness baseline."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "PERF-001",
+      "status": "active",
+      "section": [
+        "12. Canvas performance refactor"
+      ],
+      "summary": "Flying Lines replaces the quadratic hot path with a uniform spatial hash and bounded hot-loop work.",
+      "normative_payload": {
+        "algorithm": "uniform spatial hash",
+        "optimizations": [
+          "pairs once",
+          "squared distance rejection",
+          "no toFixed",
+          "no per-frame allocations",
+          "precompute",
+          "batch",
+          "cull"
+        ]
+      },
+      "anchors": [
+        "Implement a uniform spatial hash."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "RUNTIME-001",
+      "status": "active",
+      "section": [
+        "13. Worker architecture"
+      ],
+      "summary": "MainThreadBackend and WorkerBackend implement the same explicit execution lifecycle.",
+      "normative_payload": {
+        "backends": [
+          "MainThreadBackend",
+          "WorkerBackend"
+        ],
+        "methods": [
+          "initialize",
+          "start",
+          "pause",
+          "applyInput",
+          "updateParameters",
+          "dispose"
+        ],
+        "forbidden": "silent catch-all fallback"
+      },
+      "anchors": [
+        "Workers should become first-class execution runtimes."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "PROTO-001",
+      "status": "active",
+      "section": [
+        "14. Worker protocol"
+      ],
+      "summary": "Worker commands form a discriminated union and carry domain data.",
+      "normative_payload": {
+        "commands": [
+          "initialize",
+          "resize",
+          "input",
+          "parameters",
+          "pause",
+          "resume",
+          "dispose"
+        ],
+        "forbidden": [
+          "fake UIEvent"
+        ]
+      },
+      "anchors": [
+        "type RuntimeCommand ="
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "PROTO-002",
+      "status": "active",
+      "section": [
+        "15. Avoid excessive state transfer"
+      ],
+      "summary": "Worker usually owns simulation, spatial index and OffscreenCanvas renderer; main receives bounded results.",
+      "normative_payload": {
+        "worker_owns": [
+          "simulation",
+          "spatial index",
+          "OffscreenCanvas renderer"
+        ],
+        "main_receives": [
+          "analysis results",
+          "performance telemetry",
+          "selection information",
+          "errors"
+        ],
+        "forbidden": "stream particle coordinates each frame"
+      },
+      "anchors": [
+        "Not 100,000 particle coordinates every frame."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "REND-003",
+      "status": "active",
+      "section": [
+        "16. Renderer 2 — WebGL2"
+      ],
+      "summary": "WebGL2 uses buffers, instancing, compact attributes, batching and minimal allocation.",
+      "normative_payload": {
+        "requirements": [
+          "GPU buffers",
+          "instancing",
+          "compact attributes",
+          "batched connections",
+          "minimal allocation"
+        ],
+        "constraint": "do not make every line an Object3D"
+      },
+      "anchors": [
+        "Then implement a GPU renderer."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "REND-004",
+      "status": "deferred",
+      "section": [
+        "17. Renderer 3 — WebGPU"
+      ],
+      "summary": "WebGPU is capability-gated experimental and may later support GPU simulation.",
+      "normative_payload": {
+        "capability": "capabilities.webgpu === true",
+        "status": "experimental",
+        "failure_action": "normal operation must not require WebGPU"
+      },
+      "anchors": [
+        "Make this explicitly experimental."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ANAL-001",
+      "status": "active",
+      "section": [
+        "18. Analysis architecture"
+      ],
+      "summary": "Analyzers are plugins receiving read-only state and analysis context.",
+      "normative_payload": {
+        "interface": [
+          "id",
+          "analyze(state, context)"
+        ],
+        "result": "sync or Promise"
+      },
+      "anchors": [
+        "interface Analyzer<State, Result>"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ANAL-002",
+      "status": "active",
+      "section": [
+        "18. Analysis architecture"
+      ],
+      "summary": "Analysis cadence is independent of render/simulation cadence.",
+      "normative_payload": {
+        "example_hz": {
+          "render": 60,
+          "simulate": 120,
+          "graph": 10,
+          "topology": 1
+        },
+        "manual_topology": true
+      },
+      "anchors": [
+        "Analysis should be schedulable independently of animation."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ANAL-003",
+      "status": "active",
+      "section": [
+        "19. Introduce explicit computational budgets"
+      ],
+      "summary": "Analyzers declare point, duration, rate and sampling budgets.",
+      "normative_payload": {
+        "example": {
+          "maxPoints": 5000,
+          "maxDurationMs": 50,
+          "updateRateHz": 2,
+          "sampling": "adaptive"
+        },
+        "failure_action": "do not secretly freeze browser"
+      },
+      "anchors": [
+        "analysisBudget: {"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "SLICE-001",
+      "status": "active",
+      "section": [
+        "20. First mathematical vertical slice: Flying Lines"
+      ],
+      "summary": "Flying Lines is first end-to-end slice through simulation, spatial, rendering, worker, schema and graph analysis.",
+      "normative_payload": {
+        "components": [
+          "FlyingLinesExperiment",
+          "ParticleSimulation",
+          "SpatialHash",
+          "Canvas2DRenderer",
+          "WorkerRuntime",
+          "ParameterSchema",
+          "GraphAnalyzer"
+        ],
+        "inputs": [
+          "add point",
+          "remove nearest",
+          "move point"
+        ],
+        "analysis": [
+          "nodes",
+          "edges",
+          "degree distribution",
+          "connected components"
+        ]
+      },
+      "anchors": [
+        "This should be the **first target** for Codex."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TOPO-001",
+      "status": "active",
+      "section": [
+        "21. Topology v0"
+      ],
+      "summary": "Topology starts with connected components/beta0 via Union-Find.",
+      "normative_payload": {
+        "metric": "beta0",
+        "algorithm": "Union-Find"
+      },
+      "anchors": [
+        "can be calculated efficiently from the proximity graph using Union-Find"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TOPO-002",
+      "status": "active",
+      "section": [
+        "22. Topology v1"
+      ],
+      "summary": "Connection graph is the 1-skeleton and mutually connected triples become optional filled 2-simplices.",
+      "normative_payload": {
+        "elements": [
+          "edges",
+          "triangles"
+        ],
+        "interpretation": "filled triangles explain disappearing holes"
+      },
+      "anchors": [
+        "The existing connection graph becomes the 1-skeleton."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TOPO-003",
+      "status": "active",
+      "section": [
+        "23. Topology v2"
+      ],
+      "summary": "Persistent homology uses an adapter and initial Ripser WASM direction, not a new in-house algorithm.",
+      "normative_payload": {
+        "interface": "PersistentHomologyBackend",
+        "initial_backend": "RipserWasmAdapter",
+        "future": [
+          "GudhiServerAdapter",
+          "RustTdaWasmAdapter",
+          "CustomGpuTopologyAdapter"
+        ],
+        "failure_action": "do not implement persistence algorithm initially"
+      },
+      "anchors": [
+        "RipserWasmAdapter"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TOPO-004",
+      "status": "active",
+      "section": [
+        "24. Topology UI"
+      ],
+      "summary": "UI combines simulation, Betti numbers, persistence diagram, barcode and epsilon cursor.",
+      "normative_payload": {
+        "views": [
+          "simulation",
+          "Betti numbers",
+          "persistence diagram",
+          "barcode"
+        ],
+        "sync": [
+          "graph",
+          "simplices",
+          "Betti numbers",
+          "cursor"
+        ]
+      },
+      "anchors": [
+        "Dragging ε should simultaneously update:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "DYN-001",
+      "status": "active",
+      "section": [
+        "25. Dynamical systems module"
+      ],
+      "summary": "VectorFieldExperiment renders field, particles, trajectories and streamlines with initial-condition input.",
+      "normative_payload": {
+        "views": [
+          "vector field arrows",
+          "particles",
+          "trajectories",
+          "streamlines"
+        ],
+        "inputs": [
+          "new trajectory",
+          "initial condition"
+        ]
+      },
+      "anchors": [
+        "VectorFieldExperiment"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "DYN-002",
+      "status": "active",
+      "section": [
+        "26. Numerical integration"
+      ],
+      "summary": "Start integration with Euler and RK4; advanced solvers are later.",
+      "normative_payload": {
+        "initial": [
+          "Euler",
+          "RK4"
+        ],
+        "deferred": [
+          "adaptive RK",
+          "symplectic methods",
+          "stiff solvers"
+        ]
+      },
+      "anchors": [
+        "Start with:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "DYN-003",
+      "status": "active",
+      "section": [
+        "27. Formula morphing"
+      ],
+      "summary": "Formula parameters generate sliders and deterministic A/B comparison.",
+      "normative_payload": {
+        "features": [
+          "sliders",
+          "side-by-side comparison",
+          "deterministic pane synchronization"
+        ]
+      },
+      "anchors": [
+        "Add side-by-side comparison."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "DYN-004",
+      "status": "deferred",
+      "section": [
+        "28. Parameter sweeps"
+      ],
+      "summary": "Later automate parameter previews and derived-value plots.",
+      "normative_payload": {
+        "derived": [
+          "Lyapunov exponent",
+          "Betti number",
+          "attractor count",
+          "mean density"
+        ]
+      },
+      "anchors": [
+        "Later automate that."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "DYN-005",
+      "status": "deferred",
+      "section": [
+        "29. Dynamical-analysis plugins"
+      ],
+      "summary": "Add equilibrium, stability, Lyapunov, Poincare, basin and bifurcation analyzers gradually.",
+      "normative_payload": {
+        "analyzers": [
+          "equilibrium",
+          "stability",
+          "Lyapunov exponent",
+          "Poincaré section",
+          "basin visualization",
+          "bifurcation explorer"
+        ]
+      },
+      "anchors": [
+        "Dynamical-analysis plugins"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "SCALAR-001",
+      "status": "deferred",
+      "section": [
+        "30. Scalar-field experiments"
+      ],
+      "summary": "Scalar fields support heatmaps, contours, level sets and later surfaces/cubical persistence.",
+      "normative_payload": {
+        "initial": [
+          "heatmap",
+          "contours",
+          "level sets"
+        ],
+        "deferred": [
+          "3D surface",
+          "cubical-complex persistence"
+        ],
+        "algorithm": "marching squares"
+      },
+      "anchors": [
+        "Use marching squares"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "LEGACY-001",
+      "status": "active",
+      "section": [
+        "31. Preserve the weird old formulas"
+      ],
+      "summary": "Preserve Pulse/Spiral/Flying Lines as Bindfly Originals rather than correcting them.",
+      "normative_payload": {
+        "catalog": [
+          "Pulse 2023",
+          "Spiral I",
+          "Spiral II",
+          "Spiral III",
+          "Flying Lines"
+        ]
+      },
+      "anchors": [
+        "Don't “correct” Pulse/Spiral into textbook systems."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "COLLAB-001",
+      "status": "deferred",
+      "section": [
+        "32. Multiplayer architecture"
+      ],
+      "summary": "After determinism, collaboration streams domain events instead of frames.",
+      "normative_payload": {
+        "events": [
+          "AddPointEvent",
+          "RemovePointEvent",
+          "MovePointEvent",
+          "ParameterChangeEvent",
+          "FormulaChangeEvent"
+        ],
+        "forbidden": "stream frames"
+      },
+      "anchors": [
+        "Users don't stream frames."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "COLLAB-002",
+      "status": "deferred",
+      "section": [
+        "33. Don't rely on perfect lockstep forever"
+      ],
+      "summary": "Collaboration combines event sequence with periodic authoritative state/hash and resynchronization.",
+      "normative_payload": {
+        "requirements": [
+          "event sequence",
+          "periodic authoritative state/hash",
+          "resynchronization"
+        ]
+      },
+      "anchors": [
+        "Don't rely on perfect lockstep forever"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "COLLAB-003",
+      "status": "deferred",
+      "section": [
+        "34. Multiplayer can become mathematical gameplay"
+      ],
+      "summary": "Later collaborative goals operate on topology and parameters.",
+      "normative_payload": {
+        "modes": [
+          "Create exactly beta1=3",
+          "Connect using <=5 points",
+          "Destroy persistent loop",
+          "one parameter per player"
+        ]
+      },
+      "anchors": [
+        "Multiplayer can become mathematical gameplay"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "STUDIO-001",
+      "status": "active",
+      "section": [
+        "35. Studio architecture"
+      ],
+      "summary": "Studio has modular parameters, visualization, analysis and timeline/performance panels.",
+      "normative_payload": {
+        "panels": [
+          "parameters",
+          "visualization",
+          "analysis",
+          "timeline/metrics/performance"
+        ],
+        "constraint": "feature registers inspector without app-wide changes"
+      },
+      "anchors": [
+        "Panels are modular."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "STATE-003",
+      "status": "active",
+      "section": [
+        "36. Separate durable and ephemeral state"
+      ],
+      "summary": "Serialize experiment state, never hover/drag/readiness/FPS/frame.",
+      "normative_payload": {
+        "durable": [
+          "experiment id",
+          "experiment version",
+          "formula",
+          "parameters",
+          "seed",
+          "initial conditions",
+          "active analyzers",
+          "renderer choice",
+          "camera/view"
+        ],
+        "ephemeral": [
+          "hover",
+          "pointer coordinates",
+          "drag state",
+          "worker ready state",
+          "current FPS",
+          "temporary modal",
+          "current frame"
+        ]
+      },
+      "anchors": [
+        "Never serialize ephemeral state."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "CODEC-001",
+      "status": "active",
+      "section": [
+        "37. Versioned URLs"
+      ],
+      "summary": "Versioned URL state uses parse/normalize/migrate/serialize and remains compatible.",
+      "normative_payload": {
+        "route": "/lab/flying-lines?v=2&state=...",
+        "methods": [
+          "parse",
+          "normalize",
+          "migrate",
+          "serialize"
+        ]
+      },
+      "anchors": [
+        "interface ExperimentStateCodec"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TELEM-001",
+      "status": "active",
+      "section": [
+        "38. Performance telemetry"
+      ],
+      "summary": "Expose timing, counts, memory estimate, backend and DPR.",
+      "normative_payload": {
+        "metrics": [
+          "FPS",
+          "frame time",
+          "simulation time",
+          "render time",
+          "analysis time",
+          "particle count",
+          "edge count",
+          "memory estimates",
+          "backend",
+          "DPR"
+        ]
+      },
+      "anchors": [
+        "Collect:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "BENCH-001",
+      "status": "active",
+      "section": [
+        "39. Benchmark harness"
+      ],
+      "summary": "Deterministic benchmark scenarios compare backend distributions for the same experiment.",
+      "normative_payload": {
+        "fixture": "FlyingLines / Seed 42",
+        "counts": [
+          100,
+          1000,
+          10000,
+          50000
+        ],
+        "radii": [
+          20,
+          100,
+          300
+        ],
+        "metrics": [
+          "median simulation ms",
+          "p95 simulation ms",
+          "median render ms",
+          "p95 render ms",
+          "FPS"
+        ],
+        "failure_action": "never rely on visual impression"
+      },
+      "anchors": [
+        "Never claim one implementation is faster based on visual impression."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TEST-001",
+      "status": "active",
+      "section": [
+        "40. Testing architecture"
+      ],
+      "summary": "Unit/property tests cover deterministic engine, formula, spatial, codec, graph and protocol behavior.",
+      "normative_payload": {
+        "properties": [
+          "same seed identical",
+          "zero velocity stable",
+          "grid equals brute force",
+          "epsilon cannot increase beta0",
+          "symmetric metric"
+        ]
+      },
+      "anchors": [
+        "Mathematical property tests"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TEST-002",
+      "status": "active",
+      "section": [
+        "41. Analysis validation tests"
+      ],
+      "summary": "Topology uses known point-cloud fixtures and reference comparisons.",
+      "normative_payload": {
+        "fixtures": [
+          "single point",
+          "two separated points",
+          "triangle",
+          "circle",
+          "two circles",
+          "figure eight"
+        ],
+        "reference": "GUDHI"
+      },
+      "anchors": [
+        "For topology, maintain tiny known point clouds:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TEST-003",
+      "status": "active",
+      "section": [
+        "42. Visual tests"
+      ],
+      "summary": "Visual baselines pin seed, DPR, viewport, frame/step and parameters.",
+      "normative_payload": {
+        "captures": [
+          "first frame",
+          "known simulation step",
+          "paused analysis state"
+        ],
+        "forbidden": "DOM snapshots as primary graphics test"
+      },
+      "anchors": [
+        "Use deterministic:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TOOL-001",
+      "status": "active",
+      "section": [
+        "43. Tooling migration"
+      ],
+      "summary": "Replace CRA/custom Webpack split with pnpm, Vite, TypeScript, Vitest, Playwright, ESLint and ESM workers.",
+      "normative_payload": {
+        "remove": [
+          "CRA/custom Webpack split"
+        ],
+        "use": [
+          "pnpm workspaces",
+          "Vite",
+          "TypeScript",
+          "Vitest",
+          "Playwright",
+          "ESLint",
+          "ESM workers"
+        ],
+        "eventual": "allowJs false"
+      },
+      "anchors": [
+        "I would remove the old CRA + custom Webpack split."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TYPE-001",
+      "status": "active",
+      "section": [
+        "44. TypeScript compiler policy"
+      ],
+      "summary": "Use stronger strict flags where practical and type the core first.",
+      "normative_payload": {
+        "flags": [
+          "strict",
+          "noUncheckedIndexedAccess",
+          "exactOptionalPropertyTypes",
+          "noImplicitOverride"
+        ],
+        "priority": "simulation core",
+        "failure_action": "do not block architecture on maximal flags"
+      },
+      "anchors": [
+        "Type the simulation core first."
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ROAD-001",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex"
+      ],
+      "summary": "Execute ordered Phases 0 through 25 but give Codex 0 through 9 first.",
+      "normative_payload": {
+        "phase_order": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25
+        ],
+        "current_scope": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "anchors": [
+        "But I would give Codex **Phases 0–9 first**"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-001",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 0"
+      ],
+      "summary": "Baseline legacy without algorithm changes and record preservation evidence.",
+      "normative_payload": {
+        "exit": "we know what we're preserving"
+      },
+      "anchors": [
+        "Phase 0 — Baseline old Bindfly"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-002",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 1"
+      ],
+      "summary": "Scaffold architecture and dependency rules independent of legacy.",
+      "normative_payload": {
+        "exit": "new empty architecture compiles independently"
+      },
+      "anchors": [
+        "Phase 1 — Scaffold Bindfly 2"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-003",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 2"
+      ],
+      "summary": "Implement tested domain contracts without React or Canvas.",
+      "normative_payload": {
+        "exit": "contracts unit tested and React/Canvas independent"
+      },
+      "anchors": [
+        "Phase 2 — Core contracts"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-004",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 3"
+      ],
+      "summary": "Implement naive Flying Lines end-to-end and compare legacy.",
+      "normative_payload": {
+        "exit": "one complete effect runs through Bindfly 2"
+      },
+      "anchors": [
+        "Phase 3 — Flying Lines vertical slice"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-005",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 4"
+      ],
+      "summary": "Correct timing/lifecycle and refresh-rate independence.",
+      "normative_payload": {
+        "exit": "refresh rate does not materially alter simulation"
+      },
+      "anchors": [
+        "Phase 4 — Correct timing/lifecycle"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-006",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 5"
+      ],
+      "summary": "Use typed arrays, seeded RNG and reusable buffers, then benchmark.",
+      "normative_payload": {
+        "exit": "same behavior with measured improvement/no regression"
+      },
+      "anchors": [
+        "Phase 5 — Performance data model"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-007",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 6"
+      ],
+      "summary": "Implement spatial hash with brute-force oracle and benchmark.",
+      "normative_payload": {
+        "exit": "exact neighbors plus improvement at appropriate N"
+      },
+      "anchors": [
+        "Phase 6 — Spatial indexing"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-008",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 7"
+      ],
+      "summary": "Implement main/worker runtime with worker simulation and OffscreenCanvas.",
+      "normative_payload": {
+        "exit": "switch runtime without changing experiment code"
+      },
+      "anchors": [
+        "Phase 7 — Worker runtime"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-009",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 8"
+      ],
+      "summary": "Build schema-driven studio panels and controls.",
+      "normative_payload": {
+        "exit": "new parameter requires no manual UI"
+      },
+      "anchors": [
+        "Phase 8 — Studio architecture"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-010",
+      "status": "active",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 9"
+      ],
+      "summary": "Implement versioned state codec and reproducible URLs.",
+      "normative_payload": {
+        "exit": "reproduce experiment from URL"
+      },
+      "anchors": [
+        "Phase 9 — URL/state architecture"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-011",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 10"
+      ],
+      "summary": "Migrate six useful legacy Canvas effects without premature generalization.",
+      "normative_payload": {
+        "exit": "useful old Canvas effects use new engine"
+      },
+      "anchors": [
+        "Phase 10 — Legacy migration"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-012",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 11"
+      ],
+      "summary": "Implement limited safe formula AST without eval.",
+      "normative_payload": {
+        "exit": "formulas execute without eval"
+      },
+      "anchors": [
+        "Phase 11 — Formula AST"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-013",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 12"
+      ],
+      "summary": "Implement formula experiment families.",
+      "normative_payload": {
+        "exit": "formula-defined experiments"
+      },
+      "anchors": [
+        "Phase 12 — Formula-based experiment system"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-014",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 13"
+      ],
+      "summary": "Add mathematical classics as correctness/education benchmarks.",
+      "normative_payload": {
+        "exit": "reference systems available"
+      },
+      "anchors": [
+        "Phase 13 — Mathematical classics"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-015",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 14"
+      ],
+      "summary": "Implement parameter morphing and synchronized comparison.",
+      "normative_payload": {
+        "exit": "tiny parameter changes explored"
+      },
+      "anchors": [
+        "Phase 14 — Formula morphing"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-016",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 15"
+      ],
+      "summary": "Implement graph metrics and beta0.",
+      "normative_payload": {
+        "exit": "graph analysis before PH"
+      },
+      "anchors": [
+        "Phase 15 — Graph-analysis subsystem"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-017",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 16"
+      ],
+      "summary": "Visualize threshold, edges, triangles and optional higher dimensions.",
+      "normative_payload": {
+        "exit": "understand components and holes"
+      },
+      "anchors": [
+        "Phase 16 — Rips-complex visualization"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-018",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 17"
+      ],
+      "summary": "Add topology worker/adapter with Ripser WASM first for H0/H1, optional H2.",
+      "normative_payload": {
+        "exit": "Ripser WASM H0/H1 then optional H2"
+      },
+      "anchors": [
+        "Phase 17 — Persistent topology backend"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-019",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 18"
+      ],
+      "summary": "Add barcode, diagram, Betti values and synchronized epsilon cursor.",
+      "normative_payload": {
+        "exit": "epsilon updates geometry and topology coherently"
+      },
+      "anchors": [
+        "Phase 18 — Persistence visualization"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-020",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 19"
+      ],
+      "summary": "Add dynamics analyzers without render dependency.",
+      "normative_payload": {
+        "exit": "analyzers optional for rendering"
+      },
+      "anchors": [
+        "Phase 19 — Dynamical systems analysis"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-021",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 20"
+      ],
+      "summary": "Implement WebGL2 renderer using shared simulation.",
+      "normative_payload": {
+        "exit": "same experiment Canvas2D or WebGL"
+      },
+      "anchors": [
+        "Phase 20 — WebGL renderer"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-022",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 21"
+      ],
+      "summary": "Compare Canvas main, worker and WebGL fairly.",
+      "normative_payload": {
+        "exit": "same seed parameters viewport"
+      },
+      "anchors": [
+        "Phase 21 — Benchmark laboratory"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-023",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 22"
+      ],
+      "summary": "Implement capability-gated WebGPU experiment.",
+      "normative_payload": {
+        "exit": "WebGPU optional"
+      },
+      "anchors": [
+        "Phase 22 — WebGPU experiment"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-024",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 23"
+      ],
+      "summary": "Define events, local fake log, then WebSocket.",
+      "normative_payload": {
+        "exit": "two clients modify deterministic cloud"
+      },
+      "anchors": [
+        "Phase 23 — Multiplayer event system"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-025",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 24"
+      ],
+      "summary": "Add sequencing, hashes, snapshots, reconnect and resync.",
+      "normative_payload": {
+        "exit": "authoritative resynchronization"
+      },
+      "anchors": [
+        "Phase 24 — Authoritative synchronization"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "MIG-026",
+      "status": "deferred",
+      "section": [
+        "45. Migration phases for Codex",
+        "Phase 25"
+      ],
+      "summary": "Add collaborative topology/dynamics modes after synchronization.",
+      "normative_payload": {
+        "exit": "mathematical collaboration modes"
+      },
+      "anchors": [
+        "Phase 25 — Collaborative mathematical modes"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ACC-001",
+      "status": "active",
+      "section": [
+        "46. Architecture acceptance tests"
+      ],
+      "summary": "New experiment does not modify router, worker switches, generic UI, renderers or analysis infrastructure.",
+      "normative_payload": {
+        "forbidden_changes": [
+          "router",
+          "worker switch",
+          "generic parameter UI",
+          "renderer internals",
+          "analysis infrastructure"
+        ]
+      },
+      "anchors": [
+        "A new mathematical experiment should **not require modifying**:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ACC-002",
+      "status": "active",
+      "section": [
+        "46. Architecture acceptance tests"
+      ],
+      "summary": "New renderer does not modify simulation, formulas or analyzers.",
+      "normative_payload": {
+        "forbidden_changes": [
+          "simulation logic",
+          "experiment formulas",
+          "analyzers"
+        ]
+      },
+      "anchors": [
+        "A new renderer should **not require modifying**:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ACC-003",
+      "status": "active",
+      "section": [
+        "46. Architecture acceptance tests"
+      ],
+      "summary": "New analyzer does not modify renderer, simulation or React controls.",
+      "normative_payload": {
+        "forbidden_changes": [
+          "renderer",
+          "simulation",
+          "React control components"
+        ]
+      },
+      "anchors": [
+        "A new analyzer should **not require modifying**:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ACC-004",
+      "status": "active",
+      "section": [
+        "46. Architecture acceptance tests"
+      ],
+      "summary": "New parameter ideally changes only schema and simulation/formula.",
+      "normative_payload": {
+        "allowed_changes": [
+          "experiment parameter schema",
+          "simulation/formula using it"
+        ]
+      },
+      "anchors": [
+        "A new parameter should ideally require changing only:"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ARCH-009",
+      "status": "active",
+      "section": [
+        "47. One more important rule for Codex"
+      ],
+      "summary": "Prefer duplication for first two implementations and extract only after two consumers.",
+      "normative_payload": {
+        "minimum_consumers": 2,
+        "failure_action": "do not generalize from one implementation"
+      },
+      "anchors": [
+        "Prefer duplication across the first two implementations"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "TARGET-001",
+      "status": "active",
+      "section": [
+        "48. The target end-state"
+      ],
+      "summary": "End-state supports mathematical definition, multiple simulations/runtimes/renderers/analyses/interactions/collaboration.",
+      "normative_payload": {
+        "domains": [
+          "mathematical definition",
+          "simulation",
+          "runtime",
+          "renderer",
+          "analysis",
+          "interaction",
+          "collaboration"
+        ],
+        "current_major_milestone": "Flying Lines through Phases 0–9"
+      },
+      "anchors": [
+        "The first major milestone should be **Flying Lines completely rebuilt on the new architecture"
+      ],
+      "depends_on": []
+    }
+  ]
+}
