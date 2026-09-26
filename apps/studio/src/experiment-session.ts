@@ -26,6 +26,11 @@ export interface ExperimentTelemetry {
 	readonly searchBackend: 'brute' | 'grid'
 }
 
+export interface ExperimentSessionCollaborationState {
+	captureStateBytes(): Uint8Array
+	restoreStateBytes(bytes: Uint8Array): void
+}
+
 export interface Stage15FrameTiming {
 	readonly simulationMs: number
 	readonly derivationMs: number
@@ -69,6 +74,7 @@ export const createStage15FrameTimer = (now: () => number = () => performance.no
 export interface ExperimentSession<Schema extends ParameterSchema, Input, Snapshot, Telemetry> {
 	readonly parameters: ParameterValues<Schema>
 	readonly telemetry: Readonly<Telemetry>
+	readonly collaboration?: ExperimentSessionCollaborationState
 	step(step: SimulationStep): void
 	render(frame: RenderFrame): Readonly<Telemetry>
 	applyInput(input: Input): void

@@ -1,9 +1,11 @@
 import { createAdaptiveProximityDerivation } from '../../../src-v2/analysis/adaptive-proximity-derivation.ts'
 import { createSeededRandom, getParameterPatchInvalidation, normalizeParameters } from '../../../src-v2/core/index.ts'
-import type { ParameterPatch, ParameterValues, RendererKind, RenderFrame, Simulation, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
-import { flyingLinesDefinition, snapshotFlyingLinesState } from '../../../src-v2/effects/flying-lines/definition.ts'
+import type { ParameterPatch, ParameterValues, RendererKind, RenderFrame, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
+import { snapshotFlyingLinesState } from '../../../src-v2/effects/flying-lines/definition.ts'
+import { createFlyingLinesSimulation } from '../../../src-v2/effects/flying-lines/simulation.ts'
 import { flyingLinesParameters } from '../../../src-v2/effects/flying-lines/parameters.ts'
 import type { FlyingLinesInput, FlyingLinesState } from '../../../src-v2/effects/flying-lines/types.ts'
+import { decodeMovingPointCheckpointV1, encodeMovingPointCheckpointV1 } from '../../../src-v2/effects/moving-points/checkpoint.ts'
 import { MAXIMUM_MOVING_POINT_COUNT } from '../../../src-v2/effects/moving-points/parameters.ts'
 import { createFlyingLinesCanvasRenderer } from '../../../src-v2/rendering/canvas2d/flying-lines-renderer.ts'
 import type { FlyingLinesRenderView } from '../../../src-v2/rendering/flying-lines.ts'
@@ -32,10 +34,10 @@ export type FlyingLinesSession = ExperimentSession<
 export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOptions): FlyingLinesSession => {
 	let parameters = options.parameters
 	let viewport = options.viewport
-	let simulation: Simulation<FlyingLinesState, FlyingLinesInput> = flyingLinesDefinition.createSimulation({
-		random: createSeededRandom(options.seed),
-		viewport,
-	}, parameters)
+	let simulation = createFlyingLinesSimulation({
+		environment: { random: createSeededRandom(options.seed), viewport },
+		parameters,
+	})
 	const renderer = options.rendererId === 'webgl2'
 		? createFlyingLinesWebGL2Renderer(requireHtmlCanvas(options.canvas, 'Flying Lines'))
 		: createFlyingLinesCanvasRenderer(options.canvas)
@@ -70,13 +72,24 @@ export const createFlyingLinesSession = (options: CreateFlyingLinesSessionOption
 	}
 	const rebuild = () => {
 		simulation.dispose()
-		simulation = flyingLinesDefinition.createSimulation({ random: createSeededRandom(options.seed), viewport }, parameters)
+		simulation = createFlyingLinesSimulation({
+			environment: { random: createSeededRandom(options.seed), viewport },
+			parameters,
+		})
 		refreshDerivedOwners()
 	}
 
 	return {
 		get parameters() { return parameters },
 		get telemetry() { return telemetry },
+		collaboration: {
+			captureStateBytes: () => encodeMovingPointCheckpointV1(simulation.captureCheckpoint()),
+			restoreStateBytes: (bytes: Uint8Array) => {
+				assertActive()
+				simulation.restoreCheckpoint(decodeMovingPointCheckpointV1(bytes))
+				refreshDerivedOwners()
+			},
+		},
 		step: (step: SimulationStep) => {
 			assertActive()
 			frameTimer.measureSimulation(() => simulation.step(step))

@@ -1,7 +1,8 @@
-import type { Simulation, SimulationEnvironment } from '../../core/index.ts'
+import type { SimulationEnvironment } from '../../core/index.ts'
 import { createMovingPointSimulation } from '../moving-points/simulation.ts'
+import type { CheckpointableMovingPointSimulation } from '../moving-points/simulation.ts'
 
-import type { FlyingLinesInput, FlyingLinesParameters, FlyingLinesState } from './types.ts'
+import type { FlyingLinesParameters } from './types.ts'
 
 export interface CreateFlyingLinesSimulationInput {
 	readonly environment: SimulationEnvironment
@@ -11,5 +12,5 @@ export interface CreateFlyingLinesSimulationInput {
 export const createFlyingLinesSimulation = ({
 	environment,
 	parameters,
-}: CreateFlyingLinesSimulationInput): Simulation<FlyingLinesState, FlyingLinesInput> =>
+}: CreateFlyingLinesSimulationInput): CheckpointableMovingPointSimulation =>
 	createMovingPointSimulation({ environment, parameters })

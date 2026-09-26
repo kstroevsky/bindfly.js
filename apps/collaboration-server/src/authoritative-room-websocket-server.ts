@@ -102,6 +102,10 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 	private address: CollaborationServerAddress | undefined
 	private persistenceFailure: Error | undefined
 
+	get activeConnectionCount(): number {
+		return this.sessions.size
+	}
+
 	constructor(options: AuthoritativeRoomWebSocketServerOptions<Input>) {
 		const maxWireBytes = options.maxWireBytes ?? DEFAULT_MAX_WIRE_BYTES
 		if (!Number.isSafeInteger(maxWireBytes) || maxWireBytes <= 0) {

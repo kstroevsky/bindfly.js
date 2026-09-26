@@ -1,7 +1,12 @@
 import type { Result } from '../../../src-v2/core/result.ts'
 import { flyingLinesDefinition } from '../../../src-v2/effects/flying-lines/definition.ts'
+import {
+	FLYING_LINES_COLLABORATION_CONFIGURATION_VERSION,
+	decodeFlyingLinesCollaborationConfigurationV1,
+	encodeFlyingLinesCollaborationConfigurationV1,
+} from '../../../src-v2/effects/flying-lines/collaboration-configuration.ts'
 import type { FlyingLinesInput, FlyingLinesParameters } from '../../../src-v2/effects/flying-lines/types.ts'
-import { parseMovingPointInput } from '../../../src-v2/effects/moving-points/input.ts'
+import { decodeMovingPointInputV1, encodeMovingPointInputV1, parseMovingPointInput } from '../../../src-v2/effects/moving-points/input.ts'
 import { createFlyingLinesSession } from './flying-lines-session.ts'
 import { createMovingPointInteractionController } from './moving-point-interaction.ts'
 import { defineStudioExperiment } from './studio-experiment-plugin.ts'
@@ -27,6 +32,39 @@ export const flyingLinesPlugin = defineStudioExperiment({
 	definition: flyingLinesDefinition,
 	title: 'Flying Lines',
 	defaultSeed: 'bindfly-flying-lines-simple-v1',
+	collaboration: {
+		configurationVersion: FLYING_LINES_COLLABORATION_CONFIGURATION_VERSION,
+		encodeConfiguration: (configuration) => encodeFlyingLinesCollaborationConfigurationV1({
+			seed: configuration.seed,
+			parameters: configuration.parameters as FlyingLinesParameters,
+			simulationWidth: configuration.simulationWidth,
+			simulationHeight: configuration.simulationHeight,
+			fixedStepSeconds: configuration.fixedStepSeconds,
+		}),
+		decodeConfiguration: (bytes) => {
+			try {
+				const configuration = decodeFlyingLinesCollaborationConfigurationV1(bytes)
+				if (configuration.fixedStepSeconds !== flyingLinesDefinition.timing.fixedStepSeconds) {
+					return { ok: false, error: 'Flying Lines collaboration fixed timestep does not match this build.' }
+				}
+				return {
+					ok: true,
+					value: {
+						...configuration,
+						parameters: configuration.parameters,
+					},
+				}
+			} catch (error) {
+				return { ok: false, error: error instanceof Error ? error.message : 'Flying Lines collaboration configuration is invalid.' }
+			}
+		},
+		encodeInput: (input) => encodeMovingPointInputV1(parseMovingPointInput(input)),
+		decodeInput: (bytes) => {
+			try { return { ok: true, value: decodeMovingPointInputV1(bytes) } } catch (error) {
+				return { ok: false, error: error instanceof Error ? error.message : 'Flying Lines collaboration input bytes are invalid.' }
+			}
+		},
+	},
 	metrics: [
 		{ id: 'points', label: 'Points' },
 		{ id: 'edges', label: 'Edges' },

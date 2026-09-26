@@ -6,7 +6,11 @@ import type { ExperimentDefinition } from '../../../src-v2/core/experiment.ts'
 import type { Result } from '../../../src-v2/core/result.ts'
 import type { RenderFrame, SimulationStep, Viewport } from '../../../src-v2/core/index.ts'
 import type { RuntimeFormulaView, RuntimePointCloudCaptureRequest, RuntimePointInspectionRequest } from '../../../src-v2/runtime/protocol.ts'
-import type { ExperimentSession, ExperimentTelemetry } from './experiment-session.ts'
+import type {
+	ExperimentSession,
+	ExperimentSessionCollaborationState,
+	ExperimentTelemetry,
+} from './experiment-session.ts'
 
 export type StudioParameterValue = boolean | number | string
 export type StudioParameterValues = Readonly<Record<string, StudioParameterValue>>
@@ -66,6 +70,7 @@ export interface StudioPointInspectionView {
 export interface ErasedExperimentSession {
 	readonly parameters: StudioParameterValues
 	readonly telemetry: Readonly<ExperimentTelemetry>
+	readonly collaboration?: ExperimentSessionCollaborationState
 	step(step: SimulationStep): void
 	render(frame: RenderFrame): Readonly<ExperimentTelemetry>
 	applyInput(input: unknown): void
@@ -78,6 +83,22 @@ export interface ErasedExperimentSession {
 	inspectPoint?(request: RuntimePointInspectionRequest): unknown
 	capturePointCloud?(request: RuntimePointCloudCaptureRequest): unknown
 	dispose(): void
+}
+
+export interface StudioCollaborationBootstrapConfiguration {
+	readonly parameters: StudioParameterValues
+	readonly seed: string
+	readonly simulationWidth: number
+	readonly simulationHeight: number
+	readonly fixedStepSeconds: number
+}
+
+export interface StudioExperimentCollaborationCapability {
+	readonly configurationVersion: number
+	encodeConfiguration(configuration: StudioCollaborationBootstrapConfiguration): Uint8Array
+	decodeConfiguration(bytes: Uint8Array): Result<StudioCollaborationBootstrapConfiguration, string>
+	encodeInput(input: unknown): Uint8Array
+	decodeInput(bytes: Uint8Array): Result<unknown, string>
 }
 
 export interface StudioExperimentPlugin {
@@ -94,6 +115,7 @@ export interface StudioExperimentPlugin {
 	readonly pointCloudSources: readonly RuntimePointCloudCaptureRequest['source'][]
 	readonly formulaViews: readonly StudioFormulaView[]
 	readonly temporalSemantics: StudioTemporalSemantics
+	readonly collaboration?: StudioExperimentCollaborationCapability
 	readonly formatPointInspection?: (value: unknown) => StudioPointInspectionView | undefined
 	normalizeParameters(value: unknown): Result<StudioParameterValues, string>
 	parseInput(value: unknown): Result<unknown, string>
@@ -134,6 +156,7 @@ export interface DefineStudioExperimentOptions<
 	readonly pointCloudSources?: readonly RuntimePointCloudCaptureRequest['source'][]
 	readonly formulaViews?: readonly StudioFormulaView[]
 	readonly temporalSemantics?: StudioTemporalSemantics
+	readonly collaboration?: StudioExperimentCollaborationCapability
 	readonly formatPointInspection?: (value: unknown) => StudioPointInspectionView | undefined
 	readonly metrics: readonly {
 		readonly id: keyof Telemetry & string
@@ -198,6 +221,7 @@ export const defineStudioExperiment = <
 		pointCloudSources: Object.freeze([...(options.pointCloudSources ?? [])]),
 		formulaViews: Object.freeze([...(options.formulaViews ?? ['morph'])]),
 		temporalSemantics: Object.freeze(options.temporalSemantics ?? { kind: 'continuous' }),
+		...(options.collaboration ? { collaboration: options.collaboration } : {}),
 		...(options.formatPointInspection ? { formatPointInspection: options.formatPointInspection } : {}),
 		normalizeParameters: (value) => {
 			const result = normalize(value)
@@ -228,6 +252,7 @@ export const defineStudioExperiment = <
 			return {
 				get parameters() { return session.parameters as StudioParameterValues },
 				get telemetry() { return session.telemetry },
+				...(session.collaboration ? { collaboration: session.collaboration } : {}),
 				step: (step) => session.step(step),
 				render: (frame) => session.render(frame),
 				applyInput: (input) => {
