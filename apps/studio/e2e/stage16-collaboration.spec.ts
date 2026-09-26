@@ -81,6 +81,7 @@ const harness = (page: import('@playwright/test').Page) => ({
 			connected: boolean
 			currentStepIndex: number
 			lastAppliedSequence: number
+			authoritativeLogHeadSequence: number
 			requiresResynchronization: boolean
 			stateBase64Url: string
 		} } }).__bindflyCollaborationTest
@@ -136,10 +137,33 @@ test('two browser clients score the connectivity challenge from shared authorita
 			alice.connect({ url: `${address.url}?participant=alice`, roomId: 'connectivity-game-room', participantId: 'alice' }),
 			bob.connect({ url: `${address.url}?participant=bob`, roomId: 'connectivity-game-room', participantId: 'bob' }),
 		])
-		alice.startConnectivityGame(0)
-		bob.startConnectivityGame(0)
 
-		for (let index = 0; index < 5; index++) {
+		await bob.submit({ type: 'move-point', id: 0, x: 100, y: 140 })
+		await expect.poll(async () => (await alice.status()).authoritativeLogHeadSequence).toBe(1)
+		await expect.poll(async () => (await bob.status()).authoritativeLogHeadSequence).toBe(1)
+		await expect.poll(async () => (await alice.status()).lastAppliedSequence).toBe(0)
+		alice.startConnectivityGame(1)
+		bob.startConnectivityGame(1)
+
+		await server.runAuthoritativeStep(({ stepIndex, nextStepIndex }) => simulation.step({
+			index: stepIndex,
+			dtSeconds: configuration.fixedStepSeconds,
+			elapsedSeconds: nextStepIndex * configuration.fixedStepSeconds,
+		}))
+		await expect.poll(async () => (await alice.status()).lastAppliedSequence).toBe(1)
+		await expect.poll(async () => (await alice.connectivityGameStatus()).acceptedEdits).toBe(0)
+
+		await bob.submitConnectivityGame({ type: 'move-point', id: 1, x: 120, y: 150 })
+		await expect.poll(async () => (await alice.status()).authoritativeLogHeadSequence).toBe(2)
+		await expect.poll(async () => (await alice.connectivityGameStatus()).acceptedEdits).toBe(1)
+		await expect.poll(async () => (await alice.status()).lastAppliedSequence).toBe(1)
+		await server.runAuthoritativeStep(({ stepIndex, nextStepIndex }) => simulation.step({
+			index: stepIndex,
+			dtSeconds: configuration.fixedStepSeconds,
+			elapsedSeconds: nextStepIndex * configuration.fixedStepSeconds,
+		}))
+
+		for (let index = 0; index < 4; index++) {
 			await bob.submitConnectivityGame({ type: 'move-point', id: index % 3, x: 100 + index * 10, y: 140 + index * 5 })
 			await server.runAuthoritativeStep(({ stepIndex, nextStepIndex }) => simulation.step({
 				index: stepIndex,

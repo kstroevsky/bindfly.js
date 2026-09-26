@@ -15,6 +15,7 @@ interface BrowserHarnessStatus {
 	readonly connected: boolean
 	readonly currentStepIndex: number
 	readonly lastAppliedSequence: number
+	readonly authoritativeLogHeadSequence: number
 	readonly requiresResynchronization: boolean
 	readonly stateBase64Url: string
 }
@@ -97,6 +98,7 @@ export const installCollaborationBrowserTestHarness = (): CollaborationBrowserTe
 				connected: active.connected,
 				currentStepIndex: active.currentStepIndex,
 				lastAppliedSequence: active.lastAppliedSequence,
+				authoritativeLogHeadSequence: active.authoritativeLogHeadSequence,
 				requiresResynchronization: active.requiresResynchronization,
 				stateBase64Url: bytesToBase64Url(state.captureStateBytes()),
 			}

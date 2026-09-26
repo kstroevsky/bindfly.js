@@ -8,7 +8,7 @@ export const CONNECTIVITY_GAME_MAX_ACCEPTED_EDITS = 5
 
 export interface CollaborativeGameClient {
 	readonly currentStepIndex: number
-	readonly lastAppliedSequence: number
+	readonly authoritativeLogHeadSequence: number
 	readonly session: {
 		render(frame: RenderFrame): Readonly<ExperimentTelemetry>
 	}
@@ -34,7 +34,7 @@ export class ConnectivityCollaborativeGame {
 		if (!Number.isSafeInteger(gameStartSequence) || gameStartSequence < 0) {
 			throw new RangeError('Connectivity game start sequence must be a non-negative safe integer.')
 		}
-		if (gameStartSequence > client.lastAppliedSequence) {
+		if (gameStartSequence > client.authoritativeLogHeadSequence) {
 			throw new RangeError('Connectivity game start sequence cannot be ahead of the shared authoritative history.')
 		}
 		this.client = client
@@ -42,7 +42,7 @@ export class ConnectivityCollaborativeGame {
 	}
 
 	private authoritativeEditCount(): number {
-		const sequence = this.client.lastAppliedSequence
+		const sequence = this.client.authoritativeLogHeadSequence
 		if (!Number.isSafeInteger(sequence) || sequence < this.gameStartSequence) {
 			throw new Error('Shared authoritative sequence regressed behind the connectivity game start.')
 		}

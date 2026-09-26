@@ -249,6 +249,10 @@ export class SharedExperimentClient {
 		return this.replica.lastAppliedSequence
 	}
 
+	get authoritativeLogHeadSequence(): number {
+		return this.knownSequence
+	}
+
 	get requiresResynchronization(): boolean {
 		return this.replica.requiresResynchronization
 	}

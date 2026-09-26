@@ -20,18 +20,22 @@ const accepted = (sequence: number, duplicate = false): AuthoritativeSubmitResul
 	},
 })
 
-test('collaborative connectivity game derives edits from shared authoritative history', async () => {
+test('collaborative connectivity game scores accepted history independently from applied history', async () => {
 	let components = 3
-	let lastAppliedSequence = 10
+	let currentStepIndex = 4
+	let authoritativeLogHeadSequence = 10
 	let nextResult = accepted(11)
 	const game = new ConnectivityCollaborativeGame({
-		currentStepIndex: 4,
-		get lastAppliedSequence() { return lastAppliedSequence },
-		session: { render: () => ({ points: 10, edges: 9, components, step: 4, frameMs: 1, droppedSteps: 0, searchBackend: 'brute' }) },
+		get currentStepIndex() { return currentStepIndex },
+		get authoritativeLogHeadSequence() { return authoritativeLogHeadSequence },
+		session: { render: () => ({ points: 10, edges: 9, components, step: currentStepIndex, frameMs: 1, droppedSteps: 0, searchBackend: 'brute' }) },
 		submit: async () => nextResult,
 	}, 10)
+	assert.equal(game.status().acceptedEdits, 0)
+	currentStepIndex = 5
+	assert.equal(game.status().acceptedEdits, 0)
 	await game.submit({ type: 'move' })
-	lastAppliedSequence = 11
+	authoritativeLogHeadSequence = 11
 	nextResult = accepted(11, true)
 	await game.submit({ type: 'move' })
 	assert.equal(game.status().acceptedEdits, 1)
@@ -43,7 +47,7 @@ test('collaborative connectivity game enforces its accepted edit budget', async 
 	let sequence = 20
 	const game = new ConnectivityCollaborativeGame({
 		currentStepIndex: 0,
-		get lastAppliedSequence() { return sequence },
+		get authoritativeLogHeadSequence() { return sequence },
 		session: { render: () => ({ points: 10, edges: 0, components: 10, step: 0, frameMs: 1, droppedSteps: 0, searchBackend: 'brute' }) },
 		submit: async () => accepted(sequence + 1),
 	}, 20)
@@ -58,7 +62,7 @@ test('collaborators observe the same edit count and cannot report a win after th
 	let components = 2
 	const shared = {
 		currentStepIndex: 0,
-		get lastAppliedSequence() { return sequence },
+		get authoritativeLogHeadSequence() { return sequence },
 		session: { render: () => ({ points: 4, edges: 2, components, step: 0, frameMs: 1, droppedSteps: 0, searchBackend: 'brute' as const }) },
 		submit: async () => accepted(sequence + 1),
 	}
