@@ -83,7 +83,7 @@ The Probe fixture now waits by polling the actual inspection outcome while Probe
 
 Final local verification on 2026-09-26:
 
-- `pnpm run v2:check`: 216/216 tests passed; dependency boundaries, TypeScript and ESLint clean;
+- `pnpm run v2:check`: 218/218 tests passed; dependency boundaries, TypeScript and ESLint clean;
 - targeted Probe worker/main E2E: 10/10 repeated executions passed;
 - `pnpm run v2:e2e`: 16/16 Chromium Studio E2E tests passed without retry;
 - `pnpm run v2:e2e:stage16-cross-browser`: 3/3 recovery projects passed (Chromium, Firefox, WebKit);
@@ -91,18 +91,19 @@ Final local verification on 2026-09-26:
 - `pnpm run build`: passed;
 - `git diff --check`: passed.
 
-## Remaining deployment clock ownership
+## Authoritative step transaction
 
-The reference WebSocket server serializes collaboration mutations, resume requests, sync-point creation and checkpoint work, but it does not call the authoritative simulation's `step()` itself. Reference hosts and tests currently perform `simulation.step(...)` immediately before `server.advanceStepIndex(...)`.
+The reference WebSocket server now exposes `runAuthoritativeStep()`. The host still supplies the experiment-specific fixed-step callback, but the server invokes it inside the same serialized operation queue used for resume, submit, checkpoint and sync-point work. Reference hosts/tests no longer perform `simulation.step(...)` followed by a separate public server boundary call.
 
-That ordering is part of the deployment contract. A production host must not allow snapshot/resume work to observe the interval after the simulation has stepped but before the collaboration boundary has advanced. The preferred later hardening is an authoritative-step runner that executes:
+One queued authoritative step is:
 
 ```text
 simulate fixed step
-+ advance collaboration boundary
-+ checkpoint / sync-point work
+→ advance collaboration boundary
+→ checkpoint / sync-point work
+→ publish authoritative tick
 ```
 
-inside the same server/room transaction queue. This is intentionally recorded as deployment hardening rather than folded into Stage 16.2's repository acceptance boundary.
+Resume/snapshot traffic cannot observe the interval between mathematical simulation mutation and collaboration metadata advancement. If the simulation callback or boundary/checkpoint work fails, the authority fails closed: active sockets are terminated and further authoritative operations require restart/recovery.
 
-Stage 16.2 changes no simulation, formula, renderer, analyzer or generic experiment ownership boundary. It completes the single-authority repository milestone with explicit handling for checkpoint rollback, retained future WAL events, ambiguous client acknowledgements and crash-torn WAL tails. Production authoritative-clock hosting, identity, TLS/WSS, retention/backup policy and horizontally scaled transactional storage/leadership remain deployment concerns.
+Stage 16.2 changes no simulation, formula, renderer, analyzer or generic experiment ownership boundary. It completes the single-authority repository milestone with explicit handling for checkpoint rollback, retained future WAL events, ambiguous client acknowledgements, crash-torn WAL tails and authoritative-step serialization. Production wall-clock scheduling, identity, TLS/WSS, retention/backup policy and horizontally scaled transactional storage/leadership remain deployment concerns.

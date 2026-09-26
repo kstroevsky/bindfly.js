@@ -55,16 +55,21 @@ Performance telemetry remains local-only by default and must not include formula
 
 The current server is one authoritative process per room. Every newly accepted event is appended to the event WAL and fsynced before the submit is acknowledged/broadcast. Authoritative simulation ticks are not individually fsynced; the file adapter writes periodic atomic checkpoints (120 steps by default). A crash can therefore roll simulation time back to the latest checkpoint, but every acknowledged event remains in the WAL and is deterministically reapplied at its original scheduled boundary as the authority advances again.
 
-The reference server does **not** currently own the authoritative simulation clock. The test and reference-host pattern is deliberately explicit:
+The reference server now owns authoritative-step serialization through `runAuthoritativeStep()`. The host supplies the experiment-specific fixed-step callback, but the server executes it inside its room operation queue:
 
 ```text
+queued authoritative step
+    ↓
 simulation.step(...)
-await server.advanceStepIndex(...)
+    ↓
+advance collaboration boundary
+    ↓
+checkpoint / sync-point work
+    ↓
+publish authoritative tick
 ```
 
-`advanceStepIndex()` itself is serialized with resume/submit/checkpoint work through the server operation queue, but the preceding simulation mutation happens in the host. A production host must therefore preserve `simulation.step → collaboration boundary → checkpoint/sync-point publication` as one serialized operation with respect to snapshot/resume traffic. Interleaving a resume/snapshot read between the simulation mutation and the collaboration boundary would expose a mathematically newer session under older collaboration metadata.
-
-Before an Internet deployment, prefer a server/room-owned authoritative-step runner (or an equivalent host transaction queue) that executes the simulation step, advances the collaboration boundary, and performs checkpoint/sync-point work inside the same serialized queue. This is a deployment-hardening requirement; Stage 16 does not claim that the current reference server is a complete production clock host.
+Resume and submit work uses the same queue, so network-visible snapshot/resume traffic cannot interleave between the simulation mutation and collaboration boundary metadata. The host still decides *when* to request a fixed step; wall-clock scheduling remains outside the reference server. If the simulation callback or boundary/checkpoint work fails, the authority is poisoned and disconnects clients rather than exposing potentially inconsistent state.
 
 If either WAL append or checkpoint persistence fails, the room is poisoned for authoritative reads and writes, connected sockets are terminated, new upgrades are rejected, and restart/recovery is required. Clients are never given resume state from a known non-durable in-memory authority.
 
@@ -76,4 +81,4 @@ The 16 MiB default combined checkpoint/WAL ceiling turns unchecked history growt
 
 With the Stage 16.2 rollback, scheduling, client-idempotency and WAL-tail regressions included, the Stage 16 architecture satisfies its shared-experiment acceptance boundary: authenticated/authorized ordered input, deterministic scheduling, duplicate/out-of-order handling, periodic cryptographic state verification, automatic divergence recovery, bounded-cost reconnect, real WebSocket delivery, WAL-backed acknowledged-event durability, bounded transport/input pressure, explicit deletion/failure semantics and a real Studio/Flying Lines collaboration client vertical slice. A 32-client reconnect fixture and Chromium/Firefox/WebKit recovery test exercise the operational and cross-engine assumptions.
 
-Stage 16 can therefore close for the repository's current single-authority scope. A production Internet deployment still has mandatory environment decisions: authoritative simulation-clock serialization, real identity/room-membership verification, TLS/WSS, browser Origin policy where applicable, retention duration, backup/encryption policy, monitoring/alerting and a transactional store/leader design before horizontal scaling.
+Stage 16 can therefore close for the repository's current single-authority scope. A production Internet deployment still has mandatory environment decisions: wall-clock scheduling, real identity/room-membership verification, TLS/WSS, browser Origin policy where applicable, retention duration, backup/encryption policy, monitoring/alerting and a transactional store/leader design before horizontal scaling.

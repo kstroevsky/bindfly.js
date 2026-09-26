@@ -29,7 +29,7 @@ arrive at boundary N + 1
 apply authoritative inputs scheduled for boundary N + 1
 ```
 
-`InMemoryAuthoritativeRoom.advanceStepIndex()` therefore advances exactly one boundary at a time and applies the newly due event prefix at that boundary. The deterministic simulation host remains responsible for performing its fixed simulation step before advancing the collaboration boundary.
+`InMemoryAuthoritativeRoom.advanceStepIndex()` therefore advances exactly one boundary at a time and applies the newly due event prefix at that boundary. At the core-room layer the deterministic host still supplies the fixed simulation step, while the reference WebSocket server now invokes that host callback through `runAuthoritativeStep()` so simulation mutation and collaboration-boundary advancement share one serialized server transaction.
 
 The authority emits an `AuthoritativeTick` containing:
 

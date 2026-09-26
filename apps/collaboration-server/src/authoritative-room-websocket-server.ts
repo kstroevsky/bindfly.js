@@ -58,6 +58,15 @@ export interface CollaborationServerAddress {
 	readonly url: string
 }
 
+export interface AuthoritativeStepContext {
+	readonly stepIndex: number
+	readonly nextStepIndex: number
+}
+
+export type RunAuthoritativeSimulationStep = (
+	context: AuthoritativeStepContext,
+) => void | Promise<void>
+
 interface ConnectionSession {
 	readonly socket: WebSocket
 	readonly participantId: string
@@ -100,7 +109,7 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 	private readonly sessions = new Set<ConnectionSession>()
 	private operationTail: Promise<void> = Promise.resolve()
 	private address: CollaborationServerAddress | undefined
-	private persistenceFailure: Error | undefined
+	private authorityFailure: Error | undefined
 
 	get activeConnectionCount(): number {
 		return this.sessions.size
@@ -173,7 +182,7 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 			writeUpgradeRejection(socket, 404, 'Not Found')
 			return
 		}
-		if (this.persistenceFailure) {
+		if (this.authorityFailure) {
 			writeUpgradeRejection(socket, 503, 'Service Unavailable')
 			return
 		}
@@ -248,12 +257,12 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		}
 	}
 
-	private poisonPersistence(error: unknown): Error {
-		if (!this.persistenceFailure) {
-			this.persistenceFailure = error instanceof Error ? error : new Error('Collaboration persistence failed.')
+	private poisonAuthority(error: unknown): Error {
+		if (!this.authorityFailure) {
+			this.authorityFailure = error instanceof Error ? error : new Error('Collaboration authority failed.')
 			for (const session of this.sessions) session.socket.terminate()
 		}
-		return this.persistenceFailure
+		return this.authorityFailure
 	}
 
 	private async appendAcceptedEvent(sequence: number): Promise<void> {
@@ -261,7 +270,7 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		try {
 			await this.stateStore.appendEvent(this.room.capturePersistedEvent(sequence))
 		} catch (error) {
-			throw this.poisonPersistence(error)
+			throw this.poisonAuthority(error)
 		}
 	}
 
@@ -270,7 +279,7 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		try {
 			await this.stateStore.saveCheckpoint(await this.room.capturePersistenceCheckpoint())
 		} catch (error) {
-			throw this.poisonPersistence(error)
+			throw this.poisonAuthority(error)
 		}
 	}
 
@@ -280,8 +289,8 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 			this.sendError(session, 'MALFORMED_MESSAGE', parsed.error)
 			return
 		}
-		if (this.persistenceFailure) {
-			this.sendError(session, 'SERVER_ERROR', 'Collaboration persistence is unavailable; reconnect after server recovery.')
+		if (this.authorityFailure) {
+			this.sendError(session, 'SERVER_ERROR', 'Collaboration authority is unavailable; reconnect after server recovery.')
 			return
 		}
 		if (parsed.value.type === 'describe-room') {
@@ -340,20 +349,34 @@ export class AuthoritativeRoomWebSocketServer<Input> {
 		return this.address
 	}
 
-	async advanceStepIndex(nextStepIndex: number): Promise<void> {
+	private async commitAuthoritativeBoundary(nextStepIndex: number): Promise<void> {
+		const previouslyAppliedSequence = this.room.appliedSequence
+		this.room.advanceStepIndex(nextStepIndex)
+		const shouldCreateSyncPoint = nextStepIndex % this.syncPointIntervalSteps === 0
+			|| this.room.appliedSequence !== previouslyAppliedSequence
+		const syncPoint = shouldCreateSyncPoint ? await this.room.createSyncPoint() : undefined
+		if (nextStepIndex % this.checkpointIntervalSteps === 0) await this.saveCheckpoint()
+		this.broadcast({
+			wireVersion: COLLABORATION_WIRE_VERSION,
+			type: 'authoritative-tick',
+			tick: this.room.createTick(syncPoint),
+		})
+	}
+
+	async runAuthoritativeStep(runSimulationStep: RunAuthoritativeSimulationStep): Promise<void> {
 		await this.enqueue(async () => {
-			if (this.persistenceFailure) throw this.persistenceFailure
-			const previouslyAppliedSequence = this.room.appliedSequence
-			this.room.advanceStepIndex(nextStepIndex)
-			const shouldCreateSyncPoint = nextStepIndex % this.syncPointIntervalSteps === 0
-				|| this.room.appliedSequence !== previouslyAppliedSequence
-			const syncPoint = shouldCreateSyncPoint ? await this.room.createSyncPoint() : undefined
-			if (nextStepIndex % this.checkpointIntervalSteps === 0) await this.saveCheckpoint()
-			this.broadcast({
-				wireVersion: COLLABORATION_WIRE_VERSION,
-				type: 'authoritative-tick',
-				tick: this.room.createTick(syncPoint),
-			})
+			if (this.authorityFailure) throw this.authorityFailure
+			const stepIndex = this.room.currentStepIndex
+			if (!Number.isSafeInteger(stepIndex + 1)) {
+				throw new RangeError('Authoritative collaboration step exceeds the safe integer range.')
+			}
+			const nextStepIndex = stepIndex + 1
+			try {
+				await runSimulationStep({ stepIndex, nextStepIndex })
+				await this.commitAuthoritativeBoundary(nextStepIndex)
+			} catch (error) {
+				throw this.poisonAuthority(error)
+			}
 		})
 	}
 

@@ -152,10 +152,11 @@ test('SharedExperimentClient bootstraps real Flying Lines Studio sessions and re
 	assert.ok(bytesEqual(alice.descriptor.configurationBytes, configurationBytes))
 
 	const advanceAuthority = async (boundary: number): Promise<void> => {
-		const stepIndex = boundary - 1
 		const dtSeconds = flyingLinesPlugin.timing.fixedStepSeconds
-		authoritySession.step({ index: stepIndex, dtSeconds, elapsedSeconds: boundary * dtSeconds })
-		await server.advanceStepIndex(boundary)
+		await server.runAuthoritativeStep(({ stepIndex, nextStepIndex }) => {
+			assert.equal(nextStepIndex, boundary)
+			authoritySession.step({ index: stepIndex, dtSeconds, elapsedSeconds: nextStepIndex * dtSeconds })
+		})
 	}
 	const waitForClientsAt = async (stepIndex: number): Promise<void> => {
 		await waitUntil(
@@ -342,10 +343,11 @@ test('32-client shared Studio reconnect fixture converges after churn and forced
 				client.session.applyInput({ type: 'add-point', x: 300, y: 200 })
 			}
 		}
-		const stepIndex = boundary - 1
 		const dtSeconds = flyingLinesPlugin.timing.fixedStepSeconds
-		authoritySession.step({ index: stepIndex, dtSeconds, elapsedSeconds: boundary * dtSeconds })
-		await server.advanceStepIndex(boundary)
+		await server.runAuthoritativeStep(({ stepIndex, nextStepIndex }) => {
+			assert.equal(nextStepIndex, boundary)
+			authoritySession.step({ index: stepIndex, dtSeconds, elapsedSeconds: nextStepIndex * dtSeconds })
+		})
 		const connected = clients.filter((client) => client.connected)
 		await waitUntil(
 			() => connected.every((client) => client.currentStepIndex === boundary),

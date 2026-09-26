@@ -128,8 +128,11 @@ test('browser replicas detect divergence and recover through authoritative snaps
 		])
 
 		await alice.submit({ type: 'add-point', x: 120, y: 160 })
-		simulation.step({ index: 0, dtSeconds: configuration.fixedStepSeconds, elapsedSeconds: configuration.fixedStepSeconds })
-		await server.advanceStepIndex(1)
+		await server.runAuthoritativeStep(({ stepIndex, nextStepIndex }) => simulation.step({
+			index: stepIndex,
+			dtSeconds: configuration.fixedStepSeconds,
+			elapsedSeconds: nextStepIndex * configuration.fixedStepSeconds,
+		}))
 		await expect.poll(async () => (await alice.status()).currentStepIndex).toBe(1)
 		await expect.poll(async () => (await bob.status()).currentStepIndex).toBe(1)
 		const authoritativeStepOne = stateBase64Url(simulation)
@@ -137,16 +140,22 @@ test('browser replicas detect divergence and recover through authoritative snaps
 		await expect.poll(async () => (await bob.status()).stateBase64Url).toBe(authoritativeStepOne)
 
 		await alice.diverge({ type: 'add-point', x: 400, y: 300 })
-		simulation.step({ index: 1, dtSeconds: configuration.fixedStepSeconds, elapsedSeconds: 2 * configuration.fixedStepSeconds })
-		await server.advanceStepIndex(2)
+		await server.runAuthoritativeStep(({ stepIndex, nextStepIndex }) => simulation.step({
+			index: stepIndex,
+			dtSeconds: configuration.fixedStepSeconds,
+			elapsedSeconds: nextStepIndex * configuration.fixedStepSeconds,
+		}))
 		const authoritativeStepTwo = stateBase64Url(simulation)
 		await expect.poll(async () => (await alice.status()).stateBase64Url).toBe(authoritativeStepTwo)
 		await expect.poll(async () => (await alice.status()).requiresResynchronization).toBe(false)
 
 		await bob.disconnect()
 		await alice.submit({ type: 'move-point', id: 0, x: 300, y: 220 })
-		simulation.step({ index: 2, dtSeconds: configuration.fixedStepSeconds, elapsedSeconds: 3 * configuration.fixedStepSeconds })
-		await server.advanceStepIndex(3)
+		await server.runAuthoritativeStep(({ stepIndex, nextStepIndex }) => simulation.step({
+			index: stepIndex,
+			dtSeconds: configuration.fixedStepSeconds,
+			elapsedSeconds: nextStepIndex * configuration.fixedStepSeconds,
+		}))
 		const authoritativeStepThree = stateBase64Url(simulation)
 		await expect.poll(async () => (await alice.status()).stateBase64Url).toBe(authoritativeStepThree)
 		await bob.reconnect()

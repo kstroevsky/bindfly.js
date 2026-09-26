@@ -306,10 +306,9 @@ test('real WebSocket clients preserve authoritative ordering and reconnect throu
 	assert.equal(bobReplica.receive(bobSubmit.result.event).status, 'buffered-step')
 	assert.equal(aliceReplica.receive(aliceEventTwo.event).status, 'buffered-step')
 
-	stepSimulation(authority.simulation, 0)
 	stepSimulation(alice.simulation, 0)
 	stepSimulation(bob.simulation, 0)
-	await server.advanceStepIndex(1)
+	await server.runAuthoritativeStep(({ stepIndex }) => stepSimulation(authority.simulation, stepIndex))
 	const aliceTickOne = await aliceInbox.next()
 	const bobTickOne = await bobInbox.next()
 	assert.equal(aliceTickOne.type, 'authoritative-tick')
@@ -349,9 +348,8 @@ test('real WebSocket clients preserve authoritative ordering and reconnect throu
 	assert.equal((await bobReplica.applyResumePlan(replay)).ok, true)
 	await closeSocket(replaySocket)
 
-	stepSimulation(authority.simulation, 1)
 	stepSimulation(alice.simulation, 1)
-	await server.advanceStepIndex(2)
+	await server.runAuthoritativeStep(({ stepIndex }) => stepSimulation(authority.simulation, stepIndex))
 	const aliceTickTwo = await aliceInbox.next()
 	assert.equal(aliceTickTwo.type, 'authoritative-tick')
 	if (aliceTickTwo.type !== 'authoritative-tick') return
@@ -387,10 +385,9 @@ test('real WebSocket clients preserve authoritative ordering and reconnect throu
 	assert.equal((await bobReplica.applyResumePlan(snapshotPlan)).ok, true)
 	assert.deepEqual(bob.simulation.captureCheckpoint(), authority.simulation.captureCheckpoint())
 
-	stepSimulation(authority.simulation, 2)
 	stepSimulation(alice.simulation, 2)
 	stepSimulation(bob.simulation, 2)
-	await server.advanceStepIndex(3)
+	await server.runAuthoritativeStep(({ stepIndex }) => stepSimulation(authority.simulation, stepIndex))
 	const aliceTickThree = await aliceInbox.next()
 	const bobTickThree = await bobInbox.next()
 	assert.equal(aliceTickThree.type, 'authoritative-tick')
@@ -402,6 +399,95 @@ test('real WebSocket clients preserve authoritative ordering and reconnect throu
 	assert.equal(bobReplica.advanceStepIndex(3).ok, true)
 	assert.deepEqual(alice.simulation.captureCheckpoint(), authority.simulation.captureCheckpoint())
 	assert.deepEqual(bob.simulation.captureCheckpoint(), authority.simulation.captureCheckpoint())
+})
+
+test('authoritative step runner keeps simulation mutation and collaboration boundary atomic to resume traffic', async (t) => {
+	const authority = createHarness()
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'shared-flying-lines',
+		experimentId: 'flying-lines',
+		stateVersion: 1,
+		adapter: authority.adapter,
+		authorizeInput: () => ({ ok: true, value: undefined }),
+	})
+	const server = new AuthoritativeRoomWebSocketServer({
+		room,
+		syncPointIntervalSteps: 1,
+		authenticate: (request) => {
+			const participantId = request.headers['x-bindfly-participant-id']
+			return typeof participantId === 'string' && participantId.length > 0
+				? { ok: true, value: { participantId } }
+				: { ok: false, error: 'Missing participant identity.' }
+		},
+	})
+	t.after(async () => server.stop())
+	const address = await server.start()
+	const socket = await openSocket(address.url, 'alice')
+	t.after(async () => closeSocket(socket))
+	const inbox = createInbox(socket)
+
+	let releaseStep!: () => void
+	const stepRelease = new Promise<void>((resolve) => { releaseStep = resolve })
+	let simulationStepped!: () => void
+	const simulationStepReached = new Promise<void>((resolve) => { simulationStepped = resolve })
+	const step = server.runAuthoritativeStep(async ({ stepIndex }) => {
+		stepSimulation(authority.simulation, stepIndex)
+		simulationStepped()
+		await stepRelease
+	})
+	await simulationStepReached
+	assert.equal(room.currentStepIndex, 0)
+
+	let resumeSettled = false
+	const resume = sendResume(socket, inbox, 0, 0).then((plan) => {
+		resumeSettled = true
+		return plan
+	})
+	await new Promise<void>((resolve) => setTimeout(resolve, 25))
+	assert.equal(resumeSettled, false)
+
+	releaseStep()
+	await step
+	const plan = await resume
+	assert.equal(plan.ok, true)
+	if (!plan.ok) return
+	assert.equal(plan.tick.stepIndex, 1)
+	assert.equal(room.currentStepIndex, 1)
+})
+
+test('authoritative step runner fails closed when the simulation callback throws', async (t) => {
+	const authority = createHarness()
+	const room = new InMemoryAuthoritativeRoom({
+		roomId: 'shared-flying-lines',
+		experimentId: 'flying-lines',
+		stateVersion: 1,
+		adapter: authority.adapter,
+		authorizeInput: () => ({ ok: true, value: undefined }),
+	})
+	const server = new AuthoritativeRoomWebSocketServer({
+		room,
+		authenticate: (request) => {
+			const participantId = request.headers['x-bindfly-participant-id']
+			return typeof participantId === 'string' && participantId.length > 0
+				? { ok: true, value: { participantId } }
+				: { ok: false, error: 'Missing participant identity.' }
+		},
+	})
+	t.after(async () => server.stop())
+	const address = await server.start()
+	const socket = await openSocket(address.url, 'alice')
+	const closed = new Promise<void>((resolve) => socket.once('close', () => resolve()))
+
+	await assert.rejects(
+		server.runAuthoritativeStep(({ stepIndex }) => {
+			stepSimulation(authority.simulation, stepIndex)
+			throw new Error('fixture simulation failure')
+		}),
+		/fixture simulation failure/,
+	)
+	await closed
+	assert.equal(room.currentStepIndex, 0)
+	assert.equal(await rejectedUpgradeStatus(address.url, 'bob'), 503)
 })
 
 test('file WAL rejects valid-but-wrong canonical event tampering through its hash chain', async (t) => {
@@ -516,8 +602,7 @@ test('persistent WebSocket room recovers its checkpoint and pending event log af
 		{ type: 'add-point', x: 120, y: 160 },
 	)
 	assert.equal(firstSubmit.type, 'submit-result')
-	stepSimulation(firstAuthority.simulation, 0)
-	await firstServer.advanceStepIndex(1)
+	await firstServer.runAuthoritativeStep(({ stepIndex }) => stepSimulation(firstAuthority.simulation, stepIndex))
 	assert.equal((await firstInbox.next()).type, 'authoritative-tick')
 	const preCrashClientSnapshot = await firstRoom.createSnapshot()
 	const pendingSubmit = await sendProposal(
@@ -587,16 +672,14 @@ test('persistent WebSocket room recovers its checkpoint and pending event log af
 	assert.equal((await returningReplica.applyResumePlan(resume)).ok, true)
 	assert.equal(returningReplica.currentStepIndex, 0)
 	assert.equal(returningReplica.lastAppliedSequence, 0)
-	stepSimulation(recoveredAuthority.simulation, 0)
-	await recoveredServer.advanceStepIndex(1)
+	await recoveredServer.runAuthoritativeStep(({ stepIndex }) => stepSimulation(recoveredAuthority.simulation, stepIndex))
 	const recoveredTickOne = await recoveredInbox.next()
 	assert.equal(recoveredTickOne.type, 'authoritative-tick')
 	if (recoveredTickOne.type !== 'authoritative-tick') return
 	assert.equal(returningReplica.receiveTick(recoveredTickOne.tick).ok, true)
 	stepSimulation(returningClient.simulation, 0)
 	assert.equal(returningReplica.advanceStepIndex(1).ok, true)
-	stepSimulation(recoveredAuthority.simulation, 1)
-	await recoveredServer.advanceStepIndex(2)
+	await recoveredServer.runAuthoritativeStep(({ stepIndex }) => stepSimulation(recoveredAuthority.simulation, stepIndex))
 	const recoveredTickTwo = await recoveredInbox.next()
 	assert.equal(recoveredTickTwo.type, 'authoritative-tick')
 	if (recoveredTickTwo.type !== 'authoritative-tick') return
@@ -663,7 +746,10 @@ test('WebSocket room fails closed after durable persistence becomes unavailable'
 	await closed
 	assert.equal(room.logHeadSequence, 1)
 	assert.equal(await rejectedUpgradeStatus(address.url, 'bob'), 503)
-	await assert.rejects(server.advanceStepIndex(1), /fixture storage failure/)
+	await assert.rejects(
+		server.runAuthoritativeStep(({ stepIndex }) => stepSimulation(authority.simulation, stepIndex)),
+		/fixture storage failure/,
+	)
 	assert.equal(room.currentStepIndex, 0)
 	await server.stop()
 
