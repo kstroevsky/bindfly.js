@@ -1,6 +1,6 @@
 # Stage 16E — privacy, security and operations review
 
-This review covers the Stage 16 collaboration boundary as maintained through the Stage 16.1 correctness/integration hardening pass. Its acceptance target is the current single-authority shared-experiment architecture. It is not a claim that the repository now contains a production identity provider, TLS terminator or multi-region collaboration service.
+This review covers the Stage 16 collaboration boundary as maintained through the Stage 16.1 integration pass and Stage 16.2 recovery-edge hardening pass. Its acceptance target is the current single-authority shared-experiment architecture. It is not a claim that the repository now contains a production identity provider, TLS terminator or multi-region collaboration service.
 
 ## Authentication, authorization and room permissions
 
@@ -63,6 +63,6 @@ The 16 MiB default combined checkpoint/WAL ceiling turns unchecked history growt
 
 ## Review result
 
-The Stage 16 architecture satisfies its shared-experiment acceptance boundary: authenticated/authorized ordered input, deterministic scheduling, duplicate/out-of-order handling, periodic cryptographic state verification, automatic divergence recovery, bounded-cost reconnect, real WebSocket delivery, WAL-backed acknowledged-event durability, bounded transport/input pressure, explicit deletion/failure semantics and a real Studio/Flying Lines collaboration client vertical slice. A 32-client reconnect fixture and Chromium/Firefox/WebKit recovery test exercise the operational and cross-engine assumptions.
+With the Stage 16.2 rollback, scheduling, client-idempotency and WAL-tail regressions included, the Stage 16 architecture satisfies its shared-experiment acceptance boundary: authenticated/authorized ordered input, deterministic scheduling, duplicate/out-of-order handling, periodic cryptographic state verification, automatic divergence recovery, bounded-cost reconnect, real WebSocket delivery, WAL-backed acknowledged-event durability, bounded transport/input pressure, explicit deletion/failure semantics and a real Studio/Flying Lines collaboration client vertical slice. A 32-client reconnect fixture and Chromium/Firefox/WebKit recovery test exercise the operational and cross-engine assumptions.
 
 Stage 16 can therefore close for the repository's current single-authority scope. A production Internet deployment still has mandatory environment decisions: real identity/room-membership verification, TLS/WSS, browser Origin policy where applicable, retention duration, backup/encryption policy, monitoring/alerting and a transactional store/leader design before horizontal scaling.

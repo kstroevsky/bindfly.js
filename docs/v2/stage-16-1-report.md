@@ -1,6 +1,6 @@
 # Stage 16.1 — collaboration correctness and integration hardening
 
-Stage 16.1 is a post-review hardening pass over the completed Stage 16A–16E collaboration foundation. It does not reopen the ordering or simulation architecture. It closes the gaps between a strong protocol/reference-server implementation and an end-to-end shared Studio experiment.
+Stage 16.1 is a post-review hardening pass over the completed Stage 16A–16E collaboration foundation. Stage 16.2 later supersedes the final closure claim here with a narrow recovery-edge pass; this report remains the record of the 16.1 integration work. It does not reopen the ordering or simulation architecture. It closes the gaps between a strong protocol/reference-server implementation and an end-to-end shared Studio experiment.
 
 ## Active-session reconciliation
 
@@ -114,10 +114,10 @@ CI installs Chromium, Firefox and WebKit, runs the ordinary Chromium Studio suit
 
 Stage 16.1 closes the issues identified after the Stage 16 implementation review without changing the simulation, formula, rendering or Stage 13 analysis boundaries. The shared-experiment acceptance criterion is now exercised through the actual Studio session layer rather than only through raw simulations/protocol fixtures.
 
-Final verification on 2026-09-26:
+Verification recorded for the Stage 16.1 candidate on 2026-09-26:
 
 - `pnpm run v2:check`: 212/212 tests passed, with dependency boundaries, TypeScript and ESLint clean;
-- `pnpm run v2:e2e`: 16/16 Chromium Studio E2E tests passed;
+- `pnpm run v2:e2e`: all 16 Chromium Studio E2E tests ultimately passed in CI, with one Probe/worker case requiring a retry; Stage 16.2 removes that race and makes CI fail on flaky tests;
 - `pnpm run v2:e2e:stage16-cross-browser`: 3/3 collaboration recovery projects passed (Chromium, Firefox, WebKit);
 - `pnpm run v2:build`: passed;
 - `pnpm run build`: passed;
