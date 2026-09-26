@@ -8,6 +8,7 @@ import {
 import type {
 	AuthoritativeSubmitResult,
 	AuthoritativeTick,
+	ClientEventProposal,
 	CollaborationResumePlan,
 	CollaborationRoomDescriptor,
 	CollaborationStateAdapter,
@@ -21,6 +22,12 @@ import type {
 
 const WEB_SOCKET_OPEN = 1
 const WEB_SOCKET_CLOSED = 3
+
+const createClientInstanceId = (): string => {
+	const randomUUID = globalThis.crypto?.randomUUID?.bind(globalThis.crypto)
+	if (!randomUUID) throw new Error('Shared experiment collaboration requires crypto.randomUUID().')
+	return randomUUID()
+}
 
 export interface SharedExperimentSessionFactoryInput {
 	readonly plugin: StudioExperimentPlugin
@@ -131,6 +138,7 @@ export class SharedExperimentClient {
 	private readonly socketFactory: (url: string) => WebSocket
 	private readonly onError: ((error: Error) => void) | undefined
 	private readonly replica: CollaborationReplica<unknown>
+	private readonly clientInstanceId = createClientInstanceId()
 	private socket: WebSocket
 	private nextClientEventId = 1
 	private knownSequence = 0
@@ -139,6 +147,7 @@ export class SharedExperimentClient {
 		reject: (error: Error) => void
 	} | undefined
 	private pendingSubmit: {
+		proposal: ClientEventProposal
 		resolve: (result: AuthoritativeSubmitResult<unknown>) => void
 		reject: (error: Error) => void
 	} | undefined
@@ -261,6 +270,7 @@ export class SharedExperimentClient {
 
 	private installSocketHandlers(socket: WebSocket): void {
 		socket.addEventListener('message', (event) => {
+			if (socket !== this.socket || this.disposed) return
 			try {
 				const parsed = parseServerCollaborationWireMessage<unknown>(messageText(event))
 				if (!parsed.ok) throw new Error(parsed.error)
@@ -305,10 +315,22 @@ export class SharedExperimentClient {
 			if (socket !== this.socket || this.disposed) return
 			const error = new Error('Shared experiment WebSocket closed; reconnect is required.')
 			this.pendingResume?.reject(error)
-			this.pendingSubmit?.reject(error)
 			this.pendingResume = undefined
-			this.pendingSubmit = undefined
 		})
+	}
+
+	private sendSubmitProposal(proposal: ClientEventProposal): void {
+		this.socket.send(encodeClientCollaborationWireMessage({
+			wireVersion: COLLABORATION_WIRE_VERSION,
+			type: 'submit',
+			proposal,
+		}))
+	}
+
+	private resendPendingSubmit(): void {
+		if (!this.pendingSubmit) return
+		if (this.socket.readyState !== WEB_SOCKET_OPEN) throw new Error('Shared experiment WebSocket is not connected.')
+		this.sendSubmitProposal(this.pendingSubmit.proposal)
 	}
 
 	private async waitForResumePlan(): Promise<CollaborationResumePlan<unknown>> {
@@ -327,6 +349,8 @@ export class SharedExperimentClient {
 		this.knownSequence = Math.max(this.knownSequence, tick.logHeadSequence)
 		while (this.replica.currentStepIndex < tick.stepIndex) {
 			const stepIndex = this.replica.currentStepIndex
+			const allowed = this.replica.canAdvanceStepIndex(stepIndex + 1)
+			if (!allowed.ok) throw new Error(allowed.error)
 			this.session.step(this.simulationStep(stepIndex))
 			const advanced = this.replica.advanceStepIndex(stepIndex + 1)
 			if (!advanced.ok) throw new Error(advanced.error)
@@ -369,22 +393,19 @@ export class SharedExperimentClient {
 		if (this.pendingSubmit) throw new Error('Only one shared experiment input submission may be in flight at a time.')
 		const parsed = this.plugin.parseInput(input)
 		if (!parsed.ok) throw new Error(parsed.error)
-		const clientEventId = `event-${this.nextClientEventId++}`
+		const clientEventId = `${this.clientInstanceId}:${this.nextClientEventId++}`
+		const proposal: ClientEventProposal = {
+			protocolVersion: COLLABORATION_PROTOCOL_VERSION,
+			roomId: this.descriptor.roomId,
+			participantId: this.participantId,
+			clientEventId,
+			knownSequence: this.knownSequence,
+			input: parsed.value,
+		}
 		const resultPromise = new Promise<AuthoritativeSubmitResult<unknown>>((resolve, reject) => {
-			this.pendingSubmit = { resolve, reject }
+			this.pendingSubmit = { proposal, resolve, reject }
 		})
-		this.socket.send(encodeClientCollaborationWireMessage({
-			wireVersion: COLLABORATION_WIRE_VERSION,
-			type: 'submit',
-			proposal: {
-				protocolVersion: COLLABORATION_PROTOCOL_VERSION,
-				roomId: this.descriptor.roomId,
-				participantId: this.participantId,
-				clientEventId,
-				knownSequence: this.knownSequence,
-				input: parsed.value,
-			},
-		}))
+		this.sendSubmitProposal(proposal)
 		const result = await resultPromise
 		if (result.ok) {
 			this.knownSequence = Math.max(this.knownSequence, result.event.sequence)
@@ -429,11 +450,17 @@ export class SharedExperimentClient {
 		this.socket = socket
 		this.installSocketHandlers(socket)
 		await this.resumeFromLocalState()
+		this.resendPendingSubmit()
 	}
 
 	dispose(): Promise<void> {
 		if (this.disposed) return Promise.resolve()
 		this.disposed = true
+		const error = new Error('Shared experiment client was disposed.')
+		this.pendingResume?.reject(error)
+		this.pendingSubmit?.reject(error)
+		this.pendingResume = undefined
+		this.pendingSubmit = undefined
 		if (this.socket.readyState !== WEB_SOCKET_CLOSED) this.socket.close()
 		this.session.dispose()
 		return Promise.resolve()

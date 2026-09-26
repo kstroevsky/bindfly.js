@@ -4,6 +4,7 @@ export default defineConfig({
 	testDir: './apps/studio/e2e',
 	fullyParallel: false,
 	retries: process.env.CI ? 2 : 0,
+	failOnFlakyTests: Boolean(process.env.CI),
 	reporter: process.env.CI ? 'github' : 'list',
 	use: {
 		baseURL: 'http://127.0.0.1:3001',

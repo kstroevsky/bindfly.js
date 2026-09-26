@@ -377,7 +377,11 @@ test('Difference and Probe expose synchronized formula causality on main and wor
 
 	const assertProbe = async () => {
 		await page.getByRole('button', { name: 'Probe point' }).click()
-		await page.getByLabel('Interactive Pulse 2023 simulation').click({ position: { x: 100, y: 100 } })
+		const simulation = page.getByLabel('Interactive Pulse 2023 simulation')
+		await expect.poll(async () => {
+			await simulation.click({ position: { x: 100, y: 100 } })
+			return page.getByLabel('Point probe').count()
+		}, { timeout: 5_000 }).toBe(1)
 		const probe = page.getByLabel('Point probe')
 		await expect(probe).toBeVisible()
 		await expect(probe).toContainText('A valid / B valid')

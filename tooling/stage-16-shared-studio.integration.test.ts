@@ -203,6 +203,45 @@ test('SharedExperimentClient bootstraps real Flying Lines Studio sessions and re
 	await bob.waitForIdle()
 	assert.ok(bytesEqual(aliceBytes(), authorityBytes()))
 	assert.ok(bytesEqual(bobBytes(), authorityBytes()))
+
+	const sequenceBeforeAmbiguousAck = room.logHeadSequence
+	const serverSessions = (server as unknown as {
+		readonly sessions: Set<{ readonly socket: NodeWebSocket; readonly participantId: string }>
+	}).sessions
+	const aliceServerSocket = [...serverSessions].find((session) => session.participantId === 'alice')?.socket
+	assert.ok(aliceServerSocket)
+	if (!aliceServerSocket) return
+	const originalSend = aliceServerSocket.send.bind(aliceServerSocket) as (...args: unknown[]) => unknown
+	let dropSubmitResult = true
+	aliceServerSocket.send = ((...args: unknown[]) => {
+		const payload = args[0]
+		if (dropSubmitResult && typeof payload === 'string' && payload.includes('"type":"submit-result"')) {
+			dropSubmitResult = false
+			aliceServerSocket.terminate()
+			return undefined
+		}
+		return Reflect.apply(originalSend, aliceServerSocket, args)
+	}) as typeof aliceServerSocket.send
+
+	const ambiguousSubmit = alice.submit({ type: 'add-point', x: 420, y: 310 })
+	await waitUntil(
+		() => room.logHeadSequence === sequenceBeforeAmbiguousAck + 1 && !alice.connected,
+		'ambiguous acknowledged submission to commit before transport loss',
+	)
+	await alice.reconnect()
+	const recoveredSubmit = await ambiguousSubmit
+	assert.equal(recoveredSubmit.ok && recoveredSubmit.duplicate, true)
+	assert.equal(room.logHeadSequence, sequenceBeforeAmbiguousAck + 1)
+
+	await alice.disconnect()
+	const reloadedAlice = await createClient('alice')
+	t.after(async () => reloadedAlice.dispose())
+	const afterReload = await reloadedAlice.submit({ type: 'add-point', x: 430, y: 320 })
+	assert.equal(afterReload.ok, true)
+	if (recoveredSubmit.ok && afterReload.ok) {
+		assert.notEqual(afterReload.event.clientEventId, recoveredSubmit.event.clientEventId)
+		assert.equal(afterReload.event.sequence, recoveredSubmit.event.sequence + 1)
+	}
 })
 
 test('32-client shared Studio reconnect fixture converges after churn and forced divergence', async (t) => {
